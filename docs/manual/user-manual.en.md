@@ -331,7 +331,50 @@ adapter remains the default for tests, because a suite cannot assert on a sample
 distribution.
 
 **Adding a live signal source** means implementing one of the six port interfaces in
-`internal/signal` and selecting it in `internal/arena`.
+`internal/signal` and registering it in `internal/signal/profile`.
+
+### 9.1 Running against live signals
+
+Two ports have live adapters: metrics read the Prometheus HTTP API, and logs read a
+container runtime. The other four stay on fixtures.
+
+The fixture profile is the default, and that is deliberate — a deployment that meant to
+read live signals and silently read simulated ones would look healthy while proving
+nothing. So the live profile must be named, and it refuses to start half-configured:
+
+```bash
+arena serve \
+  --signal-profile live \
+  --prometheus-url http://prometheus:9090 \
+  --container-host unix:///var/run/docker.sock \
+  --series-map ./series-map.json
+```
+
+Every flag also reads from an environment variable — `ARENA_SIGNAL_PROFILE`,
+`ARENA_PROMETHEUS_URL`, `ARENA_CONTAINER_HOST`, `ARENA_SERIES_MAP` — which is how the
+container image is configured.
+
+The series map is what makes adding a metric configuration rather than code:
+
+```json
+{
+  "series": {
+    "http_error_rate": "rate(http_requests_total{status=~\"5..\"}[1m])",
+    "db_pool_in_use": "db_pool_connections_in_use"
+  },
+  "units":      { "http_error_rate": "ratio" },
+  "capacities": { "db_pool_in_use": 20 }
+}
+```
+
+A misspelled profile name is rejected at start-up with exit code `2` and the offending
+flag named. It is never treated as a request for the default.
+
+**What a live adapter does when its backend is down.** It returns a typed error, the
+collector records a degraded source, and the investigation continues with what it has. An
+unreachable Prometheus never aborts a case: a partial investigation is worth more than
+none. A `NaN`, a stale marker or an empty result becomes an *absent* sample rather than a
+zero — a zero reading and no reading support different conclusions.
 
 ## 10. Troubleshooting
 

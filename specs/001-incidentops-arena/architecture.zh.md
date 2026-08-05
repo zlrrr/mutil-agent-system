@@ -198,7 +198,7 @@ sequenceDiagram
 
 **实现需求。** REQ-0011, REQ-0020, REQ-0090
 
-<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082 -->
+<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082,REQ-0096,REQ-0097,REQ-0098 -->
 ### ARC-006 — 信号端口以夹具优先
 
 **元素。** 六个端口——指标、日志、变更、拓扑、知识、执行器——每个都有夹具适配器与在线
@@ -210,7 +210,8 @@ sequenceDiagram
 配合 REQ-0082），因此新增故障场景是一个数据文件，而不是一次代码变更。执行器的在线适配器
 只能指向演示栈。
 
-**实现需求。** REQ-0010, REQ-0012, REQ-0013, REQ-0014, REQ-0015, REQ-0016, REQ-0082
+**实现需求。** REQ-0010, REQ-0012, REQ-0013, REQ-0014, REQ-0015, REQ-0016, REQ-0082,
+REQ-0096, REQ-0097, REQ-0098
 
 <!-- sdd:item id=ARC-007 stage=architect status=approved derives_from=REQ-0021,REQ-0035 -->
 ### ARC-007 — 证据覆盖是一个格，推进由它守卫

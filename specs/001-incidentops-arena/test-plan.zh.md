@@ -678,6 +678,65 @@ release。
 
 **测试函数。** `internal/httpapi/delivery_test.go` 中的 `TestReleasePipeline`
 
+### 3.11 在线信号适配器
+
+<!-- sdd:item id=TC-0100 stage=verify status=approved derives_from=REQ-0096 -->
+#### TC-0100 — Prometheus 适配器把 range 响应映射为序列
+
+**层级。** unit。**验证。** REQ-0096。
+
+**步骤。** 用 `httptest` 服务器提供一份录制的 `query_range` 载荷并查询它。
+
+**预期。** 采样点按时间戳顺序出现且取值已解析；标签与单位被带上；请求发出了 `query`、
+`start`、`end` 与 `step`。`NaN` 采样点在序列中是缺失的，而不是以 `0` 的形式存在。
+
+**测试函数。** `internal/signal/prometheus/prometheus_test.go` 中的 `TestPrometheusRange`
+
+<!-- sdd:item id=TC-0101 stage=verify status=approved derives_from=REQ-0096 -->
+#### TC-0101 — Prometheus 适配器施加上限并以带类型的方式报告失败
+
+**层级。** unit。**验证。** REQ-0096。
+
+**步骤。** 先提供超过 `MaxRows` 的载荷，再提供一个 API 错误，然后关闭服务器并查询这个
+已死的端点。
+
+**预期。** 过长的序列被截断为最近的 `MaxRows` 个采样点并报告截断；API 错误与不可达端点
+都表现为指明端口的 `signal.SourceError`，而不是一个泛化错误或 panic。
+
+**测试函数。** `internal/signal/prometheus/prometheus_test.go` 中的
+`TestPrometheusBoundsAndErrors`
+
+<!-- sdd:item id=TC-0102 stage=verify status=approved derives_from=REQ-0097 -->
+#### TC-0102 — 容器日志适配器完成解复用与过滤
+
+**层级。** unit。**验证。** REQ-0097。
+
+**步骤。** 提供一段多路复用的日志流，其中包含一条载荷字节里恰好出现帧头模式的记录，然后
+带关键词与时间窗检索它。
+
+**预期。** stdout 与 stderr 记录连同正确的级别与时间戳被还原；那条对抗性载荷不会让解析器
+失步；只返回同时匹配所有关键词、且落在时间窗内的行，并施加上限与标记。
+
+**测试函数。** `internal/signal/containerlog/containerlog_test.go` 中的
+`TestContainerLogSearch`
+
+<!-- sdd:item id=TC-0103 stage=verify status=approved derives_from=REQ-0098 -->
+#### TC-0103 — 默认配置档就是夹具档
+
+**层级。** integration。**验证。** REQ-0098。
+
+**步骤。** 先校验空配置、夹具档、一份完整的在线档以及若干不完整的在线档；再分别用空配置、
+夹具档、以及一个未知的 profile 名构建信号集合。
+
+**预期。** 空配置与夹具档都产出夹具集合；在线档只替换指标端口与日志端口；未知名称是一个
+指明出错取值的错误，而不是静默回退。
+
+校验不需要先构建即可完成，因此入口可以在启动时就拒掉错误的 profile。把这项检查推迟到构建
+时，会让一个 profile 拼错的服务先干净地启动、然后一个 case 接一个 case 地失败——而失败恰好
+在已经有人依赖它的时候才到来。
+
+**测试函数。** `internal/signal/profile/profile_test.go` 中的 `TestProfileSelection`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

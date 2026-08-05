@@ -394,6 +394,36 @@ func Summarise(outcomes []CaseOutcome) Report
 
 **细化自。** ARC-014
 
+<!-- sdd:item id=HLD-019 stage=hld status=approved derives_from=ARC-006 -->
+### HLD-019 — 在线信号适配器与配置档选择
+
+**目的。** 用真实系统为指标端口与日志端口提供服务，同时不让推理平面——以及测试套件——
+察觉到任何变化。
+
+**公开接口面。**
+
+```go
+package prometheus
+func New(endpoint string, opts Options) *Source      // 实现 signal.MetricSource
+
+package containerlog
+func New(host string, opts Options) *Source          // 实现 signal.LogSource
+
+package profile
+func Build(name string, fc FaultCase, cat *Catalog, b Bounds) (signal.Set, error)
+```
+
+**失败行为。** 在线适配器在够不到其后端时返回 `signal.SourceError`，其中指明端口与端点。
+采集器把它记为降级数据源并继续；够不到的指标后端绝不会中止一次调查，因为一次不完整的
+调查也比没有调查更有价值。
+
+"缺失"与"零"始终区分开：`NaN`、陈旧标记或空结果都变成缺失的采样点，绝不会变成 `0.0`
+读数。
+
+**协作者。** 仅由入口（HLD-018）装配。推理平面与控制平面中没有任何东西引用这些包。
+
+**细化自。** ARC-006
+
 ## 3. 数据模型
 
 | 实体 | 关键字段 | 归属模块 | 生命周期 |

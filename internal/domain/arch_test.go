@@ -21,6 +21,14 @@ var planes = map[string]planeSpec{
 	"internal/signal":         {1, "signal"},
 	"internal/catalog":        {2, "reasoning"},
 	"internal/signal/fixture": {3, "signal-adapter"},
+	// The live adapters sit at the same rank as the fixture adapter: they are
+	// alternatives to it, not layers above it, and nothing may depend on one that
+	// could not equally depend on the other.
+	"internal/signal/prometheus":   {3, "signal-adapter"},
+	"internal/signal/containerlog": {3, "signal-adapter"},
+	// Profile selection is the one place that names every adapter, so it ranks above
+	// all of them and below everything that consumes a port.
+	"internal/signal/profile": {4, "signal-adapter"},
 	"internal/reasoner":       {4, "reasoning"},
 	"internal/agent":          {5, "reasoning"},
 	"internal/policy":         {5, "control"},

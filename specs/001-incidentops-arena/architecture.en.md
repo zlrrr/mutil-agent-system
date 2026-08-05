@@ -214,7 +214,7 @@ so the offline system is a working product, not a placeholder.
 
 **Realises.** REQ-0011, REQ-0020, REQ-0090
 
-<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082 -->
+<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082,REQ-0096,REQ-0097,REQ-0098 -->
 ### ARC-006 — Signal ports are fixture-first
 
 **Element.** Six ports — metric, log, change, topology, knowledge, actuator — each with
@@ -227,7 +227,8 @@ truncation. Fixture data is declarative case data (ARC-006 with REQ-0082), so a 
 fault scenario is a data file, not a code change. The live adapter for the actuator may
 target only the demo stack.
 
-**Realises.** REQ-0010, REQ-0012, REQ-0013, REQ-0014, REQ-0015, REQ-0016, REQ-0082
+**Realises.** REQ-0010, REQ-0012, REQ-0013, REQ-0014, REQ-0015, REQ-0016, REQ-0082,
+REQ-0096, REQ-0097, REQ-0098
 
 <!-- sdd:item id=ARC-007 stage=architect status=approved derives_from=REQ-0021,REQ-0035 -->
 ### ARC-007 — Evidence coverage is a lattice, and progression is guarded by it

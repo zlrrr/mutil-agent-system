@@ -3,6 +3,8 @@
 // Usage:
 //
 //	arena serve  [--addr :8080] [--store memory|file] [--data ./data]
+//	             [--signal-profile fixture|live] [--prometheus-url URL]
+//	             [--container-host HOST] [--series-map FILE]
 //	arena demo   [--case C1] [--mode multi_with_critic] [--approve] [--out report.md]
 //	arena cases
 //	arena version
@@ -10,6 +12,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -28,6 +31,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/policy"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
 	"github.com/zlrrr/mutil-agent-system/internal/report"
+	"github.com/zlrrr/mutil-agent-system/internal/signal/profile"
 	"github.com/zlrrr/mutil-agent-system/internal/store"
 )
 
@@ -60,8 +64,28 @@ func main() {
 	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "arena: %v\n", err)
+		// HLD-018: a configuration error exits 2, so an operator's start-up script can
+		// tell "you asked for something impossible" apart from "it broke while running".
+		var ce *configError
+		if errors.As(err, &ce) {
+			os.Exit(2)
+		}
 		os.Exit(1)
 	}
+}
+
+// configError marks a failure caused by what the operator asked for, rather than by
+// something that went wrong at runtime.
+type configError struct {
+	key string
+	err error
+}
+
+func (e *configError) Error() string { return e.key + ": " + e.err.Error() }
+func (e *configError) Unwrap() error { return e.err }
+
+func badConfig(key string, format string, args ...any) error {
+	return &configError{key: key, err: fmt.Errorf(format, args...)}
 }
 
 func serve(args []string) error {
@@ -69,6 +93,14 @@ func serve(args []string) error {
 	addr := fs.String("addr", env("ARENA_ADDR", ":8080"), "listen address")
 	kind := fs.String("store", env("ARENA_STORE", "memory"), "store adapter: memory|file")
 	dir := fs.String("data", env("ARENA_DATA", "./data"), "data directory for the file store")
+	prof := fs.String("signal-profile", env("ARENA_SIGNAL_PROFILE", string(profile.Fixture)),
+		"signal adapters: "+strings.Join(profile.Names(), "|"))
+	promURL := fs.String("prometheus-url", env("ARENA_PROMETHEUS_URL", ""),
+		"Prometheus base URL, required by the live profile")
+	runtimeHost := fs.String("container-host", env("ARENA_CONTAINER_HOST", "unix:///var/run/docker.sock"),
+		"container runtime host, used by the live profile")
+	seriesMap := fs.String("series-map", env("ARENA_SERIES_MAP", ""),
+		"path to a JSON file mapping series names to PromQL, used by the live profile")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -81,8 +113,13 @@ func serve(args []string) error {
 	if err != nil {
 		return fmt.Errorf("load catalog: %w", err)
 	}
-	registry, err := arena.NewRegistry(st, eventbus.New(),
-		reasoner.DefaultConfig(), policy.DefaultConfig(), cat)
+
+	signals, err := buildSignalConfig(*prof, *promURL, *runtimeHost, *seriesMap)
+	if err != nil {
+		return err
+	}
+	registry, err := arena.NewRegistryWithSignals(st, eventbus.New(),
+		reasoner.DefaultConfig(), policy.DefaultConfig(), cat, signals)
 	if err != nil {
 		return err
 	}
@@ -104,8 +141,8 @@ func serve(args []string) error {
 		_ = srv.Shutdown(shutdown)
 	}()
 
-	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, cases=%v)\n",
-		Version, *addr, *kind, cat.CaseIDs())
+	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, signals=%s, cases=%v)\n",
+		Version, *addr, *kind, signals.Profile, cat.CaseIDs())
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -208,6 +245,50 @@ func listCases() error {
 	return nil
 }
 
+// buildSignalConfig resolves the adapter profile from flags. A configuration error names
+// the offending key and exits 2 (HLD-018), because a deployment that meant to read live
+// signals and silently read fixtures instead would look healthy while proving nothing.
+func buildSignalConfig(name, promURL, runtimeHost, seriesMapPath string) (profile.Config, error) {
+	cfg := profile.Config{
+		Profile:       profile.Profile(name),
+		PrometheusURL: promURL,
+		ContainerHost: runtimeHost,
+	}
+	if cfg.Profile != profile.Live {
+		// Validated here too, so a mistyped profile fails at start-up rather than at
+		// the first case.
+		if err := cfg.Validate(); err != nil {
+			return cfg, badConfig("-signal-profile", "%w", err)
+		}
+		return cfg, nil
+	}
+
+	if seriesMapPath == "" {
+		return cfg, badConfig("-series-map", "required by the %s profile: without it no series can be resolved", profile.Live)
+	}
+	raw, err := os.ReadFile(seriesMapPath)
+	if err != nil {
+		return cfg, badConfig("-series-map", "%w", err)
+	}
+	var file struct {
+		Series     map[string]string  `json:"series"`
+		Units      map[string]string  `json:"units"`
+		Capacities map[string]float64 `json:"capacities"`
+	}
+	if err := json.Unmarshal(raw, &file); err != nil {
+		return cfg, badConfig("-series-map", "%s: %w", seriesMapPath, err)
+	}
+	if len(file.Series) == 0 {
+		return cfg, badConfig("-series-map", "%s declares no series", seriesMapPath)
+	}
+	cfg.SeriesMap, cfg.Units, cfg.Capacities = file.Series, file.Units, file.Capacities
+
+	if err := cfg.Validate(); err != nil {
+		return cfg, badConfig("-signal-profile", "%w", err)
+	}
+	return cfg, nil
+}
+
 func buildStore(kind, dir string) (store.Store, error) {
 	switch kind {
 	case "memory", "":
@@ -215,7 +296,7 @@ func buildStore(kind, dir string) (store.Store, error) {
 	case "file":
 		return store.NewFile(dir)
 	default:
-		return nil, fmt.Errorf("unknown store adapter %q: use memory or file", kind)
+		return nil, badConfig("-store", "unknown adapter %q: use memory or file", kind)
 	}
 }
 

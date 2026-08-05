@@ -779,6 +779,62 @@ a gate.
 
 **Verified by.** TC-0092
 
+<!-- sdd:item id=REQ-0096 stage=specify status=approved derives_from=G-001 priority=P1 -->
+### REQ-0096 — Live metric adapter over the Prometheus HTTP API
+
+**Requirement.** The metric port MUST have a live adapter querying the Prometheus HTTP
+API, returning the same `Series` shape the fixture adapter returns, so no code above the
+port can tell which adapter served it. It MUST apply the port's bounds, MUST mark
+truncation rather than silently dropping samples, and MUST fail with a typed error the
+collector can record as a degraded source rather than as a crash.
+
+A Prometheus response containing `NaN`, a stale marker, or a series with no samples MUST
+be treated as absence of evidence, not as a zero value: a zero reading and no reading
+support different conclusions.
+
+**Acceptance.**
+- Given a recorded `query_range` response, when the adapter maps it, then the resulting
+  series matches the equivalent fixture series in shape, ordering and units.
+- Given a response with more samples than the bound allows, when the adapter maps it,
+  then the series is truncated and truncation is reported.
+- Given an unreachable endpoint, when a collector queries it, then the collector records
+  a degraded source and the investigation continues.
+
+**Verified by.** TC-0100, TC-0101
+
+<!-- sdd:item id=REQ-0097 stage=specify status=approved derives_from=G-001 priority=P1 -->
+### REQ-0097 — Live log adapter over the container runtime
+
+**Requirement.** The log port MUST have a live adapter reading container logs from the
+container runtime, demultiplexing the runtime's stream framing, filtering by the query's
+terms and window, and applying the port's bounds.
+
+**Acceptance.**
+- Given a multiplexed runtime log stream, when the adapter reads it, then stdout and
+  stderr records are recovered with their correct stream labels and timestamps.
+- Given a query with terms and a window, when the adapter searches, then only lines
+  matching every term and falling inside the window are returned, bounded and marked.
+
+**Verified by.** TC-0102
+
+<!-- sdd:item id=REQ-0098 stage=specify status=approved derives_from=G-001,G-006 priority=P0 -->
+### REQ-0098 — Adapter selection is configuration, and offline stays the default
+
+**Requirement.** The adapter serving each port MUST be selected by a named profile at
+startup. The default profile MUST be the fixture profile. No test in the suite may
+require network access, a container runtime, or a Prometheus instance to pass.
+
+**Acceptance.**
+- Given no configuration, when the system starts, then every port is served by its
+  fixture adapter.
+- Given the full test suite, when it runs with no network, then it passes.
+
+This requirement is the reason the live adapters are safe to add. An adapter set that
+could quietly become the default would make the determinism the rest of the system rests
+on (REQ-0090) conditional on the environment.
+
+**Verified by.** TC-0103
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

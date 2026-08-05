@@ -294,8 +294,48 @@ type Reasoner interface {
 数据，与规则输出一样要通过完全相同的校验、证据绑定与策略检查。确定性适配器仍然是测试的默认
 选择，因为测试套件无法对一个采样分布做断言。
 
-**新增在线信号源**只需实现 `internal/signal` 中六个端口接口之一，并在 `internal/arena` 中
-选择它。
+**新增在线信号源**只需实现 `internal/signal` 中六个端口接口之一，并在
+`internal/signal/profile` 中注册它。
+
+### 9.1 对接在线信号
+
+有两个端口具备在线适配器：指标读取 Prometheus HTTP API，日志读取容器运行时。其余四个
+端口仍走夹具。
+
+夹具档是默认，而这是刻意为之——一套本想读在线信号、却悄悄读了模拟数据的部署，会看起来
+很健康，实际上什么也没证明。因此在线档必须被显式指定，而且它拒绝在配置不全的情况下启动：
+
+```bash
+arena serve \
+  --signal-profile live \
+  --prometheus-url http://prometheus:9090 \
+  --container-host unix:///var/run/docker.sock \
+  --series-map ./series-map.json
+```
+
+每个 flag 同样可从环境变量读取——`ARENA_SIGNAL_PROFILE`、`ARENA_PROMETHEUS_URL`、
+`ARENA_CONTAINER_HOST`、`ARENA_SERIES_MAP`——容器镜像正是这样配置的。
+
+序列映射正是"新增一条指标属于配置而非代码"的原因：
+
+```json
+{
+  "series": {
+    "http_error_rate": "rate(http_requests_total{status=~\"5..\"}[1m])",
+    "db_pool_in_use": "db_pool_connections_in_use"
+  },
+  "units":      { "http_error_rate": "ratio" },
+  "capacities": { "db_pool_in_use": 20 }
+}
+```
+
+profile 名拼错会在启动时即被拒绝，以退出码 `2` 退出并指明出错的 flag。它绝不会被当作
+"请求默认值"。
+
+**在线适配器在后端挂掉时会怎样。** 它返回一个带类型的错误，采集器把该数据源记为降级，
+调查带着已有的东西继续。够不到的 Prometheus 绝不会中止一个 case：一次不完整的调查也比
+没有调查更有价值。`NaN`、陈旧标记或空结果会变成**缺失**的采样点而不是零——读数为零与
+没有读数支持的是不同的结论。
 
 ## 10. 故障排查
 

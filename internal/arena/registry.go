@@ -11,6 +11,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/orchestrator"
 	"github.com/zlrrr/mutil-agent-system/internal/policy"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
+	"github.com/zlrrr/mutil-agent-system/internal/signal/profile"
 	"github.com/zlrrr/mutil-agent-system/internal/store"
 )
 
@@ -26,12 +27,20 @@ type Registry struct {
 	cfg     reasoner.Config
 	pol     policy.Config
 	cat     *catalog.Catalog
+	signals profile.Config
 	engines map[string]*orchestrator.Engine // keyed by case identifier
 	builds  map[string]*Build
 }
 
-// NewRegistry builds a registry over a shared store and broker.
+// NewRegistry builds a registry over a shared store and broker, serving every port from
+// the fixture adapters.
 func NewRegistry(st store.Store, bus *eventbus.Broker, cfg reasoner.Config, pol policy.Config, cat *catalog.Catalog) (*Registry, error) {
+	return NewRegistryWithSignals(st, bus, cfg, pol, cat, profile.Config{})
+}
+
+// NewRegistryWithSignals builds a registry whose cases use a named adapter profile. The
+// zero profile is the fixture profile, so this and NewRegistry agree by default.
+func NewRegistryWithSignals(st store.Store, bus *eventbus.Broker, cfg reasoner.Config, pol policy.Config, cat *catalog.Catalog, signals profile.Config) (*Registry, error) {
 	if cat == nil {
 		var err error
 		cat, err = catalog.Load()
@@ -52,7 +61,7 @@ func NewRegistry(st store.Store, bus *eventbus.Broker, cfg reasoner.Config, pol 
 		pol = policy.DefaultConfig()
 	}
 	return &Registry{
-		store: st, bus: bus, cfg: cfg, pol: pol, cat: cat,
+		store: st, bus: bus, cfg: cfg, pol: pol, cat: cat, signals: signals,
 		engines: map[string]*orchestrator.Engine{},
 		builds:  map[string]*Build{},
 	}, nil
@@ -84,9 +93,9 @@ func (r *Registry) Create(ctx context.Context, alert domain.Alert, mode domain.M
 			alert.Service, r.cat.CaseIDs())
 	}
 
-	build, err := NewFixtureBuild(Params{
+	build, err := NewBuild(Params{
 		CaseID: ref, Mode: mode, Store: r.store, Bus: r.bus,
-		Config: r.cfg, Policy: r.pol, Catalog: r.cat,
+		Config: r.cfg, Policy: r.pol, Catalog: r.cat, Signals: r.signals,
 	})
 	if err != nil {
 		return nil, err

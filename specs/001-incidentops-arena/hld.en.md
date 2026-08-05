@@ -415,6 +415,38 @@ runtime errors exit `1`.
 
 **Refines.** ARC-014
 
+<!-- sdd:item id=HLD-019 stage=hld status=approved derives_from=ARC-006 -->
+### HLD-019 — Live signal adapters and profile selection
+
+**Purpose.** Serve the metric and log ports from real systems without letting the
+reasoning plane, or the test suite, learn that anything changed.
+
+**Public surface.**
+
+```go
+package prometheus
+func New(endpoint string, opts Options) *Source      // implements signal.MetricSource
+
+package containerlog
+func New(host string, opts Options) *Source          // implements signal.LogSource
+
+package profile
+func Build(name string, fc FaultCase, cat *Catalog, b Bounds) (signal.Set, error)
+```
+
+**Failure behaviour.** A live adapter that cannot reach its backend returns a
+`signal.SourceError` naming the port and the endpoint. Collectors record it as a degraded
+source and continue; an unreachable metric backend never aborts an investigation, because
+a partial investigation is worth more than none.
+
+Absence and zero are kept distinct: a `NaN`, a stale marker or an empty result becomes an
+absent sample, never a `0.0` reading.
+
+**Collaborators.** Built only by the entry points (HLD-018). Nothing in the reasoning or
+control plane refers to these packages.
+
+**Refines.** ARC-006
+
 ## 3. Data model
 
 | Entity | Key fields | Owner module | Lifecycle |

@@ -4,6 +4,8 @@ package signal
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
@@ -167,6 +169,32 @@ type (
 		Invoke(ctx context.Context, call domain.ActionCall) (ActuationResult, error)
 	}
 )
+
+// SourceError is the typed failure a live adapter returns when its backend cannot be
+// reached or answers with an error.
+//
+// It lives beside the ports rather than in an adapter package because a collector has to
+// recognise a degraded source without importing the adapter that produced it — the
+// reasoning plane never learns which adapter is behind a port (ARC-001).
+type SourceError struct {
+	Port     string // the port that failed: "metric", "log", ...
+	Endpoint string // where it was reached for
+	Err      error
+}
+
+func (e *SourceError) Error() string {
+	return fmt.Sprintf("%s source %s: %v", e.Port, e.Endpoint, e.Err)
+}
+
+func (e *SourceError) Unwrap() error { return e.Err }
+
+// Degraded reports whether an error means a source was unavailable, as opposed to a
+// programming fault. A collector continues on a degraded source and records it: a
+// partial investigation is worth more than none.
+func Degraded(err error) bool {
+	var se *SourceError
+	return errors.As(err, &se)
+}
 
 // DemandResponder serves evidence registered against a critic's demand descriptor.
 // Round two is targeted rather than a blind repeat because collectors ask this

@@ -244,6 +244,11 @@ line of each file, so the index is derived, not authoritative (ADR-004).
 `truncated bool`. `SignalSet` bundles the six ports plus the bounds so an agent receives
 one value.
 
+`SourceError` is the typed failure every live adapter returns, carrying the port name,
+the endpoint and the underlying cause. It exists here rather than in an adapter package
+because a collector must be able to recognise a degraded source without importing the
+adapter that produced it (ARC-001).
+
 **Invariants.** No adapter returns a result exceeding bounds; truncation is always
 reported, never silent (REQ-0016).
 
@@ -328,6 +333,78 @@ matches the case's `recoveryTrigger`, subsequent metric queries return the case'
 `postRecovery` series, which is how verification observes recovery.
 
 **Checkpoint.** TC-0051 — verification observes recovery only after the action.
+
+<!-- sdd:item id=DLD-1025 stage=dld status=approved derives_from=HLD-019 -->
+### DLD-1025 — Prometheus metric adapter
+
+**File.** `internal/signal/prometheus/prometheus.go`
+
+**Types.** `Source{endpoint string; client *http.Client; step time.Duration}`,
+`Options{Step, Timeout time.Duration; Client *http.Client; SeriesMap map[string]string}`.
+
+**Behaviour.** `Range` issues `GET /api/v1/query_range` with `query`, `start`, `end` and
+`step`. The `query` is resolved from `SeriesMap` — a declarative name-to-PromQL mapping,
+so adding a series is configuration rather than code. The response
+(`{"status","data":{"resultType","result":[{"metric":{},"values":[[ts,"val"],...]}]}}`)
+is decoded with `encoding/json` into `signal.Series`, sorted by timestamp.
+
+A sample whose value parses to `NaN` is dropped rather than recorded as zero; the point
+is absent, and absence is what the reasoner must see. A `status` of `error` becomes a
+`signal.SourceError` carrying the API's `errorType` and `error` fields.
+
+`SeriesNames` issues `GET /api/v1/label/__name__/values`, filtered to the names present
+in `SeriesMap` so the adapter never advertises series it cannot resolve.
+
+Bounds are applied after decoding through `Bounds.ApplyRowsPoints`, which keeps the
+*earliest* points. That end is the load-bearing one: onset detection (DLD-1021) and the
+`change_correlation` term (DLD-1032) both read the start of the window, so discarding the
+head of a series would silently move a hypothesis's apparent onset.
+
+**Checkpoint.** TC-0100, TC-0101
+
+<!-- sdd:item id=DLD-1026 stage=dld status=approved derives_from=HLD-019 -->
+### DLD-1026 — Container log adapter
+
+**File.** `internal/signal/containerlog/containerlog.go`
+
+**Types.** `Source{host string; client *http.Client}`, `Options{Timeout time.Duration;
+Client *http.Client; Container func(service string) string}`.
+
+**Behaviour.** `Search` issues `GET /containers/{id}/logs?stdout=1&stderr=1&timestamps=1`
+against the runtime's HTTP API, over a Unix socket when `host` begins `unix://` — dialled
+through a custom `http.Transport.DialContext`, which is why no client library is needed.
+
+The runtime frames its stream as an 8-byte header per record: byte 0 is the stream type
+(1 = stdout, 2 = stderr), bytes 4–7 are the payload length, big-endian. `readFrames`
+consumes header-then-payload pairs, so a message containing the header's byte pattern
+cannot desynchronise the parser — which reading line-by-line would allow.
+
+Each record's leading RFC3339Nano timestamp is parsed into `LogLine.At`; the stream type
+becomes `Level` (`stderr` → `error`, `stdout` → `info`) unless the message itself carries
+a recognised level. Lines are filtered to those inside `q.Window` containing every term
+in `q.Terms`, case-insensitively, then bounded.
+
+**Checkpoint.** TC-0102
+
+<!-- sdd:item id=DLD-1027 stage=dld status=approved derives_from=HLD-019 -->
+### DLD-1027 — Profile selection
+
+**File.** `internal/signal/profile/profile.go`
+
+**Types.** `Profile string` with constants `Fixture` and `Live`; `Config{Profile,
+PrometheusURL, ContainerHost string; SeriesMap map[string]string}`.
+
+**Behaviour.** `Build` returns the fixture set for `Fixture` and for the empty string —
+the zero value is the safe value, so a missing configuration cannot silently select a
+live backend. For `Live` it substitutes the Prometheus and container-log adapters for the
+metric and log ports and leaves the remaining four ports on their fixture adapters, since
+M4 covers only those two.
+
+An unknown profile name is an error naming the offending value and the legal set; it is
+never treated as a request for the default, because a typo that silently falls back to
+fixtures would make a live deployment look healthy while reading simulated data.
+
+**Checkpoint.** TC-0103
 
 ## 6. Catalog and reasoning
 

@@ -232,6 +232,10 @@ case 折叠，并校验序号从 1 起连续。
 **行为。** `Bounds.ApplyRows`、`ApplyChars` 与 `ApplySpan` 执行截断并返回
 `truncated bool`。`SignalSet` 把六个端口与上限打包，使 Agent 只接收一个值。
 
+`SourceError` 是每个在线适配器返回的带类型失败，携带端口名、端点与底层原因。它定义在
+这里而不是某个适配器包中，是因为采集器必须能够识别出"降级的数据源"，却不必 import 产生
+它的那个适配器（ARC-001）。
+
 **不变量。** 没有适配器返回超出上限的结果；截断总会被报告，绝不静默（REQ-0016）。
 
 **检查点。** TC-0016 — 超长结果被截断并标记。
@@ -311,6 +315,73 @@ Cluster(lines):
 `postRecovery` 序列——验证正是据此观察到恢复。
 
 **检查点。** TC-0051 — 只有在动作之后验证才观察到恢复。
+
+<!-- sdd:item id=DLD-1025 stage=dld status=approved derives_from=HLD-019 -->
+### DLD-1025 — Prometheus 指标适配器
+
+**文件。** `internal/signal/prometheus/prometheus.go`
+
+**类型。** `Source{endpoint string; client *http.Client; step time.Duration}`、
+`Options{Step, Timeout time.Duration; Client *http.Client; SeriesMap map[string]string}`。
+
+**行为。** `Range` 以 `query`、`start`、`end`、`step` 发起 `GET /api/v1/query_range`。
+其中 `query` 由 `SeriesMap` 解析得到——这是一份声明式的"名称到 PromQL"映射，因此新增一条
+序列属于配置而不是代码。响应
+（`{"status","data":{"resultType","result":[{"metric":{},"values":[[ts,"val"],...]}]}}`）
+由 `encoding/json` 解码为 `signal.Series`，并按时间戳排序。
+
+取值解析为 `NaN` 的采样点会被丢弃，而不是记为零：该点是缺失的，而推理器必须看到的正是
+"缺失"。`status` 为 `error` 时转为 `signal.SourceError`，携带 API 的 `errorType` 与
+`error` 字段。
+
+`SeriesNames` 发起 `GET /api/v1/label/__name__/values`，并过滤到 `SeriesMap` 中存在的
+名称，因此适配器绝不会宣称提供它解析不了的序列。
+
+上限在解码之后经由 `Bounds.ApplyRowsPoints` 施加，该函数保留**最早**的那些采样点。承重的
+恰恰是这一端：起点检测（DLD-1021）与 `change_correlation` 项（DLD-1032）读的都是窗口的
+开头，因此丢掉序列的头部会悄悄改变某个假设看起来的起始时刻。
+
+**检查点。** TC-0100、TC-0101
+
+<!-- sdd:item id=DLD-1026 stage=dld status=approved derives_from=HLD-019 -->
+### DLD-1026 — 容器日志适配器
+
+**文件。** `internal/signal/containerlog/containerlog.go`
+
+**类型。** `Source{host string; client *http.Client}`、`Options{Timeout time.Duration;
+Client *http.Client; Container func(service string) string}`。
+
+**行为。** `Search` 向运行时的 HTTP API 发起
+`GET /containers/{id}/logs?stdout=1&stderr=1&timestamps=1`；当 `host` 以 `unix://`
+开头时走 Unix 套接字——通过自定义的 `http.Transport.DialContext` 拨号，这正是无需任何
+客户端库的原因。
+
+运行时对流的分帧是每条记录 8 字节头部：第 0 字节是流类型（1 = stdout，2 = stderr），
+第 4–7 字节是大端序的载荷长度。`readFrames` 按"头部—载荷"成对消费，因此即便消息内容里
+出现与头部相同的字节模式，也不会让解析器失步——而逐行读取则会。
+
+每条记录开头的 RFC3339Nano 时间戳被解析进 `LogLine.At`；流类型转为 `Level`
+（`stderr` → `error`，`stdout` → `info`），除非消息自身携带可识别的级别。随后过滤出
+落在 `q.Window` 内、且（不区分大小写地）包含 `q.Terms` 中每个关键词的行，再施加上限。
+
+**检查点。** TC-0102
+
+<!-- sdd:item id=DLD-1027 stage=dld status=approved derives_from=HLD-019 -->
+### DLD-1027 — 配置档选择
+
+**文件。** `internal/signal/profile/profile.go`
+
+**类型。** `Profile string`，常量为 `Fixture` 与 `Live`；`Config{Profile,
+PrometheusURL, ContainerHost string; SeriesMap map[string]string}`。
+
+**行为。** `Build` 对 `Fixture` 以及空字符串都返回夹具集合——零值即安全值，因此缺失配置
+不可能悄悄选中一个在线后端。对 `Live`，它把指标端口与日志端口替换为 Prometheus 与容器
+日志适配器，其余四个端口保持夹具适配器，因为 M4 只覆盖这两个。
+
+未知的 profile 名是一个错误，其中指明出错的取值与合法集合；它绝不会被当作"请求默认值"，
+因为一个拼写错误若悄悄回退到夹具，会让一套在线部署看起来很健康、实际读的却是模拟数据。
+
+**检查点。** TC-0103
 
 ## 6. 目录与推理
 

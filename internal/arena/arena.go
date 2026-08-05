@@ -14,6 +14,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
 	"github.com/zlrrr/mutil-agent-system/internal/signal"
 	"github.com/zlrrr/mutil-agent-system/internal/signal/fixture"
+	"github.com/zlrrr/mutil-agent-system/internal/signal/profile"
 	"github.com/zlrrr/mutil-agent-system/internal/store"
 )
 
@@ -39,12 +40,24 @@ type Params struct {
 	Policy   policy.Config
 	Actuator signal.Actuator // optional override, used by tests to count invocations
 	Catalog  *catalog.Catalog
+	// Signals selects which adapter serves each port. The zero value is the fixture
+	// profile, so a caller that says nothing gets the offline path (REQ-0098).
+	Signals profile.Config
 }
 
 // NewFixtureBuild assembles an engine over the deterministic fixture adapters for one
 // fault case. This is the default profile: no network, no credentials, no model
 // provider (ADR-002).
+//
+// It forces the fixture profile regardless of p.Signals, so a caller that names this
+// function gets what the name says. Use NewBuild to honour a configured profile.
 func NewFixtureBuild(p Params) (*Build, error) {
+	p.Signals = profile.Config{Profile: profile.Fixture}
+	return NewBuild(p)
+}
+
+// NewBuild assembles an engine using the adapter profile in p.Signals.
+func NewBuild(p Params) (*Build, error) {
 	cat := p.Catalog
 	if cat == nil {
 		var err error
@@ -76,7 +89,10 @@ func NewFixtureBuild(p Params) (*Build, error) {
 		bus = eventbus.New()
 	}
 
-	set, state := fixture.NewSet(fc, cat, signal.DefaultBounds())
+	set, state, err := profile.Build(p.Signals, fc, cat, signal.DefaultBounds())
+	if err != nil {
+		return nil, fmt.Errorf("signal profile: %w", err)
+	}
 	if p.Actuator != nil {
 		set.Actuator = p.Actuator
 	}
