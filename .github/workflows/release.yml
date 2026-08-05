@@ -1,0 +1,239 @@
+name: release
+
+# Publishes a version: a linux/amd64 container image and checksummed binaries,
+# attached to a GitHub release (REQ-0095, TC-0092).
+#
+# The step order is load-bearing, not stylistic. Everything that can refuse to publish —
+# the delivery gate, the test suite, the health check on the built image — runs before
+# the first `docker push`. A pipeline that published first and verified afterwards would
+# satisfy every individual clause of REQ-0095 while defeating its purpose, so TC-0092
+# asserts the ordering by byte offset in this file.
+
+on:
+  push:
+    tags: ["v*"]
+  # The same pipeline, startable from the Actions UI by anyone who can run workflows but
+  # cannot push a tag. It creates the tag as part of publishing rather than requiring one
+  # to exist first, so the two entry points produce identical releases.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, without the leading v (e.g. 0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write # create the release and upload its assets
+  packages: write # publish the image to the container registry
+
+jobs:
+  release:
+    name: publish the versioned artifact
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: ghcr.io
+      PLATFORM: linux/amd64
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the release notes read the log back to the previous tag
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false # the module has no dependencies to cache
+
+      - name: derive the version and image name
+        id: meta
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          # A tag push carries the version in the ref; a manual run carries it as an
+          # input and the tag is created later, by the release itself.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="${INPUT_VERSION#v}"
+          fi
+          if [ -z "${version}" ]; then
+            echo "no version to release" >&2
+            exit 1
+          fi
+          image="${REGISTRY}/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          {
+            echo "version=${version}"
+            echo "tag=v${version}"
+            echo "image=${image}"
+          } >> "$GITHUB_OUTPUT"
+          echo "releasing ${version} as ${image}:${version}"
+
+      # ---------------------------------------------------------------- gates
+
+      # Nothing below this line may publish if these fail. A version that ships is by
+      # definition one whose spec tree is sealed, traced and tested.
+      - name: governance — bilingual parity, traceability and drift
+        run: go run ./cmd/sddctl validate
+
+      - name: governance — delivery gate
+        run: go run ./cmd/sddctl gate --stage deliver
+
+      - name: test
+        run: go test ./...
+
+      - name: test with the race detector
+        run: go test -race ./...
+
+      # ------------------------------------------------------------- binaries
+
+      - name: build the linux/amd64 binaries
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          mkdir -p dist
+          for cmd in arena evalctl faultctl sddctl; do
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOFLAGS=-trimpath GOPROXY=off \
+              go build -ldflags="-s -w -X main.Version=${VERSION}" \
+              -o "dist/${cmd}" "./cmd/${cmd}"
+          done
+          # A binary that does not run on the platform it claims is worse than no binary.
+          file dist/arena
+          ./dist/arena version
+
+      - name: package the binaries
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          tar -C dist -czf "incidentops-arena-${VERSION}-linux-amd64.tar.gz" \
+            arena evalctl faultctl sddctl
+
+      # ---------------------------------------------------------------- image
+
+      - name: build the linux/amd64 image
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker buildx build \
+            --platform "${PLATFORM}" \
+            --build-arg "VERSION=${VERSION}" \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.version=${VERSION}" \
+            --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            -f deploy/docker/Dockerfile \
+            -t "${IMAGE}:${VERSION}" \
+            -t "${IMAGE}:${GITHUB_SHA}" \
+            --load \
+            .
+
+      # The same health check the compose stack relies on. If the image cannot answer
+      # it, the version does not ship.
+      - name: the image starts and answers its health check
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker run -d --name arena-release -p 8080:8080 "${IMAGE}:${VERSION}"
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/healthz > /dev/null; then
+              echo "healthy after ${i}s"
+              curl -fsS http://localhost:8080/api/version
+              docker rm -f arena-release
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "the image never became healthy; not publishing" >&2
+          docker logs arena-release >&2
+          exit 1
+
+      # The registry can be private, can require a login the reader does not have, and
+      # can be pruned. A tarball on the release is downloadable by anyone who can see the
+      # release, so the artifact stays usable without registry access.
+      - name: save the image as a loadable tarball
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker save "${IMAGE}:${VERSION}" \
+            | gzip -9 > "incidentops-arena-${VERSION}-linux-amd64-image.tar.gz"
+
+      - name: checksum every asset
+        run: sha256sum incidentops-arena-*.tar.gz > SHA256SUMS
+
+      # -------------------------------------------------------------- publish
+
+      - name: sign in to the container registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | docker login "${REGISTRY}" -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: publish the image
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          docker push "${IMAGE}:${VERSION}"
+          docker push "${IMAGE}:${GITHUB_SHA}"
+
+      - name: write the release notes
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          # Resolved from the commit rather than the ref, so a manual run — where the ref
+          # is a branch, not the tag being created — reads the same history.
+          previous="$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)"
+          {
+            echo "## Container image (linux/amd64)"
+            echo
+            echo '```bash'
+            echo "docker pull ${IMAGE}:${VERSION}"
+            echo "docker run --rm -p 8080:8080 ${IMAGE}:${VERSION}"
+            echo '```'
+            echo
+            echo "Without registry access, load the attached tarball instead:"
+            echo
+            echo '```bash'
+            echo "gunzip -c incidentops-arena-${VERSION}-linux-amd64-image.tar.gz | docker load"
+            echo "docker run --rm -p 8080:8080 ${IMAGE}:${VERSION}"
+            echo '```'
+            echo
+            echo "Then open <http://localhost:8080/> for the console, or run the reference"
+            echo "scenario with \`docker run --rm ${IMAGE}:${VERSION} demo --case C1\`."
+            echo
+            echo "Built from \`${GITHUB_SHA}\`. Verify the assets with \`sha256sum -c SHA256SUMS\`."
+            echo
+            echo "## Documentation"
+            echo
+            echo "- User manual: [English](docs/manual/user-manual.en.md) · [中文](docs/manual/user-manual.zh.md)"
+            echo "- Checkpoint log: [English](docs/checkpoints.en.md) · [中文](docs/checkpoints.zh.md)"
+            echo
+            echo "## Changes"
+            echo
+            if [ -n "${previous}" ]; then
+              git log --no-merges --pretty='- %s' "${previous}..${GITHUB_SHA}"
+            else
+              echo "First tagged release."
+              echo
+              git log --no-merges --pretty='- %s' "${GITHUB_SHA}" | head -20
+            fi
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          # --target creates the tag when it does not exist, which is what makes the
+          # manual entry point work without anyone having to push a tag first.
+          gh release create "${TAG}" \
+            --target "${GITHUB_SHA}" \
+            --title "IncidentOps Arena ${TAG}" \
+            --notes-file release-notes.md \
+            "incidentops-arena-${VERSION}-linux-amd64.tar.gz" \
+            "incidentops-arena-${VERSION}-linux-amd64-image.tar.gz" \
+            SHA256SUMS

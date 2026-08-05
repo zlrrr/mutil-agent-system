@@ -345,7 +345,7 @@ it, a database adapter implements the same port without touching any plane above
 
 **Realises.** REQ-0002, REQ-0003
 
-<!-- sdd:item id=ARC-014 stage=architect status=approved derives_from=REQ-0063,REQ-0065,REQ-0091,REQ-0092,REQ-0093 -->
+<!-- sdd:item id=ARC-014 stage=architect status=approved derives_from=REQ-0063,REQ-0065,REQ-0091,REQ-0092,REQ-0093,REQ-0095 -->
 ### ARC-014 — One binary, embedded console, embedded fixtures
 
 **Element.** A single executable serving the API, the event stream and the
@@ -357,7 +357,13 @@ misconfigure.
 **Constraints.** No build-time network access, no second runtime, no external asset
 path. The container image adds only a non-root user, a health check and the binary.
 
-**Realises.** REQ-0063, REQ-0065, REQ-0091, REQ-0092, REQ-0093
+**Why this makes release cheap.** Because the artifact is one static binary with nothing
+beside it, publishing a version is a build and a push rather than an assembly step: there
+is no dependency set to resolve at build time, no asset bundle to ship alongside the
+image, and no configuration file the release must carry to be runnable. That is what
+lets the release pipeline be a straight line from tag to registry (REQ-0095).
+
+**Realises.** REQ-0063, REQ-0065, REQ-0091, REQ-0092, REQ-0093, REQ-0095
 
 ## 5. Ports and adapters
 

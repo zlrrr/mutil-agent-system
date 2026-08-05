@@ -27,6 +27,7 @@ CON-005 要求：任何设计主张若没有明确的检查点、测试用例标
 | 5 | T-009、T-010 | `go test ./internal/agent/ ./internal/policy/` | 通过 | TC-0001、TC-0013、TC-0014、TC-0015、TC-0040、TC-0041、TC-0043、TC-0044 |
 | 6 | T-011 | `go test -race ./internal/orchestrator/` | 通过 | TC-0010、TC-0021、TC-0031、TC-0035、TC-0042、TC-0045、TC-0046、TC-0051、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、TC-0073 |
 | 7 | T-012、T-013、T-014 | `make check` | 通过 | TC-0053、TC-0063、TC-0064、TC-0065、TC-0080、TC-0081、TC-0090、TC-0091 |
+| 8 | REQ-0095（发布） | `go test ./internal/httpapi/ && sddctl gate --stage deliver` | 通过 | TC-0092 |
 
 ## 检查点抓到的缺陷
 
@@ -43,6 +44,7 @@ CON-005 要求：任何设计主张若没有明确的检查点、测试用例标
 | D6 | TC-0062 | 分诊步骤发出的 `agent_completed` 没有耗时，事件日志中的工作记录因此不完整 | 分诊现在会对自身计时，并给出它计划扇出的采集器清单 |
 | D7 | `sddctl gate --stage architect` | 有 13 条需求没有任何架构条目派生自它——这是真实的覆盖缺口，不是工具产物 | 扩展 ARC-003、ARC-004、ARC-006、ARC-010、ARC-011 与 ARC-014 以认领它们 |
 | D8 | TC-0091 | REQ-0091（无第三方依赖）没有已执行的测试，因为验证它的那个测试只链接到框架自身的需求 | TC-9013 现在同时派生自 REQ-9013 与 REQ-0091 |
+| D9 | TC-0092 | 发布流水线的顺序断言匹配到了该文件自己的头部注释——注释里提到了 `docker push`——于是它把一条注释当成了发布步骤，判定一个正确的工作流失败 | 断言先剥离整行注释：描述流水线的散文无法发布任何东西。已通过把发布步骤移到门禁之前（测试失败）再还原（测试通过）确认该断言是活的 |
 
 ## 已执行的级联更新
 
@@ -71,6 +73,12 @@ CON-003 要求上游变更必须一路跟到每个后代。本里程碑期间执
 | 交付门禁 | `go run ./cmd/sddctl gate --stage deliver` | 通过 |
 | 参考场景 | `go run ./cmd/arena demo --case C1` | 通过 |
 | 评估 | `go run ./cmd/evalctl run` | 通过 |
+| 容器镜像在 linux/amd64 上构建 | `docker build -f deploy/docker/Dockerfile`（CI，第 5 次运行） | 通过 |
+| 镜像启动并提供服务 | 健康检查 + `/api/version`（CI，第 5 次运行） | 通过——`healthy after 1s`，版本 `0.1.0-mvp`，样例 C1–C3 |
+
+上面最后两行此前在本文中记录为*未实际执行*，因为开发环境没有 Docker 守护进程。它们现已
+在 CI 上针对提交 `13209ba` 运行通过，因此该条目从"哪些没做"中移出，而不是留在那里、
+暗示一次其实并未发生的验证。
 
 ## 哪些没做，以及为什么
 
@@ -78,43 +86,59 @@ CON-003 要求上游变更必须一路跟到每个后代。本里程碑期间执
 
 | 项目 | 状态 | 原因 |
 |---|---|---|
-| 容器镜像的构建与运行 | 定义已写出并由 TC-0090 断言；未实际执行 | 开发环境中没有可用的 Docker 守护进程。Dockerfile、compose 栈以及"构建镜像并做健康检查"的 CI 作业均已就位；镜像作业运行在有守护进程的机器上 |
 | 在线 Prometheus 与容器日志适配器 | 端口已定义、夹具适配器已实现、在线适配器未实现 | 里程碑 M4。参考场景与整套测试刻意不依赖它们（CON-007） |
 | 基于模型的推理器 | 端口已定义并有文档；未接入适配器 | 章程中的开放问题 Q1：尚未选定服务商。确定性适配器是设计上的默认，而非遗漏（ADR-002） |
 | 故障样例 C4–C6 | 未编写 | 里程碑 M5。三个样例足以满足 M1 门禁；尤其是日志误导样例是用来检验过拟合的，而只有当目录不再与它同步生长时，这项检验才公平 |
 | 多租户认证 | 未实现 | 章程非目标 N6 |
-| 把分支推送到 GitHub | 被阻塞 | 见下方升级记录。所有提交都已存在于本地分支 `claude/project-spec-architecture-78dmtj`；内容没有丢失，但远端尚未收到 |
 
 ## 升级记录
 
-有一条，且它超出了规格自身能够解决的授权范围。
+有一条，已经提出并随后解决。这里保留而不是删除，因为 CON-010 要的是这个循环做了什么，
+而不只是它最后停在哪里。
 
-**推送到远端被组织策略阻断。** `git push` 返回 `403`，GitHub API 直接给出了原因：
+**提出：推送到远端曾被组织策略阻断。** `git push` 返回 `403`，API 直接给出了原因——
+*GitHub access is not enabled for this session. An org admin must connect the Claude
+GitHub App for this organization.* 全程读取都是可用的（`git ls-remote` 与 API 的读取
+端点都成功），代理也未报告任何中继失败，因此这是一条授权边界，而不是网络或凭据故障。
+三条写入路径均已尝试，且都被拒绝：
 
-> GitHub access is not enabled for this session. An org admin must connect the Claude
-> GitHub App for this organization.
-
-读取是可用的——`git ls-remote` 与 API 的读取端点都成功——因此这是一条授权边界，而不是网络
-或凭据故障，重试没有意义。三条写入路径均已尝试，且都被拒绝：
-
-| 路径 | 结果 |
+| 路径 | 阻断期间的结果 |
 |---|---|
 | 经 HTTPS 的 `git push` | `403` |
 | 用会话令牌调用 `POST /repos/.../git/refs` | `403 GitHub access is not enabled for this session` |
 | GitHub App 集成 | `403 Resource not accessible by integration` |
 
-代理未报告任何中继失败，说明传输环节没有丢包；这次拒绝是在授权层被明确发出的。因此，
-改用 API 逐文件写出不只是不现实——它同样不被允许；何况那样做还会把九次提交压成一次，
-丢弃掉本身就属于本里程碑交付内容的提交历史。
+既然拒绝发生在授权层，那么重试与绕行都是错的做法：循环就此停下，把阻塞写进本日志，
+使它随制品一同留存、而不是只活在一次对话里，并指明唯一能解除它的那个动作。
 
-**维护者需要做什么。** 为该组织连接 Claude GitHub App，或为本会话授予
-`zlrrr/mutil-agent-system` 的写权限，然后重新执行：
+**解决：写权限已授予，分支已推送。** `git push -u origin
+claude/project-spec-architecture-78dmtj` 现已成功。本地与远端的领先/落后计数均为
+`0 0`，远端因此完整承载了每一次提交、顺序与提交信息俱在——没有压缩历史，也没有逐文件
+重传。
+
+**未决：切出 release 需要本会话并不持有的权限。** 分支推送可以成功，但推送**标签**返回
+`403`，说明写权限是按分支授予的。其余每条路径也都试过并被拒绝：
+
+| 路径 | 结果 |
+|---|---|
+| `git push origin v0.1.0` | `403`（表面上表现为 sideband 断连；`--verbose` 才显示真实状态码） |
+| 用会话令牌调用 `POST /repos/.../git/tags` | `403 Write access to this GitHub API path is not permitted through this proxy` |
+| GitHub App 集成（`workflow dispatch`） | `403 Resource not accessible by integration` |
+
+流水线已经就位、已经过测试、正在等待。由于被卡住的恰恰是**标签**这一环，工作流因此新增了
+一个手动入口，而不是继续依赖那唯一缺失的权限——能运行工作流但推不了标签的维护者，现在
+可以直接在 Actions 界面切出 release，标签由流水线自己创建。
+
+**维护者需要做什么**——两种方式任选其一，产出的 release 完全相同：
 
 ```bash
-git push -u origin claude/project-spec-architecture-78dmtj
+git push origin v0.1.0            # 该标签已在本地这个分支上存在
 ```
 
-所有提交都已按顺序、连同提交信息完成。该分支就其现状而言已经完整。
+或者，等 `release.yml` 进入默认分支之后，完全不需要克隆仓库：**Actions → release →
+Run workflow**，版本填 `0.1.0`。这个前提是 GitHub 的规定、不是我们加的：只有位于默认
+分支上的工作流才会提供 `workflow_dispatch`，因此在本分支合并之前，可走的路径是推送标签。
 
-本里程碑期间没有其他决策需要规格之外的授权：每一处歧义都能由章程、需求或宪章解决。
-章程记录的三个开放问题（Q1–Q3）没有阻塞任何 M1 工作，各自都按章程声明的默认假设推进。
+连同上面那条推送阻塞，这是本里程碑中自主循环仅有的两次需要它并不具备的授权
+（CON-010）。其余决策都不需要：每一处歧义都能由章程、需求或宪章解决。章程记录的三个
+开放问题（Q1–Q3）没有阻塞任何 M1 工作，各自都按章程声明的默认假设推进。

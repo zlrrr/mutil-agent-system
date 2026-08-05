@@ -122,3 +122,105 @@ func TestDeliveryArtifacts(t *testing.T) {
 		}
 	})
 }
+
+// stripYAMLComments removes whole-line comments, leaving the executable content of a
+// workflow. Inline trailing comments are left alone: the line around them still runs.
+func stripYAMLComments(yaml string) string {
+	lines := strings.Split(yaml, "\n")
+	kept := lines[:0]
+	for _, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return strings.Join(kept, "\n")
+}
+
+// sdd:verify TC-0092
+func TestReleasePipeline(t *testing.T) {
+	release := readRepoFile(t, ".github/workflows/release.yml")
+
+	t.Run("a version tag is what triggers it", func(t *testing.T) {
+		if !strings.Contains(release, `tags: ["v*"]`) {
+			t.Error("the workflow is not triggered by a version tag")
+		}
+	})
+
+	// Tag-push permission and workflow-run permission are granted separately, so a
+	// pipeline reachable only by pushing a tag is one some maintainers cannot run.
+	t.Run("it can also be started without pushing a tag", func(t *testing.T) {
+		if !strings.Contains(release, "workflow_dispatch:") {
+			t.Error("the workflow cannot be started manually")
+		}
+		if !strings.Contains(release, "--target") {
+			t.Error("a manual run does not create the tag, so it cannot release without one already existing")
+		}
+	})
+
+	t.Run("the image is built for linux/amd64 explicitly", func(t *testing.T) {
+		if !strings.Contains(release, "linux/amd64") {
+			t.Error("the workflow does not name the target platform")
+		}
+		if !strings.Contains(release, "--platform") {
+			t.Error("the build does not pin a platform, so the artifact's target is whatever the runner happens to be")
+		}
+	})
+
+	t.Run("the image carries the commit it was built from", func(t *testing.T) {
+		if !strings.Contains(release, "org.opencontainers.image.revision=${GITHUB_SHA}") {
+			t.Error("the image is not labelled with its source commit")
+		}
+		if !strings.Contains(release, `"${IMAGE}:${GITHUB_SHA}"`) {
+			t.Error("the image is not tagged with the commit SHA, so a version tag that moves loses its provenance")
+		}
+		if !strings.Contains(release, `"${IMAGE}:${VERSION}"`) {
+			t.Error("the image is not tagged with the version")
+		}
+	})
+
+	t.Run("the release is usable without registry access", func(t *testing.T) {
+		if !strings.Contains(release, "docker save") {
+			t.Error("no loadable image tarball is produced, so a private package leaves the release unusable")
+		}
+		if !strings.Contains(release, "SHA256SUMS") {
+			t.Error("the assets are not checksummed")
+		}
+		if !strings.Contains(release, "gh release create") {
+			t.Error("the workflow never creates a release")
+		}
+	})
+
+	// The substantive assertion. Every clause above can hold in a pipeline that
+	// publishes first and verifies afterwards, which would defeat the point of
+	// verifying at all — so the order is checked directly rather than assumed.
+	t.Run("nothing is published before it has been gated and proven to start", func(t *testing.T) {
+		// Comments are stripped first: prose describing the pipeline cannot publish
+		// anything, and matching it would let a comment near the top of the file
+		// satisfy — or, as it happens, falsely break — an ordering claim about steps.
+		steps := stripYAMLComments(release)
+
+		publish := strings.Index(steps, "docker push")
+		if publish < 0 {
+			t.Fatal("the workflow never publishes the image")
+		}
+		for _, precondition := range []struct {
+			marker string
+			why    string
+		}{
+			{"sddctl gate --stage deliver", "the delivery gate"},
+			{"sddctl validate", "the governance check"},
+			{"go test ./...", "the test suite"},
+			{"/healthz", "the health check on the built image"},
+		} {
+			at := strings.Index(steps, precondition.marker)
+			if at < 0 {
+				t.Errorf("the workflow never runs %s (%q)", precondition.why, precondition.marker)
+				continue
+			}
+			if at > publish {
+				t.Errorf("%s runs after the image is published; it cannot prevent a bad release from shipping", precondition.why)
+			}
+		}
+	})
+}
