@@ -1,0 +1,24 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}} — IncidentOps Arena</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">IncidentOps&nbsp;Arena</a>
+  <span class="tag">multi-agent incident localisation</span>
+  <span class="spacer"></span>
+  <span class="tag mono">{{.Version}}</span>
+</header>
+<main>
+{{template "content" .}}
+</main>
+<footer>
+  <span>Every claim on this page carries an evidence identifier that resolves to the query behind it.</span>
+</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>{{end}}
