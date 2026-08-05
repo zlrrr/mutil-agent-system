@@ -147,6 +147,17 @@ func TestReleasePipeline(t *testing.T) {
 		}
 	})
 
+	// Tag-push permission and workflow-run permission are granted separately, so a
+	// pipeline reachable only by pushing a tag is one some maintainers cannot run.
+	t.Run("it can also be started without pushing a tag", func(t *testing.T) {
+		if !strings.Contains(release, "workflow_dispatch:") {
+			t.Error("the workflow cannot be started manually")
+		}
+		if !strings.Contains(release, "--target") {
+			t.Error("a manual run does not create the tag, so it cannot release without one already existing")
+		}
+	})
+
 	t.Run("the image is built for linux/amd64 explicitly", func(t *testing.T) {
 		if !strings.Contains(release, "linux/amd64") {
 			t.Error("the workflow does not name the target platform")

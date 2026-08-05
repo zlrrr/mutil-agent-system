@@ -12,6 +12,15 @@ name: release
 on:
   push:
     tags: ["v*"]
+  # The same pipeline, startable from the Actions UI by anyone who can run workflows but
+  # cannot push a tag. It creates the tag as part of publishing rather than requiring one
+  # to exist first, so the two entry points produce identical releases.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, without the leading v (e.g. 0.1.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write # create the release and upload its assets
@@ -38,11 +47,24 @@ jobs:
 
       - name: derive the version and image name
         id: meta
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          # A tag push carries the version in the ref; a manual run carries it as an
+          # input and the tag is created later, by the release itself.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="${INPUT_VERSION#v}"
+          fi
+          if [ -z "${version}" ]; then
+            echo "no version to release" >&2
+            exit 1
+          fi
           image="${REGISTRY}/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
           {
             echo "version=${version}"
+            echo "tag=v${version}"
             echo "image=${image}"
           } >> "$GITHUB_OUTPUT"
           echo "releasing ${version} as ${image}:${version}"
@@ -160,7 +182,9 @@ jobs:
           IMAGE: ${{ steps.meta.outputs.image }}
           VERSION: ${{ steps.meta.outputs.version }}
         run: |
-          previous="$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+          # Resolved from the commit rather than the ref, so a manual run — where the ref
+          # is a branch, not the tag being created — reads the same history.
+          previous="$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)"
           {
             echo "## Container image (linux/amd64)"
             echo
@@ -189,11 +213,11 @@ jobs:
             echo "## Changes"
             echo
             if [ -n "${previous}" ]; then
-              git log --no-merges --pretty='- %s' "${previous}..${GITHUB_REF_NAME}"
+              git log --no-merges --pretty='- %s' "${previous}..${GITHUB_SHA}"
             else
               echo "First tagged release."
               echo
-              git log --no-merges --pretty='- %s' "${GITHUB_REF_NAME}" | head -20
+              git log --no-merges --pretty='- %s' "${GITHUB_SHA}" | head -20
             fi
           } > release-notes.md
           cat release-notes.md
@@ -202,9 +226,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.meta.outputs.version }}
+          TAG: ${{ steps.meta.outputs.tag }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "IncidentOps Arena ${GITHUB_REF_NAME}" \
+          # --target creates the tag when it does not exist, which is what makes the
+          # manual entry point work without anyone having to push a tag first.
+          gh release create "${TAG}" \
+            --target "${GITHUB_SHA}" \
+            --title "IncidentOps Arena ${TAG}" \
             --notes-file release-notes.md \
             "incidentops-arena-${VERSION}-linux-amd64.tar.gz" \
             "incidentops-arena-${VERSION}-linux-amd64-image.tar.gz" \

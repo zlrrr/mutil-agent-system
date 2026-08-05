@@ -768,6 +768,14 @@ release is downloadable by anyone who can see the release and loadable with
 `docker load`. The release must remain usable without registry access.
 - Given a tree that fails `sddctl gate --stage deliver`, when the pipeline runs, then it
   fails before anything is published.
+- Given a maintainer who can run workflows but cannot push a tag, when they start the
+  pipeline manually with a version, then it produces the same release and creates the tag
+  itself.
+
+The manual entry point exists because tag-push permission and workflow-run permission are
+granted separately, and a release that only a tag-pusher can cut is a release some
+maintainers cannot cut at all. Both entry points run the identical job; neither can skip
+a gate.
 
 **Verified by.** TC-0092
 

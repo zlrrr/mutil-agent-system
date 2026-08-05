@@ -725,7 +725,8 @@ finding.
 
 **Steps.** Parse `.github/workflows/release.yml`.
 
-**Expected.** The workflow triggers on a `v*` tag; it runs the delivery gate before any
+**Expected.** The workflow triggers on a `v*` tag and can also be started manually with a
+version input; it runs the delivery gate before any
 publishing step; it builds for `linux/amd64` explicitly; it starts the built image and
 waits for `/healthz` before publishing; it tags the image with both the version and the
 commit SHA; and it creates a release whose assets include a loadable image tarball and
