@@ -100,9 +100,19 @@ One, and it is outside the specification's authority to resolve.
 
 Read access works — `git ls-remote` and the API's read endpoints both succeed — so this
 is an authorisation boundary, not a network or credential fault, and retrying it would
-be pointless. Pushing the tree through the API instead is not practical: 164 files and
-1.38 MB would have to be re-transmitted file by file, which risks corrupting exactly the
-artifact being delivered.
+be pointless. All three write paths were tried and each was refused:
+
+| Path | Result |
+|---|---|
+| `git push` over HTTPS | `403` |
+| `POST /repos/.../git/refs` with the session token | `403 GitHub access is not enabled for this session` |
+| The GitHub App integration | `403 Resource not accessible by integration` |
+
+The agent proxy reports no relay failures, so nothing is being dropped in transit; the
+refusal is issued deliberately at the authorisation layer. Writing the tree out through
+the API file by file is therefore not merely impractical — it is not permitted either,
+and it would in any case collapse nine commits into one and discard the history that is
+itself part of what this milestone delivers.
 
 **What a maintainer needs to do.** Connect the Claude GitHub App for the organisation,
 or grant this session write access to `zlrrr/mutil-agent-system`, then re-run:

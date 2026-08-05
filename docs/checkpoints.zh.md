@@ -95,8 +95,17 @@ CON-003 要求上游变更必须一路跟到每个后代。本里程碑期间执
 > GitHub App for this organization.
 
 读取是可用的——`git ls-remote` 与 API 的读取端点都成功——因此这是一条授权边界，而不是网络
-或凭据故障，重试没有意义。改用 API 逐文件推送也不现实：164 个文件、1.38 MB 需要被逐个
-重新传输，而这恰恰会带来损坏交付物本身的风险。
+或凭据故障，重试没有意义。三条写入路径均已尝试，且都被拒绝：
+
+| 路径 | 结果 |
+|---|---|
+| 经 HTTPS 的 `git push` | `403` |
+| 用会话令牌调用 `POST /repos/.../git/refs` | `403 GitHub access is not enabled for this session` |
+| GitHub App 集成 | `403 Resource not accessible by integration` |
+
+代理未报告任何中继失败，说明传输环节没有丢包；这次拒绝是在授权层被明确发出的。因此，
+改用 API 逐文件写出不只是不现实——它同样不被允许；何况那样做还会把九次提交压成一次，
+丢弃掉本身就属于本里程碑交付内容的提交历史。
 
 **维护者需要做什么。** 为该组织连接 Claude GitHub App，或为本会话授予
 `zlrrr/mutil-agent-system` 的写权限，然后重新执行：
