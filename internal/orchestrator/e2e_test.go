@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -509,4 +510,75 @@ func TestThreeModes(t *testing.T) {
 	if full.Round <= results[domain.ModeSingle].Round {
 		t.Error("the full flow should have taken more rounds than a single pass")
 	}
+}
+
+// sdd:verify TC-0104
+func TestMisleadingLogsDoNotWin(t *testing.T) {
+	withC4 := func(p *arena.Params) { p.CaseID = "C4" }
+
+	b := build(t, withC4)
+	c := runToHalt(t, b, domain.ModeMultiWithCritic)
+	if c.Status == domain.StatusAwaitingApproval {
+		c = approve(t, b, c)
+	}
+	if len(c.Hypotheses) == 0 {
+		t.Fatal("C4 produced no hypothesis")
+	}
+
+	const expected = "sig-traffic-surge"
+
+	// The point of this case. C1 is won by demoting sig-traffic-surge from first
+	// place, so a system that had learned "the leading explanation is wrong", or
+	// simply "traffic is never the cause", would still score perfectly on C1..C3 and
+	// fail here. Only a case where the critic must decline to object distinguishes a
+	// discriminator from a bias.
+	t.Run("the explanation C1 demotes is the one that wins here", func(t *testing.T) {
+		if got := c.Hypotheses[0].SignatureID; got != expected {
+			t.Errorf("accepted %s, want %s — the outcome looks like a fixed bias rather than evidence", got, expected)
+		}
+	})
+
+	t.Run("the loudest evidence does not decide the outcome", func(t *testing.T) {
+		// The database errors are the highest-volume log signal in the whole catalog.
+		var logLines int
+		for _, e := range c.Evidence {
+			if e.Kind == domain.KindLog {
+				if n, err := strconv.Atoi(e.Fact("count")); err == nil {
+					logLines += n
+				}
+			}
+		}
+		if logLines == 0 {
+			t.Error("no log volume was recorded; this case cannot demonstrate anything about loud evidence")
+		}
+		for i, h := range c.Hypotheses {
+			if i == 0 {
+				continue
+			}
+			if h.Breakdown.Total >= c.Hypotheses[0].Breakdown.Total {
+				t.Errorf("%s scores %.2f, not below the leader's %.2f",
+					h.SignatureID, h.Breakdown.Total, c.Hypotheses[0].Breakdown.Total)
+			}
+		}
+	})
+
+	// Each database explanation must be refuted by evidence, not merely out-scored.
+	// Being beaten on points would leave open the possibility that the ranking is
+	// arbitrary; carrying counter-evidence is a positive finding against the claim.
+	t.Run("each database explanation is refuted by discriminating evidence", func(t *testing.T) {
+		for _, want := range []string{"sig-db-pool-exhaustion", "sig-db-outage"} {
+			var found *domain.Hypothesis
+			for i := range c.Hypotheses {
+				if c.Hypotheses[i].SignatureID == want {
+					found = &c.Hypotheses[i]
+				}
+			}
+			if found == nil {
+				continue // never proposed at all, which is a stronger form of the same thing
+			}
+			if len(found.Counter) == 0 {
+				t.Errorf("%s was out-scored but never contradicted; the ranking rests on arithmetic alone", want)
+			}
+		}
+	})
 }

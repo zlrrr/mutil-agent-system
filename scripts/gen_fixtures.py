@@ -361,7 +361,152 @@ c3 = {
     "expected_remediation": "set_config order-api FEATURE_FLAG_SAFE_MODE true",
 }
 
-for case in (c1, c2, c3):
+# --------------------------------------------------------------------------
+# C4 — the loud logs are not the cause, and the "obvious" answer is right
+# --------------------------------------------------------------------------
+#
+# This case exists to catch overfitting, in both directions.
+#
+# Its logs are dominated by database connection errors — the same signal that wins C1
+# for sig-db-pool-exhaustion. But the pool never saturates, the database never goes
+# down, and no pool configuration changed. What did happen is a request rate of 940 rps
+# against a service whose highest previously served peak was 420.
+#
+# So the correct answer is sig-traffic-surge: the explanation C1 spends its whole second
+# round demoting. A system that learned "the leading explanation is wrong", or "traffic
+# is never the cause", scores perfectly on C1..C3 and fails here. That is the point.
+C4_START = datetime(2026, 8, 3, 21, 40, 0, tzinfo=timezone.utc)
+
+c4 = {
+    "id": "C4",
+    "title": "Order API 5xx under an unprecedented traffic peak",
+    "description": (
+        "A marketing campaign drove the order API to 940 rps, more than twice the "
+        "highest peak it had ever served. The service saturates and returns 500s, and "
+        "its database connections start timing out under the queue depth. The logs are "
+        "therefore dominated by database connection errors — but the pool never "
+        "saturates, the database stays up, and nothing was reconfigured. The database "
+        "errors are a consequence of the load, not its cause."
+    ),
+    "alert": {
+        "alert_name": "OrderApiHighErrorRate",
+        "service": "order-api",
+        "severity": "P1",
+        "starts_at": ts(C4_START),
+        "ends_at": ts(C4_START + timedelta(minutes=20)),
+        "labels": {"env": "demo", "team": "checkout"},
+        "annotations": {
+            "summary": "5xx rate above 10% for 5 minutes during a campaign launch",
+        },
+        "case_ref": "C4",
+    },
+    "default_series": [
+        "http_5xx_rate", "http_request_duration_p99", "http_requests_total",
+    ],
+    "series": [
+        series("http_5xx_rate", "ratio", 0.003, [(0, 0.16)], C4_START),
+        series("http_request_duration_p99", "ms", 175, [(0, 2600)], C4_START),
+        # The cause: an order-of-magnitude rise, beginning before the errors.
+        series("http_requests_total", "rps", 130, [(-3, 940)], C4_START),
+        # The discriminating evidence, both refuting a database explanation.
+        series("db_pool_saturation", "ratio", 0.22, [(-1, 0.34)], C4_START, capacity=1.0),
+        series("db_up", "count", 1, [], C4_START),
+    ],
+    "post_recovery_series": [
+        series("http_5xx_rate", "ratio", 0.003, [(0, 0.16), (20, 0.004)], C4_START),
+        series("http_request_duration_p99", "ms", 175, [(0, 2600), (20, 205)], C4_START),
+        series("http_requests_total", "rps", 130, [(-3, 940), (20, 200)], C4_START),
+    ],
+    # 300 database connection errors: by volume, the loudest evidence in the catalog.
+    # If log alignment decided the outcome, this case would resolve to a pool or outage
+    # explanation. It must not.
+    "logs": logs(C4_START, [
+        ("db connection timeout after 3000ms (attempt {i})", "error", 300, 8, 3),
+        ("request queue depth 512, shedding", "warn", 96, 20, 11),
+        ("upstream request rate 940 rps exceeds configured capacity 400", "warn", 12, 15, 60),
+    ]),
+    # A deploy exists, but it is 31 hours old and changed nothing about the pool. Its
+    # presence matters: a case with no changes at all would let change_correlation stay
+    # trivially zero rather than being genuinely uncorrelated.
+    "changes": [
+        {
+            "at": ts(C4_START - timedelta(hours=31)),
+            "service": "order-api", "type": "deploy",
+            "key": "image", "old": "order-api:1.5.0", "new": "order-api:1.5.1",
+            "author": "ci", "ref": "release-2026.08.02-2", "revision": "4c81de9",
+        },
+    ],
+    "topology": {
+        "service": "order-api",
+        "nodes": [
+            {"name": "order-api", "anomalous": True,
+             "first_seen": ts(C4_START), "role": "api"},
+            {"name": "checkout-web", "anomalous": True,
+             "first_seen": ts(C4_START + timedelta(minutes=3)), "role": "frontend"},
+            {"name": "payment-api", "anomalous": False, "role": "api"},
+            {"name": "postgres", "anomalous": False, "role": "datastore"},
+        ],
+        "edges": [
+            {"from": "checkout-web", "to": "order-api"},
+            {"from": "order-api", "to": "postgres"},
+            {"from": "order-api", "to": "payment-api"},
+        ],
+    },
+    "demand_responses": [
+        {
+            "descriptor": "database connection pool saturation metric",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:db_pool_saturation{service=\"order-api\"}",
+            "confidence": 0.9, "series": "db_pool_saturation",
+            "facts": {"peak_saturation": "0.34", "counters": "sig-db-pool-exhaustion"},
+        },
+        {
+            "descriptor": "database availability metric",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:db_up{service=\"order-api\"}",
+            "confidence": 0.9, "series": "db_up",
+            "facts": {"availability": "1.0 throughout", "counters": "sig-db-outage"},
+        },
+        {
+            "descriptor": "configuration changes for the service in the 30 minutes before onset",
+            "kind": "change", "source": "deploy-history-fixture",
+            "raw_ref": "deploy-history:order-api?lookback=30m",
+            "confidence": 0.9, "changes": True,
+        },
+        # In C1 this same descriptor refutes the traffic explanation. Here it confirms
+        # it. The descriptor is identical on purpose: the answer comes from the data,
+        # not from which question was asked.
+        {
+            "descriptor": "historical peak traffic comparison at equal load",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:http_requests_total{service=\"order-api\"}[30d:offset 1d]",
+            "confidence": 0.9,
+            "summary": (
+                "the highest peak order-api served in the preceding 30 days was 420 rps; "
+                "the current peak of 940 rps is 2.24x that maximum and exceeds the "
+                "configured capacity of 400 rps"
+            ),
+            "facts": {
+                "historical_peak": "420 rps",
+                "current_peak": "940 rps",
+                "ratio": "2.24",
+                "configured_capacity": "400 rps",
+            },
+        },
+    ],
+    "recovery_trigger": {
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "RATE_LIMIT_QPS", "value": "200"},
+    },
+    "initial_config": {
+        "order-api/RATE_LIMIT_QPS": "500",
+        "order-api/DB_POOL_SIZE": "20",
+    },
+    "expected_signature": "sig-traffic-surge",
+    "expected_remediation": "set_config order-api RATE_LIMIT_QPS 200",
+}
+
+for case in (c1, c2, c3, c4):
     path = os.path.join(OUT, "case-%s.json" % case["id"].lower())
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(case, fh, indent=2, ensure_ascii=False)

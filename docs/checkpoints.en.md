@@ -29,6 +29,7 @@ Each wave closed only when its gate command exited zero.
 | 7 | T-012, T-013, T-014 | `make check` | pass | TC-0053, TC-0063, TC-0064, TC-0065, TC-0080, TC-0081, TC-0090, TC-0091 |
 | 8 | REQ-0095 (release publishing) | `go test ./internal/httpapi/ && sddctl gate --stage deliver` | pass | TC-0092 |
 | 9 | REQ-0096..0098 (M4 live adapters) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0100, TC-0101, TC-0102, TC-0103 |
+| 10 | REQ-0099 (overfitting case C4) | `go test ./... && go run ./cmd/evalctl run` | pass | TC-0104 |
 
 ## Defects found by the checkpoints
 
@@ -48,7 +49,45 @@ because a checkpoint that never fails is not a checkpoint.
 | D9 | TC-0092 | The release pipeline's ordering assertion matched the file's own header comment, which mentions `docker push` — so it read a comment as a publishing step and failed a correct workflow | The assertion strips whole-line comments first: prose describing a pipeline cannot publish anything. Confirmed live by moving the publish step above the gates, which fails the test, and restoring it, which passes |
 | D10 | `TestPlaneDependencies` | The three new adapter packages were not in the dependency table, so nothing constrained what they could import | They were assigned ranks: the live adapters sit beside the fixture adapter as alternatives to it, and profile selection ranks above all adapters and below every port consumer |
 | D11 | Manual CLI check | `arena serve --signal-profile prod` started cleanly. An unknown profile was only rejected when the first case was created, so a mistyped deployment looked healthy and then failed one case at a time, once someone was relying on it | `profile.Config.Validate()` was added and is called at start-up; the entry point exits 2 naming the offending flag |
+| D13 | Building C4 | `sig-traffic-surge` scored 1.00 on the only term it claims and was still capped near 0.55, because terms it never required were charged as zeros. Any explanation requiring one evidence kind is therefore unacceptable at the 0.75 threshold no matter how strong its support | **Not fixed — see the known issue below.** The obvious fix makes things worse, and shipping the wrong fix would have been worse than shipping the defect |
 | D12 | Review of TC-0102 | The "adversarial payload" in the log test contained header-like bytes but no newline, so a naive line-oriented parser would have passed it too — the test asserted nothing the framed parser uniquely provides | The payload became a genuine multi-line record whose continuation begins with header bytes, and the assertion now requires both halves in one record |
+
+## Known issues
+
+**Scoring charges an explanation for evidence it never claimed (D13).** A signature's
+score sums six weighted terms, but three of them — metric, log and change alignment —
+only apply to a signature that requires that kind of evidence. `sig-traffic-surge`
+requires one metric. With that metric perfectly matched it reaches 0.47, and its
+theoretical maximum is 0.55, so it can never cross the 0.75 acceptance threshold. It can
+be *ranked* first, and in C4 it is; it can never be *acted on*.
+
+The obvious fix is to renormalise over the terms that apply. It was implemented and
+measured, and it is wrong:
+
+| Case | Leader before | Leader after | Effect |
+|---|---|---|---|
+| C1 round 1 | `sig-traffic-surge` 0.49 | `sig-traffic-surge` 0.89 | above threshold, gap 0.45 — the critic never fires |
+| C1 final | `sig-db-pool-exhaustion` 0.94 | 0.94 | correct, but reached without the adversarial round |
+
+Renormalising makes a one-requirement explanation trivially near-certain: matching its
+single requirement is, by construction, matching everything it asked for. The reference
+scenario then accepts the wrong answer in round one with high confidence, which destroys
+the demonstration the entire project rests on. Four tests caught this — the close-call
+rule, the round-count assertions in both mode comparisons, and the escalation test — and
+the change was reverted rather than the tests adjusted to accommodate it.
+
+The real defect is in the catalog, not the arithmetic: "traffic rose" is not evidence
+that traffic *caused* the outage. The explanation should require the historical
+comparison showing the load exceeded what was previously served — the very evidence C1
+uses to refute it and C4 uses to confirm it. That is a modelling change to
+`signatures.json` with its own cascade, and it is deferred rather than rushed alongside a
+new fault case.
+
+**Consequence today.** C4 ranks the correct cause first and refutes both rivals with
+counter-evidence, which is what TC-0104 asserts and what the overfitting test needs. It
+stops below the acceptance threshold rather than proposing its declared remediation. The
+case declares `expected_remediation` because that is the correct action; the system does
+not currently reach it.
 
 ## Cascading updates performed
 
@@ -95,7 +134,7 @@ Recorded here rather than implied by absence.
 | Item | Status | Reason |
 |---|---|---|
 | Model-backed reasoner | Port defined and documented; no adapter wired | Open question Q1 in the charter: no provider has been chosen. The deterministic adapter is the default by design, not by omission (ADR-002) |
-| Fault cases C4–C6 | Not written | Milestone M5. Three cases are enough for M1's gate; the misleading-log case in particular exists to test overfitting, which is a fair test only once the catalog has stopped growing alongside it |
+| Fault cases C5–C6 | Not written | Milestone M5. C4, the misleading-log case, is written and is the one that mattered: it is what distinguishes a discriminating critic from a biased one. C5 (victim versus source) and C6 remain |
 | Multi-tenant authentication | Not implemented | Charter non-goal N6 |
 
 ## Escalations

@@ -1,0 +1,3924 @@
+{
+  "id": "C4",
+  "title": "Order API 5xx under an unprecedented traffic peak",
+  "description": "A marketing campaign drove the order API to 940 rps, more than twice the highest peak it had ever served. The service saturates and returns 500s, and its database connections start timing out under the queue depth. The logs are therefore dominated by database connection errors — but the pool never saturates, the database stays up, and nothing was reconfigured. The database errors are a consequence of the load, not its cause.",
+  "alert": {
+    "alert_name": "OrderApiHighErrorRate",
+    "service": "order-api",
+    "severity": "P1",
+    "starts_at": "2026-08-03T21:40:00Z",
+    "ends_at": "2026-08-03T22:00:00Z",
+    "labels": {
+      "env": "demo",
+      "team": "checkout"
+    },
+    "annotations": {
+      "summary": "5xx rate above 10% for 5 minutes during a campaign launch"
+    },
+    "case_ref": "C4"
+  },
+  "default_series": [
+    "http_5xx_rate",
+    "http_request_duration_p99",
+    "http_requests_total"
+  ],
+  "series": [
+    {
+      "name": "http_5xx_rate",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 0.16
+        }
+      ]
+    },
+    {
+      "name": "http_request_duration_p99",
+      "unit": "ms",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 2600
+        }
+      ]
+    },
+    {
+      "name": "http_requests_total",
+      "unit": "rps",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 940
+        }
+      ]
+    },
+    {
+      "name": "db_pool_saturation",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 0.22
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 0.34
+        }
+      ],
+      "capacity": 1.0
+    },
+    {
+      "name": "db_up",
+      "unit": "count",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "post_recovery_series": [
+    {
+      "name": "http_5xx_rate",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 0.16
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 0.004
+        }
+      ]
+    },
+    {
+      "name": "http_request_duration_p99",
+      "unit": "ms",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 175
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 2600
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 205
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 205
+        }
+      ]
+    },
+    {
+      "name": "http_requests_total",
+      "unit": "rps",
+      "points": [
+        {
+          "at": "2026-08-03T21:30:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:31:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:32:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:33:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:34:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:35:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:36:00Z",
+          "value": 130
+        },
+        {
+          "at": "2026-08-03T21:37:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:38:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:39:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:40:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:41:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:42:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:43:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:44:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:45:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:46:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:47:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:48:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:49:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:50:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:51:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:52:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:53:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:54:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:55:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:56:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:57:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:58:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T21:59:00Z",
+          "value": 940
+        },
+        {
+          "at": "2026-08-03T22:00:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:01:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:02:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:03:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:04:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:05:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:06:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:07:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:08:00Z",
+          "value": 200
+        },
+        {
+          "at": "2026-08-03T22:09:00Z",
+          "value": 200
+        }
+      ]
+    }
+  ],
+  "logs": [
+    {
+      "at": "2026-08-03T21:40:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1000)"
+    },
+    {
+      "at": "2026-08-03T21:40:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1001)"
+    },
+    {
+      "at": "2026-08-03T21:40:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1002)"
+    },
+    {
+      "at": "2026-08-03T21:40:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:40:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1003)"
+    },
+    {
+      "at": "2026-08-03T21:40:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1004)"
+    },
+    {
+      "at": "2026-08-03T21:40:20Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:40:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1005)"
+    },
+    {
+      "at": "2026-08-03T21:40:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1006)"
+    },
+    {
+      "at": "2026-08-03T21:40:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1007)"
+    },
+    {
+      "at": "2026-08-03T21:40:31Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:40:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1008)"
+    },
+    {
+      "at": "2026-08-03T21:40:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1009)"
+    },
+    {
+      "at": "2026-08-03T21:40:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1010)"
+    },
+    {
+      "at": "2026-08-03T21:40:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1011)"
+    },
+    {
+      "at": "2026-08-03T21:40:42Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:40:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1012)"
+    },
+    {
+      "at": "2026-08-03T21:40:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1013)"
+    },
+    {
+      "at": "2026-08-03T21:40:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1014)"
+    },
+    {
+      "at": "2026-08-03T21:40:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1015)"
+    },
+    {
+      "at": "2026-08-03T21:40:53Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:40:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1016)"
+    },
+    {
+      "at": "2026-08-03T21:40:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1017)"
+    },
+    {
+      "at": "2026-08-03T21:41:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1018)"
+    },
+    {
+      "at": "2026-08-03T21:41:04Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:41:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1019)"
+    },
+    {
+      "at": "2026-08-03T21:41:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1020)"
+    },
+    {
+      "at": "2026-08-03T21:41:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1021)"
+    },
+    {
+      "at": "2026-08-03T21:41:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1022)"
+    },
+    {
+      "at": "2026-08-03T21:41:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:41:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:41:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1023)"
+    },
+    {
+      "at": "2026-08-03T21:41:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1024)"
+    },
+    {
+      "at": "2026-08-03T21:41:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1025)"
+    },
+    {
+      "at": "2026-08-03T21:41:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1026)"
+    },
+    {
+      "at": "2026-08-03T21:41:26Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:41:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1027)"
+    },
+    {
+      "at": "2026-08-03T21:41:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1028)"
+    },
+    {
+      "at": "2026-08-03T21:41:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1029)"
+    },
+    {
+      "at": "2026-08-03T21:41:37Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:41:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1030)"
+    },
+    {
+      "at": "2026-08-03T21:41:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1031)"
+    },
+    {
+      "at": "2026-08-03T21:41:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1032)"
+    },
+    {
+      "at": "2026-08-03T21:41:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1033)"
+    },
+    {
+      "at": "2026-08-03T21:41:48Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:41:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1034)"
+    },
+    {
+      "at": "2026-08-03T21:41:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1035)"
+    },
+    {
+      "at": "2026-08-03T21:41:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1036)"
+    },
+    {
+      "at": "2026-08-03T21:41:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1037)"
+    },
+    {
+      "at": "2026-08-03T21:41:59Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:42:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1038)"
+    },
+    {
+      "at": "2026-08-03T21:42:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1039)"
+    },
+    {
+      "at": "2026-08-03T21:42:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1040)"
+    },
+    {
+      "at": "2026-08-03T21:42:10Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:42:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1041)"
+    },
+    {
+      "at": "2026-08-03T21:42:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1042)"
+    },
+    {
+      "at": "2026-08-03T21:42:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:42:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1043)"
+    },
+    {
+      "at": "2026-08-03T21:42:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1044)"
+    },
+    {
+      "at": "2026-08-03T21:42:21Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:42:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1045)"
+    },
+    {
+      "at": "2026-08-03T21:42:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1046)"
+    },
+    {
+      "at": "2026-08-03T21:42:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1047)"
+    },
+    {
+      "at": "2026-08-03T21:42:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1048)"
+    },
+    {
+      "at": "2026-08-03T21:42:32Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:42:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1049)"
+    },
+    {
+      "at": "2026-08-03T21:42:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1050)"
+    },
+    {
+      "at": "2026-08-03T21:42:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1051)"
+    },
+    {
+      "at": "2026-08-03T21:42:43Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:42:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1052)"
+    },
+    {
+      "at": "2026-08-03T21:42:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1053)"
+    },
+    {
+      "at": "2026-08-03T21:42:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1054)"
+    },
+    {
+      "at": "2026-08-03T21:42:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1055)"
+    },
+    {
+      "at": "2026-08-03T21:42:54Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:42:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1056)"
+    },
+    {
+      "at": "2026-08-03T21:42:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1057)"
+    },
+    {
+      "at": "2026-08-03T21:43:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1058)"
+    },
+    {
+      "at": "2026-08-03T21:43:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1059)"
+    },
+    {
+      "at": "2026-08-03T21:43:05Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:43:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1060)"
+    },
+    {
+      "at": "2026-08-03T21:43:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1061)"
+    },
+    {
+      "at": "2026-08-03T21:43:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1062)"
+    },
+    {
+      "at": "2026-08-03T21:43:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:43:16Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:43:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1063)"
+    },
+    {
+      "at": "2026-08-03T21:43:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1064)"
+    },
+    {
+      "at": "2026-08-03T21:43:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1065)"
+    },
+    {
+      "at": "2026-08-03T21:43:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1066)"
+    },
+    {
+      "at": "2026-08-03T21:43:27Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:43:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1067)"
+    },
+    {
+      "at": "2026-08-03T21:43:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1068)"
+    },
+    {
+      "at": "2026-08-03T21:43:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1069)"
+    },
+    {
+      "at": "2026-08-03T21:43:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1070)"
+    },
+    {
+      "at": "2026-08-03T21:43:38Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:43:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1071)"
+    },
+    {
+      "at": "2026-08-03T21:43:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1072)"
+    },
+    {
+      "at": "2026-08-03T21:43:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1073)"
+    },
+    {
+      "at": "2026-08-03T21:43:49Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:43:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1074)"
+    },
+    {
+      "at": "2026-08-03T21:43:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1075)"
+    },
+    {
+      "at": "2026-08-03T21:43:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1076)"
+    },
+    {
+      "at": "2026-08-03T21:43:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1077)"
+    },
+    {
+      "at": "2026-08-03T21:44:00Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:44:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1078)"
+    },
+    {
+      "at": "2026-08-03T21:44:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1079)"
+    },
+    {
+      "at": "2026-08-03T21:44:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1080)"
+    },
+    {
+      "at": "2026-08-03T21:44:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1081)"
+    },
+    {
+      "at": "2026-08-03T21:44:11Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:44:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1082)"
+    },
+    {
+      "at": "2026-08-03T21:44:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:44:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1083)"
+    },
+    {
+      "at": "2026-08-03T21:44:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1084)"
+    },
+    {
+      "at": "2026-08-03T21:44:22Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:44:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1085)"
+    },
+    {
+      "at": "2026-08-03T21:44:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1086)"
+    },
+    {
+      "at": "2026-08-03T21:44:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1087)"
+    },
+    {
+      "at": "2026-08-03T21:44:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1088)"
+    },
+    {
+      "at": "2026-08-03T21:44:33Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:44:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1089)"
+    },
+    {
+      "at": "2026-08-03T21:44:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1090)"
+    },
+    {
+      "at": "2026-08-03T21:44:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1091)"
+    },
+    {
+      "at": "2026-08-03T21:44:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1092)"
+    },
+    {
+      "at": "2026-08-03T21:44:44Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:44:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1093)"
+    },
+    {
+      "at": "2026-08-03T21:44:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1094)"
+    },
+    {
+      "at": "2026-08-03T21:44:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1095)"
+    },
+    {
+      "at": "2026-08-03T21:44:55Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:44:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1096)"
+    },
+    {
+      "at": "2026-08-03T21:44:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1097)"
+    },
+    {
+      "at": "2026-08-03T21:45:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1098)"
+    },
+    {
+      "at": "2026-08-03T21:45:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1099)"
+    },
+    {
+      "at": "2026-08-03T21:45:06Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:45:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1100)"
+    },
+    {
+      "at": "2026-08-03T21:45:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1101)"
+    },
+    {
+      "at": "2026-08-03T21:45:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1102)"
+    },
+    {
+      "at": "2026-08-03T21:45:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:45:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1103)"
+    },
+    {
+      "at": "2026-08-03T21:45:17Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:45:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1104)"
+    },
+    {
+      "at": "2026-08-03T21:45:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1105)"
+    },
+    {
+      "at": "2026-08-03T21:45:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1106)"
+    },
+    {
+      "at": "2026-08-03T21:45:28Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:45:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1107)"
+    },
+    {
+      "at": "2026-08-03T21:45:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1108)"
+    },
+    {
+      "at": "2026-08-03T21:45:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1109)"
+    },
+    {
+      "at": "2026-08-03T21:45:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1110)"
+    },
+    {
+      "at": "2026-08-03T21:45:39Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:45:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1111)"
+    },
+    {
+      "at": "2026-08-03T21:45:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1112)"
+    },
+    {
+      "at": "2026-08-03T21:45:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1113)"
+    },
+    {
+      "at": "2026-08-03T21:45:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1114)"
+    },
+    {
+      "at": "2026-08-03T21:45:50Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:45:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1115)"
+    },
+    {
+      "at": "2026-08-03T21:45:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1116)"
+    },
+    {
+      "at": "2026-08-03T21:45:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1117)"
+    },
+    {
+      "at": "2026-08-03T21:46:01Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:46:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1118)"
+    },
+    {
+      "at": "2026-08-03T21:46:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1119)"
+    },
+    {
+      "at": "2026-08-03T21:46:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1120)"
+    },
+    {
+      "at": "2026-08-03T21:46:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1121)"
+    },
+    {
+      "at": "2026-08-03T21:46:12Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:46:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1122)"
+    },
+    {
+      "at": "2026-08-03T21:46:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:46:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1123)"
+    },
+    {
+      "at": "2026-08-03T21:46:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1124)"
+    },
+    {
+      "at": "2026-08-03T21:46:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1125)"
+    },
+    {
+      "at": "2026-08-03T21:46:23Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:46:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1126)"
+    },
+    {
+      "at": "2026-08-03T21:46:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1127)"
+    },
+    {
+      "at": "2026-08-03T21:46:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1128)"
+    },
+    {
+      "at": "2026-08-03T21:46:34Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:46:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1129)"
+    },
+    {
+      "at": "2026-08-03T21:46:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1130)"
+    },
+    {
+      "at": "2026-08-03T21:46:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1131)"
+    },
+    {
+      "at": "2026-08-03T21:46:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1132)"
+    },
+    {
+      "at": "2026-08-03T21:46:45Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:46:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1133)"
+    },
+    {
+      "at": "2026-08-03T21:46:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1134)"
+    },
+    {
+      "at": "2026-08-03T21:46:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1135)"
+    },
+    {
+      "at": "2026-08-03T21:46:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1136)"
+    },
+    {
+      "at": "2026-08-03T21:46:56Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:46:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1137)"
+    },
+    {
+      "at": "2026-08-03T21:47:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1138)"
+    },
+    {
+      "at": "2026-08-03T21:47:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1139)"
+    },
+    {
+      "at": "2026-08-03T21:47:07Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:47:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1140)"
+    },
+    {
+      "at": "2026-08-03T21:47:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1141)"
+    },
+    {
+      "at": "2026-08-03T21:47:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1142)"
+    },
+    {
+      "at": "2026-08-03T21:47:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:47:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1143)"
+    },
+    {
+      "at": "2026-08-03T21:47:18Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:47:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1144)"
+    },
+    {
+      "at": "2026-08-03T21:47:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1145)"
+    },
+    {
+      "at": "2026-08-03T21:47:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1146)"
+    },
+    {
+      "at": "2026-08-03T21:47:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1147)"
+    },
+    {
+      "at": "2026-08-03T21:47:29Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:47:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1148)"
+    },
+    {
+      "at": "2026-08-03T21:47:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1149)"
+    },
+    {
+      "at": "2026-08-03T21:47:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1150)"
+    },
+    {
+      "at": "2026-08-03T21:47:40Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:47:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1151)"
+    },
+    {
+      "at": "2026-08-03T21:47:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1152)"
+    },
+    {
+      "at": "2026-08-03T21:47:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1153)"
+    },
+    {
+      "at": "2026-08-03T21:47:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1154)"
+    },
+    {
+      "at": "2026-08-03T21:47:51Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:47:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1155)"
+    },
+    {
+      "at": "2026-08-03T21:47:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1156)"
+    },
+    {
+      "at": "2026-08-03T21:47:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1157)"
+    },
+    {
+      "at": "2026-08-03T21:48:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1158)"
+    },
+    {
+      "at": "2026-08-03T21:48:02Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:48:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1159)"
+    },
+    {
+      "at": "2026-08-03T21:48:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1160)"
+    },
+    {
+      "at": "2026-08-03T21:48:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1161)"
+    },
+    {
+      "at": "2026-08-03T21:48:13Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:48:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1162)"
+    },
+    {
+      "at": "2026-08-03T21:48:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:48:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1163)"
+    },
+    {
+      "at": "2026-08-03T21:48:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1164)"
+    },
+    {
+      "at": "2026-08-03T21:48:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1165)"
+    },
+    {
+      "at": "2026-08-03T21:48:24Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:48:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1166)"
+    },
+    {
+      "at": "2026-08-03T21:48:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1167)"
+    },
+    {
+      "at": "2026-08-03T21:48:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1168)"
+    },
+    {
+      "at": "2026-08-03T21:48:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1169)"
+    },
+    {
+      "at": "2026-08-03T21:48:35Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:48:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1170)"
+    },
+    {
+      "at": "2026-08-03T21:48:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1171)"
+    },
+    {
+      "at": "2026-08-03T21:48:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1172)"
+    },
+    {
+      "at": "2026-08-03T21:48:46Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:48:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1173)"
+    },
+    {
+      "at": "2026-08-03T21:48:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1174)"
+    },
+    {
+      "at": "2026-08-03T21:48:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1175)"
+    },
+    {
+      "at": "2026-08-03T21:48:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1176)"
+    },
+    {
+      "at": "2026-08-03T21:48:57Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:48:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1177)"
+    },
+    {
+      "at": "2026-08-03T21:49:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1178)"
+    },
+    {
+      "at": "2026-08-03T21:49:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1179)"
+    },
+    {
+      "at": "2026-08-03T21:49:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1180)"
+    },
+    {
+      "at": "2026-08-03T21:49:08Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:49:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1181)"
+    },
+    {
+      "at": "2026-08-03T21:49:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1182)"
+    },
+    {
+      "at": "2026-08-03T21:49:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:49:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1183)"
+    },
+    {
+      "at": "2026-08-03T21:49:19Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:49:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1184)"
+    },
+    {
+      "at": "2026-08-03T21:49:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1185)"
+    },
+    {
+      "at": "2026-08-03T21:49:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1186)"
+    },
+    {
+      "at": "2026-08-03T21:49:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1187)"
+    },
+    {
+      "at": "2026-08-03T21:49:30Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:49:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1188)"
+    },
+    {
+      "at": "2026-08-03T21:49:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1189)"
+    },
+    {
+      "at": "2026-08-03T21:49:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1190)"
+    },
+    {
+      "at": "2026-08-03T21:49:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1191)"
+    },
+    {
+      "at": "2026-08-03T21:49:41Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:49:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1192)"
+    },
+    {
+      "at": "2026-08-03T21:49:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1193)"
+    },
+    {
+      "at": "2026-08-03T21:49:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1194)"
+    },
+    {
+      "at": "2026-08-03T21:49:52Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:49:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1195)"
+    },
+    {
+      "at": "2026-08-03T21:49:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1196)"
+    },
+    {
+      "at": "2026-08-03T21:49:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1197)"
+    },
+    {
+      "at": "2026-08-03T21:50:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1198)"
+    },
+    {
+      "at": "2026-08-03T21:50:03Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:50:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1199)"
+    },
+    {
+      "at": "2026-08-03T21:50:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1200)"
+    },
+    {
+      "at": "2026-08-03T21:50:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1201)"
+    },
+    {
+      "at": "2026-08-03T21:50:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1202)"
+    },
+    {
+      "at": "2026-08-03T21:50:14Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:50:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:50:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1203)"
+    },
+    {
+      "at": "2026-08-03T21:50:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1204)"
+    },
+    {
+      "at": "2026-08-03T21:50:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1205)"
+    },
+    {
+      "at": "2026-08-03T21:50:25Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:50:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1206)"
+    },
+    {
+      "at": "2026-08-03T21:50:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1207)"
+    },
+    {
+      "at": "2026-08-03T21:50:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1208)"
+    },
+    {
+      "at": "2026-08-03T21:50:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1209)"
+    },
+    {
+      "at": "2026-08-03T21:50:36Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:50:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1210)"
+    },
+    {
+      "at": "2026-08-03T21:50:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1211)"
+    },
+    {
+      "at": "2026-08-03T21:50:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1212)"
+    },
+    {
+      "at": "2026-08-03T21:50:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1213)"
+    },
+    {
+      "at": "2026-08-03T21:50:47Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:50:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1214)"
+    },
+    {
+      "at": "2026-08-03T21:50:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1215)"
+    },
+    {
+      "at": "2026-08-03T21:50:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1216)"
+    },
+    {
+      "at": "2026-08-03T21:50:58Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:50:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1217)"
+    },
+    {
+      "at": "2026-08-03T21:51:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1218)"
+    },
+    {
+      "at": "2026-08-03T21:51:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1219)"
+    },
+    {
+      "at": "2026-08-03T21:51:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1220)"
+    },
+    {
+      "at": "2026-08-03T21:51:09Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:51:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1221)"
+    },
+    {
+      "at": "2026-08-03T21:51:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1222)"
+    },
+    {
+      "at": "2026-08-03T21:51:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "upstream request rate 940 rps exceeds configured capacity 400"
+    },
+    {
+      "at": "2026-08-03T21:51:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1223)"
+    },
+    {
+      "at": "2026-08-03T21:51:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1224)"
+    },
+    {
+      "at": "2026-08-03T21:51:20Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:51:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1225)"
+    },
+    {
+      "at": "2026-08-03T21:51:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1226)"
+    },
+    {
+      "at": "2026-08-03T21:51:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1227)"
+    },
+    {
+      "at": "2026-08-03T21:51:31Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:51:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1228)"
+    },
+    {
+      "at": "2026-08-03T21:51:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1229)"
+    },
+    {
+      "at": "2026-08-03T21:51:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1230)"
+    },
+    {
+      "at": "2026-08-03T21:51:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1231)"
+    },
+    {
+      "at": "2026-08-03T21:51:42Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:51:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1232)"
+    },
+    {
+      "at": "2026-08-03T21:51:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1233)"
+    },
+    {
+      "at": "2026-08-03T21:51:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1234)"
+    },
+    {
+      "at": "2026-08-03T21:51:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1235)"
+    },
+    {
+      "at": "2026-08-03T21:51:53Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:51:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1236)"
+    },
+    {
+      "at": "2026-08-03T21:51:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1237)"
+    },
+    {
+      "at": "2026-08-03T21:52:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1238)"
+    },
+    {
+      "at": "2026-08-03T21:52:04Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:52:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1239)"
+    },
+    {
+      "at": "2026-08-03T21:52:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1240)"
+    },
+    {
+      "at": "2026-08-03T21:52:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1241)"
+    },
+    {
+      "at": "2026-08-03T21:52:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1242)"
+    },
+    {
+      "at": "2026-08-03T21:52:15Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:52:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1243)"
+    },
+    {
+      "at": "2026-08-03T21:52:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1244)"
+    },
+    {
+      "at": "2026-08-03T21:52:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1245)"
+    },
+    {
+      "at": "2026-08-03T21:52:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1246)"
+    },
+    {
+      "at": "2026-08-03T21:52:26Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:52:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1247)"
+    },
+    {
+      "at": "2026-08-03T21:52:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1248)"
+    },
+    {
+      "at": "2026-08-03T21:52:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1249)"
+    },
+    {
+      "at": "2026-08-03T21:52:37Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:52:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1250)"
+    },
+    {
+      "at": "2026-08-03T21:52:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1251)"
+    },
+    {
+      "at": "2026-08-03T21:52:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1252)"
+    },
+    {
+      "at": "2026-08-03T21:52:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1253)"
+    },
+    {
+      "at": "2026-08-03T21:52:48Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:52:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1254)"
+    },
+    {
+      "at": "2026-08-03T21:52:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1255)"
+    },
+    {
+      "at": "2026-08-03T21:52:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1256)"
+    },
+    {
+      "at": "2026-08-03T21:52:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1257)"
+    },
+    {
+      "at": "2026-08-03T21:52:59Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:53:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1258)"
+    },
+    {
+      "at": "2026-08-03T21:53:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1259)"
+    },
+    {
+      "at": "2026-08-03T21:53:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1260)"
+    },
+    {
+      "at": "2026-08-03T21:53:10Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:53:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1261)"
+    },
+    {
+      "at": "2026-08-03T21:53:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1262)"
+    },
+    {
+      "at": "2026-08-03T21:53:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1263)"
+    },
+    {
+      "at": "2026-08-03T21:53:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1264)"
+    },
+    {
+      "at": "2026-08-03T21:53:21Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:53:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1265)"
+    },
+    {
+      "at": "2026-08-03T21:53:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1266)"
+    },
+    {
+      "at": "2026-08-03T21:53:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1267)"
+    },
+    {
+      "at": "2026-08-03T21:53:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1268)"
+    },
+    {
+      "at": "2026-08-03T21:53:32Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:53:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1269)"
+    },
+    {
+      "at": "2026-08-03T21:53:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1270)"
+    },
+    {
+      "at": "2026-08-03T21:53:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1271)"
+    },
+    {
+      "at": "2026-08-03T21:53:43Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:53:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1272)"
+    },
+    {
+      "at": "2026-08-03T21:53:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1273)"
+    },
+    {
+      "at": "2026-08-03T21:53:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1274)"
+    },
+    {
+      "at": "2026-08-03T21:53:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1275)"
+    },
+    {
+      "at": "2026-08-03T21:53:54Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:53:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1276)"
+    },
+    {
+      "at": "2026-08-03T21:53:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1277)"
+    },
+    {
+      "at": "2026-08-03T21:54:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1278)"
+    },
+    {
+      "at": "2026-08-03T21:54:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1279)"
+    },
+    {
+      "at": "2026-08-03T21:54:05Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:54:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1280)"
+    },
+    {
+      "at": "2026-08-03T21:54:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1281)"
+    },
+    {
+      "at": "2026-08-03T21:54:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1282)"
+    },
+    {
+      "at": "2026-08-03T21:54:16Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:54:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1283)"
+    },
+    {
+      "at": "2026-08-03T21:54:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1284)"
+    },
+    {
+      "at": "2026-08-03T21:54:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1285)"
+    },
+    {
+      "at": "2026-08-03T21:54:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1286)"
+    },
+    {
+      "at": "2026-08-03T21:54:27Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:54:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1287)"
+    },
+    {
+      "at": "2026-08-03T21:54:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1288)"
+    },
+    {
+      "at": "2026-08-03T21:54:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1289)"
+    },
+    {
+      "at": "2026-08-03T21:54:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1290)"
+    },
+    {
+      "at": "2026-08-03T21:54:38Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:54:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1291)"
+    },
+    {
+      "at": "2026-08-03T21:54:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1292)"
+    },
+    {
+      "at": "2026-08-03T21:54:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1293)"
+    },
+    {
+      "at": "2026-08-03T21:54:49Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:54:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1294)"
+    },
+    {
+      "at": "2026-08-03T21:54:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1295)"
+    },
+    {
+      "at": "2026-08-03T21:54:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1296)"
+    },
+    {
+      "at": "2026-08-03T21:54:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1297)"
+    },
+    {
+      "at": "2026-08-03T21:55:00Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:55:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1298)"
+    },
+    {
+      "at": "2026-08-03T21:55:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1299)"
+    },
+    {
+      "at": "2026-08-03T21:55:11Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:55:22Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:55:33Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:55:44Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:55:55Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:56:06Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:56:17Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:56:28Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:56:39Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:56:50Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:57:01Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:57:12Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:57:23Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:57:34Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    },
+    {
+      "at": "2026-08-03T21:57:45Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "request queue depth 512, shedding"
+    }
+  ],
+  "changes": [
+    {
+      "at": "2026-08-02T14:40:00Z",
+      "service": "order-api",
+      "type": "deploy",
+      "key": "image",
+      "old": "order-api:1.5.0",
+      "new": "order-api:1.5.1",
+      "author": "ci",
+      "ref": "release-2026.08.02-2",
+      "revision": "4c81de9"
+    }
+  ],
+  "topology": {
+    "service": "order-api",
+    "nodes": [
+      {
+        "name": "order-api",
+        "anomalous": true,
+        "first_seen": "2026-08-03T21:40:00Z",
+        "role": "api"
+      },
+      {
+        "name": "checkout-web",
+        "anomalous": true,
+        "first_seen": "2026-08-03T21:43:00Z",
+        "role": "frontend"
+      },
+      {
+        "name": "payment-api",
+        "anomalous": false,
+        "role": "api"
+      },
+      {
+        "name": "postgres",
+        "anomalous": false,
+        "role": "datastore"
+      }
+    ],
+    "edges": [
+      {
+        "from": "checkout-web",
+        "to": "order-api"
+      },
+      {
+        "from": "order-api",
+        "to": "postgres"
+      },
+      {
+        "from": "order-api",
+        "to": "payment-api"
+      }
+    ]
+  },
+  "demand_responses": [
+    {
+      "descriptor": "database connection pool saturation metric",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:db_pool_saturation{service=\"order-api\"}",
+      "confidence": 0.9,
+      "series": "db_pool_saturation",
+      "facts": {
+        "peak_saturation": "0.34",
+        "counters": "sig-db-pool-exhaustion"
+      }
+    },
+    {
+      "descriptor": "database availability metric",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:db_up{service=\"order-api\"}",
+      "confidence": 0.9,
+      "series": "db_up",
+      "facts": {
+        "availability": "1.0 throughout",
+        "counters": "sig-db-outage"
+      }
+    },
+    {
+      "descriptor": "configuration changes for the service in the 30 minutes before onset",
+      "kind": "change",
+      "source": "deploy-history-fixture",
+      "raw_ref": "deploy-history:order-api?lookback=30m",
+      "confidence": 0.9,
+      "changes": true
+    },
+    {
+      "descriptor": "historical peak traffic comparison at equal load",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:http_requests_total{service=\"order-api\"}[30d:offset 1d]",
+      "confidence": 0.9,
+      "summary": "the highest peak order-api served in the preceding 30 days was 420 rps; the current peak of 940 rps is 2.24x that maximum and exceeds the configured capacity of 400 rps",
+      "facts": {
+        "historical_peak": "420 rps",
+        "current_peak": "940 rps",
+        "ratio": "2.24",
+        "configured_capacity": "400 rps"
+      }
+    }
+  ],
+  "recovery_trigger": {
+    "tool": "set_config",
+    "args": {
+      "service": "order-api",
+      "key": "RATE_LIMIT_QPS",
+      "value": "200"
+    }
+  },
+  "initial_config": {
+    "order-api/RATE_LIMIT_QPS": "500",
+    "order-api/DB_POOL_SIZE": "20"
+  },
+  "expected_signature": "sig-traffic-surge",
+  "expected_remediation": "set_config order-api RATE_LIMIT_QPS 200"
+}

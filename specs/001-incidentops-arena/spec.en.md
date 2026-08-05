@@ -835,6 +835,30 @@ on (REQ-0090) conditional on the environment.
 
 **Verified by.** TC-0103
 
+<!-- sdd:item id=REQ-0099 stage=specify status=approved derives_from=G-002,G-005 priority=P0 -->
+### REQ-0099 — Correctness must not depend on distrusting any particular explanation
+
+**Requirement.** The fault catalog MUST contain at least one case whose loudest evidence
+is non-causal, and at least one case whose correct answer is the explanation that the
+reference scenario teaches the system to reject. The adversarial process MUST reach the
+declared root cause in both.
+
+**Why this is a requirement and not a test detail.** The reference scenario C1 is won by
+demoting `sig-traffic-surge` from first place. A system that learned "the leading
+explanation is wrong" or "traffic is never the cause" would score perfectly on C1, C2 and
+C3 while having learned nothing. The critic's value is that it *discriminates*, and a
+discriminator is only demonstrated by a case where it must decline to object.
+
+**Acceptance.**
+- Given a case whose log volume overwhelmingly matches one signature while the
+  discriminating metric and change evidence refute it, when the full flow runs, then the
+  declared root cause is accepted and the loud signature is not.
+- Given that same case, when the flow runs, then the accepted cause is
+  `sig-traffic-surge` — the explanation C1 demotes — proving the outcome is evidence-led
+  rather than a fixed bias.
+
+**Verified by.** TC-0104
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

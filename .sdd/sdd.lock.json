@@ -1,6 +1,6 @@
 {
   "sddVersion": "1.0.0",
-  "sealedAt": "2026-08-05T21:05:32Z",
+  "sealedAt": "2026-08-05T21:14:41Z",
   "items": {
     "ADR-001": {
       "hash": "042ab491cf6bfc8c6fd827484c62231a5461575aa66e323f819683eb46a8ea7d",
@@ -87,7 +87,7 @@
       "file": "specs/001-incidentops-arena/architecture.en.md"
     },
     "ARC-009": {
-      "hash": "a7c03f2acb3e276b25c3745e75a2e566cb915a2edc594792ddba6670de15c7de",
+      "hash": "98bb0ee828d2951ceed60ce28898e83d508c3c3af46525f275190e891749a158",
       "stage": "architect",
       "status": "approved",
       "file": "specs/001-incidentops-arena/architecture.en.md"
@@ -1058,6 +1058,12 @@
       "status": "approved",
       "file": "specs/001-incidentops-arena/spec.en.md"
     },
+    "REQ-0099": {
+      "hash": "e998c005cc924a9ab442c4b366d4bbe23e8395a4b3553fb82772d1717be03343",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/spec.en.md"
+    },
     "REQ-9001": {
       "hash": "92d9321512b565a074fc4c04c6cf743249978eb98232417b18708136e7d44662",
       "stage": "specify",
@@ -1552,6 +1558,12 @@
     },
     "TC-0103": {
       "hash": "26ab10c3e914f17ad6e3d07c3ae1d0154732c323db642685abefb1f35e35e403",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/test-plan.en.md"
+    },
+    "TC-0104": {
+      "hash": "30dc0823441e4239e2b4f00a6fb9e3f2d2de9ad71bba7544c81f2c6bf8a3ae5a",
       "stage": "verify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/test-plan.en.md"

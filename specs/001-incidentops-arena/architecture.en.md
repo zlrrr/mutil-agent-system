@@ -262,7 +262,7 @@ every run and in every process.
 
 **Realises.** REQ-0022, REQ-0023, REQ-0024
 
-<!-- sdd:item id=ARC-009 stage=architect status=approved derives_from=REQ-0030,REQ-0031,REQ-0032,REQ-0033,REQ-0034,REQ-0036 -->
+<!-- sdd:item id=ARC-009 stage=architect status=approved derives_from=REQ-0030,REQ-0031,REQ-0032,REQ-0033,REQ-0034,REQ-0036,REQ-0099 -->
 ### ARC-009 — Adversarial review is a rule ensemble with demand and veto powers
 
 **Element.** Independent critique rules — alternative explanation, temporal order,
@@ -283,7 +283,7 @@ objection and stops. Independent rules each fire on their own trigger, so a case
 be challenged on timing *and* on an alternative explanation simultaneously — and each
 rule's absence is detectable by a test.
 
-**Realises.** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036
+**Realises.** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036, REQ-0099
 
 <!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0040,REQ-0041,REQ-0042,REQ-0043,REQ-0044,REQ-0045,REQ-0046 -->
 ### ARC-010 — The policy engine is a pre-execution chokepoint

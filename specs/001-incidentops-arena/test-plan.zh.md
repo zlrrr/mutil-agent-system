@@ -737,6 +737,25 @@ release。
 
 **测试函数。** `internal/signal/profile/profile_test.go` 中的 `TestProfileSelection`
 
+### 3.12 过拟合
+
+<!-- sdd:item id=TC-0104 stage=verify status=approved derives_from=REQ-0099 -->
+#### TC-0104 — 最响亮的证据不会取胜，固定的偏见也不会
+
+**层级。** e2e。**验证。** REQ-0099。
+
+**步骤。** 以三种模式端到端运行样例 `C4`。它的日志被数据库连接错误压倒性占据，而其指标与
+变更证据否定了每一个数据库类解释，并支持一次前所未有的流量峰值。
+
+**预期。** 被接受的根因是 `sig-traffic-surge`。尽管 `sig-db-pool-exhaustion` 与
+`sig-db-outage` 在该 case 中拥有最高的日志量，二者都不会被接受。
+
+正是这个样例让评估保持诚实。C1 的取胜方式是把 `sig-traffic-surge` 从第一名降下来，因此
+一个学到"领先的解释就是错的"、或者干脆学到"流量从来不是原因"的系统，照样能在 C1、C2、C3
+上拿满分。只有存在一个"质疑者必须选择不反对"的样例，才能把"会区分"与"有偏见"区分开。
+
+**测试函数。** `internal/orchestrator/e2e_test.go` 中的 `TestMisleadingLogsDoNotWin`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

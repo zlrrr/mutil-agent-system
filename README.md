@@ -139,11 +139,17 @@ make eval
 
 | Mode | Samples | Top-1 accuracy | Top-3 coverage | Evidence kinds | Rounds |
 |---|---|---|---|---|---|
-| single | 3 | 0% | 100% | 5.0 | 1.0 |
-| multi_no_critic | 3 | 0% | 100% | 5.0 | 1.0 |
-| multi_with_critic | 3 | 100% | 100% | 6.0 | 2.0 |
+| single | 4 | 25% | 100% | 5.0 | 1.0 |
+| multi_no_critic | 4 | 25% | 100% | 5.0 | 1.0 |
+| multi_with_critic | 4 | 100% | 100% | 5.8 | 2.0 |
 
-Two caveats, printed alongside the numbers rather than buried: the sample is three fault
+The baselines are not uniformly useless: they get `C4` right. That case's correct answer
+is `sig-traffic-surge` — the explanation the reference scenario spends its whole second
+round demoting. It is in the catalog precisely so that a system which had learned "the
+leading explanation is wrong" would fail somewhere, and it is why the adversarial flow's
+100% means it discriminates rather than objects by reflex.
+
+Two caveats, printed alongside the numbers rather than buried: the sample is four fault
 cases, and the single-agent baseline is given the *same tools and the same default
 queries* as the full flow. It models "one context window, one look", not a weaker
 toolset — which is the fairest comparison available, and the only one that makes the

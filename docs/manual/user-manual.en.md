@@ -298,9 +298,16 @@ the flow rather than to the data:
 - `multi_no_critic` — the collectors and the analysis role, no adversarial round
 - `multi_with_critic` — the full flow
 
+One case in that set is doing specific work. `C4`'s correct answer is
+`sig-traffic-surge` — the explanation the reference scenario spends its whole second
+round demoting — and both baselines get it right while failing the other three. It exists
+so that a system which had merely learned "the leading explanation is wrong" would fail
+somewhere, which is what makes the adversarial flow's 100% a claim about discrimination
+rather than about reflexive objection.
+
 Read the numbers with two caveats, both of which the report prints alongside them.
-First, the sample is three fault cases; a 100% top-1 accuracy on three cases is a
-statement about three cases. Second, the single-agent baseline is given the same tools
+First, the sample is four fault cases; a 100% top-1 accuracy on four cases is a
+statement about four cases. Second, the single-agent baseline is given the same tools
 and the same default queries as the full flow — it models "one context window, one
 look", not a weaker toolset. That is the fairest baseline available here, and it is
 also the one that makes the comparison meaningful.
