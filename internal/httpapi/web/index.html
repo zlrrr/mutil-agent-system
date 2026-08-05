@@ -1,0 +1,48 @@
+{{define "content"}}
+<section class="panel">
+  <h1>Cases</h1>
+  {{if .Cases}}
+  <table class="grid">
+    <thead><tr><th>Case</th><th>Alert</th><th>Service</th><th>Severity</th><th>Mode</th><th>Status</th></tr></thead>
+    <tbody>
+    {{range .Cases}}
+      <tr>
+        <td><a class="mono" href="/cases/{{.ID}}">{{.ID}}</a></td>
+        <td>{{.AlertName}}</td>
+        <td>{{.Service}}</td>
+        <td><span class="pill sev-{{.Severity}}">{{.Severity}}</span></td>
+        <td class="mono">{{.Mode}}</td>
+        <td><span class="pill status-{{.Status}}">{{.Status}}</span></td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="empty">No investigation has been opened yet.</p>
+  {{end}}
+</section>
+
+<section class="panel">
+  <h2>Reproducible fault cases</h2>
+  <p class="hint">Each case is declarative data. Opening one runs the full flow offline
+  with no network and no model provider, and produces the same result every time.</p>
+  <table class="grid">
+    <thead><tr><th>Case</th><th>Title</th><th>Service</th><th>Expected root cause</th><th></th></tr></thead>
+    <tbody>
+    {{range .FaultCases}}
+      <tr>
+        <td class="mono">{{.ID}}</td>
+        <td>{{.Title}}</td>
+        <td>{{.Service}}</td>
+        <td class="mono small">{{.Expected}}</td>
+        <td>
+          <form method="post" action="/api/cases" class="inline js-open" data-case="{{.ID}}">
+            <button type="submit">Open investigation</button>
+          </form>
+        </td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}

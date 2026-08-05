@@ -1,0 +1,199 @@
+{
+  "signatures": [
+    {
+      "id": "sig-db-pool-exhaustion",
+      "claim": "A reduction of the database connection pool size exhausted the pool under load",
+      "mechanism": "With the pool reduced, concurrent requests exceed the available connections. Requests queue waiting for a connection, the wait exceeds the acquisition timeout, and the service returns 500s. Latency rises before errors appear because queueing precedes timing out.",
+      "attributes_to": "change",
+      "requires": [
+        {
+          "kind": "metric",
+          "match": ["db_pool_saturation"],
+          "saturated": true,
+          "label": "connection pool reached saturation",
+          "demand": "database connection pool saturation metric"
+        },
+        {
+          "kind": "log",
+          "match": ["connection timeout"],
+          "label": "requests timed out acquiring a database connection",
+          "demand": "database connection timeout log sample"
+        },
+        {
+          "kind": "change",
+          "match": ["db_pool_size"],
+          "label": "the pool size was changed shortly before onset",
+          "demand": "configuration changes for the service in the 30 minutes before onset"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "database connection pool saturation metric",
+          "kind": "metric",
+          "reason": "pool saturation distinguishes an exhausted pool from a database that is simply slow or unreachable"
+        }
+      ],
+      "remediation": {
+        "title": "Restore the database connection pool size",
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "DB_POOL_SIZE"},
+        "restore_from_change": "DB_POOL_SIZE",
+        "risk": "medium",
+        "rationale": "Restoring the previous pool size removes the queueing that produces the timeouts, and is reversible in one step.",
+        "preconditions": [
+          "the change that reduced the pool is confirmed by change evidence",
+          "the database itself is reachable"
+        ],
+        "verify": ["http_5xx_rate", "http_request_duration_p99"]
+      },
+      "runbook_ids": ["rb-db-pool"]
+    },
+    {
+      "id": "sig-traffic-surge",
+      "claim": "A traffic increase exceeded the service's capacity",
+      "mechanism": "Request rate rose beyond what the current instance count can serve, so queueing raises latency and requests begin to fail. This explanation predicts that the same load has not been served successfully before.",
+      "requires": [
+        {
+          "kind": "metric",
+          "match": ["http_requests_total"],
+          "label": "request rate rose sharply",
+          "demand": "request rate metric"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "historical peak traffic comparison at equal load",
+          "kind": "metric",
+          "reason": "if an equal or greater load was served without error previously, load alone does not explain the failure"
+        }
+      ],
+      "remediation": {
+        "title": "Reduce load on the service",
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "RATE_LIMIT_QPS", "value": "200"},
+        "risk": "medium",
+        "rationale": "Rate limiting sheds load while capacity is added, and is reversible.",
+        "preconditions": ["the traffic increase is confirmed to be organic"],
+        "rollback_args": {"service": "order-api", "key": "RATE_LIMIT_QPS", "value": "500"},
+        "verify": ["http_5xx_rate"]
+      },
+      "runbook_ids": ["rb-capacity"]
+    },
+    {
+      "id": "sig-db-outage",
+      "claim": "The database became unavailable",
+      "mechanism": "If the database is down or unreachable, every query fails and connection errors dominate the logs. This explanation predicts that the database availability signal has dropped.",
+      "requires": [
+        {
+          "kind": "metric",
+          "match": ["db_up"],
+          "saturated": true,
+          "label": "database availability signal dropped",
+          "demand": "database availability metric"
+        },
+        {
+          "kind": "log",
+          "match": ["connection timeout"],
+          "label": "database connection errors in the logs",
+          "demand": "database connection timeout log sample"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "database availability metric",
+          "kind": "metric",
+          "reason": "an available database rules out an outage and leaves the connection errors to be explained another way"
+        }
+      ],
+      "runbook_ids": ["rb-db-outage"]
+    },
+    {
+      "id": "sig-misconfigured-dependency",
+      "claim": "A dependency endpoint was pointed at an unreachable host",
+      "mechanism": "A configuration change replaced a dependency URL. Every call to that dependency fails to connect, so the calling service returns upstream errors while its own request rate is unchanged.",
+      "attributes_to": "change",
+      "requires": [
+        {
+          "kind": "log",
+          "match": ["connection refused"],
+          "label": "upstream connections refused",
+          "demand": "upstream dependency error log sample"
+        },
+        {
+          "kind": "change",
+          "match": ["url"],
+          "label": "a dependency URL was changed shortly before onset",
+          "demand": "configuration changes for the service in the 30 minutes before onset"
+        },
+        {
+          "kind": "metric",
+          "match": ["upstream_connect_errors"],
+          "label": "upstream connect errors rose",
+          "demand": "upstream dependency error metric"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "upstream dependency error metric",
+          "kind": "metric",
+          "reason": "upstream connect errors separate a dependency misconfiguration from a fault inside this service"
+        }
+      ],
+      "remediation": {
+        "title": "Restore the dependency endpoint",
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "PAYMENT_URL"},
+        "restore_from_change": "PAYMENT_URL",
+        "risk": "medium",
+        "rationale": "Restoring the previous endpoint reverses the change that produced the connection failures.",
+        "preconditions": ["the previous endpoint is confirmed healthy"],
+        "verify": ["http_5xx_rate"]
+      },
+      "runbook_ids": ["rb-dependency"]
+    },
+    {
+      "id": "sig-slow-query",
+      "claim": "A release introduced a query that does not use an index",
+      "mechanism": "The new query performs a sequential scan, so each request holds the database longer. Database CPU rises and latency rises together while the error rate stays low, because requests are slow rather than failing.",
+      "attributes_to": "change",
+      "requires": [
+        {
+          "kind": "log",
+          "match": ["slow query"],
+          "label": "slow query log entries",
+          "demand": "slow query log sample"
+        },
+        {
+          "kind": "change",
+          "match": ["image"],
+          "label": "a release shortly before onset",
+          "demand": "configuration changes for the service in the 30 minutes before onset"
+        },
+        {
+          "kind": "metric",
+          "match": ["db_cpu_utilisation"],
+          "label": "database CPU rose",
+          "demand": "database cpu utilisation metric"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "database cpu utilisation metric",
+          "kind": "metric",
+          "reason": "database CPU rising with latency separates an inefficient query from a network or capacity problem"
+        }
+      ],
+      "remediation": {
+        "title": "Enable safe mode to bypass the new query path",
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "FEATURE_FLAG_SAFE_MODE", "value": "true"},
+        "risk": "medium",
+        "rationale": "Safe mode routes around the new query while an index is prepared, and is reversible by flag.",
+        "preconditions": ["safe mode is known to serve the affected endpoint"],
+        "rollback_args": {"service": "order-api", "key": "FEATURE_FLAG_SAFE_MODE", "value": "false"},
+        "verify": ["http_request_duration_p99"]
+      },
+      "runbook_ids": ["rb-slow-query"]
+    }
+  ]
+}

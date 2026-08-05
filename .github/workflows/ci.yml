@@ -1,0 +1,86 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build, test and govern
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false # the module has no dependencies to cache
+
+      - name: assert the module has no third-party dependencies
+        run: |
+          if grep -qE '^\s*require' go.mod; then
+            echo "go.mod declares a dependency; CON-008 requires an ADR first" >&2
+            exit 1
+          fi
+          test ! -f go.sum || (echo "go.sum exists" >&2; exit 1)
+
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l cmd internal)"
+          if [ -n "$unformatted" ]; then
+            echo "these files are not gofmt-clean:" >&2
+            echo "$unformatted" >&2
+            exit 1
+          fi
+
+      - name: vet
+        run: go vet ./...
+
+      - name: build
+        run: go build ./...
+
+      # The suite must pass with no network: determinism is the property under test.
+      - name: test
+        run: go test ./...
+
+      - name: test with the race detector
+        run: go test -race ./...
+
+      - name: governance — bilingual parity, traceability and drift
+        run: go run ./cmd/sddctl validate
+
+      - name: governance — delivery gate
+        run: go run ./cmd/sddctl gate --stage deliver
+
+      - name: reference scenario
+        run: go run ./cmd/arena demo --case C1 --quiet > /dev/null
+
+      - name: evaluation
+        run: go run ./cmd/evalctl run
+
+  image:
+    name: container image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build the image
+        run: docker build -f deploy/docker/Dockerfile -t incidentops-arena:ci .
+      - name: the image starts and answers its health check
+        run: |
+          docker run -d --name arena-ci -p 8080:8080 incidentops-arena:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/healthz > /dev/null; then
+              echo "healthy after ${i}s"
+              curl -fsS http://localhost:8080/api/version
+              docker rm -f arena-ci
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "the container never became healthy" >&2
+          docker logs arena-ci >&2
+          exit 1

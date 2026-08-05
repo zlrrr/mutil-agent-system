@@ -1,0 +1,191 @@
+{{define "content"}}
+{{$c := .Case}}
+<section class="panel summary">
+  <div class="summary-head">
+    <div>
+      <h1>{{$c.Alert.Name}}</h1>
+      <p class="mono small">{{$c.ID}} · {{$c.Alert.Service}} · round {{$c.Round}} · {{$c.LastSeq}} events</p>
+    </div>
+    <div class="summary-badges">
+      <span class="pill sev-{{$c.Alert.Severity}}">{{$c.Alert.Severity}}</span>
+      <span class="pill status-{{$c.Status}}" id="case-status">{{$c.Status}}</span>
+      <span class="pill mono">{{$c.Mode}}</span>
+    </div>
+  </div>
+  {{with .Leading}}
+  <div class="verdict">
+    <div class="verdict-claim">{{.Claim}}</div>
+    <div class="verdict-meta">
+      confidence <strong>{{printf "%.2f" .Breakdown.Total}}</strong>
+      · critic verdict <strong>{{if .Verdict}}{{.Verdict}}{{else}}pending{{end}}</strong>
+      · signature <code>{{.SignatureID}}</code>
+    </div>
+  </div>
+  {{end}}
+</section>
+
+<div class="columns">
+<section class="panel">
+  <h2>Agent timeline</h2>
+  <p class="hint">Live. Each row is one immutable event; the report is reconstructable from this log alone.</p>
+  <ol class="timeline" id="timeline">
+    {{range .Timeline}}
+    <li data-seq="{{.Seq}}">
+      <span class="t-seq mono">{{.Seq}}</span>
+      <span class="t-actor actor-{{.Actor}}">{{.Actor}}</span>
+      <span class="t-type mono small">{{.Type}}</span>
+      <span class="t-summary">{{.Summary}}</span>
+    </li>
+    {{end}}
+  </ol>
+</section>
+
+<section class="panel">
+  <h2>Evidence</h2>
+  {{range .EvidenceGroups}}
+  <h3 class="kind kind-{{.Kind}}">{{.Kind}} <span class="count">{{len .Items}}</span></h3>
+  <ul class="evidence">
+    {{range .Items}}
+    <li>
+      <div><code class="eid">{{.ID}}</code> <span class="src">{{.Source}}</span>
+        {{if .Truncated}}<span class="pill warn">truncated</span>{{end}}</div>
+      <div class="ev-summary">{{.Summary}}</div>
+      <div class="raw mono small">{{.RawRef}}</div>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="empty">No evidence collected yet.</p>
+  {{end}}
+</section>
+</div>
+
+<section class="panel">
+  <h2>Ranked root cause hypotheses</h2>
+  {{range $i, $h := $c.Hypotheses}}
+  <article class="hypothesis {{if eq $i 0}}leading{{end}}">
+    <header>
+      <span class="rank">#{{inc $i}}</span>
+      <span class="claim">{{$h.Claim}}</span>
+      <span class="score">{{printf "%.2f" $h.Breakdown.Total}}</span>
+      <span class="pill verdict-{{$h.Verdict}}">{{if $h.Verdict}}{{$h.Verdict}}{{else}}pending{{end}}</span>
+    </header>
+    <p class="mechanism">{{$h.Mechanism}}</p>
+    <table class="grid breakdown">
+      <thead><tr><th>Term</th><th>Weight</th><th>Value</th><th>Contribution</th></tr></thead>
+      <tbody>
+      {{range $h.Breakdown.Terms}}
+        <tr><td>{{.Name}}</td><td>{{printf "%.2f" .Weight}}</td><td>{{printf "%.2f" .Value}}</td><td>{{printf "%.4f" .Contribution}}</td></tr>
+      {{end}}
+        <tr class="penalty"><td>counter-evidence penalty</td><td></td><td>{{$h.Breakdown.Unresolved}} unresolved</td><td>-{{printf "%.4f" $h.Breakdown.Penalty}}</td></tr>
+        <tr class="total"><td><strong>total</strong></td><td></td><td></td><td><strong>{{printf "%.4f" $h.Breakdown.Total}}</strong></td></tr>
+      </tbody>
+    </table>
+    <div class="chain">
+      <strong>Supported by:</strong>
+      {{range $h.Supporting}}<code class="eid">{{.}}</code>{{end}}
+      {{if $h.Counter}}<br><strong class="danger">Contradicted by:</strong>
+      {{range $h.Counter}}<code class="eid danger">{{.}}</code>{{end}}{{end}}
+    </div>
+  </article>
+  {{else}}
+  <p class="empty">No hypothesis has been formed yet.</p>
+  {{end}}
+</section>
+
+<section class="panel">
+  <h2>Adversarial review</h2>
+  <p class="hint">The critic cannot propose a root cause. It can only challenge one,
+  demand specific evidence, and refuse to let the case proceed.</p>
+  {{if $c.Critiques}}
+  <table class="grid">
+    <thead><tr><th>Rule</th><th>Hypothesis</th><th>Verdict</th><th>Challenge</th></tr></thead>
+    <tbody>
+    {{range $c.Critiques}}
+      <tr>
+        <td class="mono small">{{.Rule}}</td>
+        <td><code class="eid">{{.HypothesisID}}</code></td>
+        <td><span class="pill verdict-{{.Verdict}}">{{.Verdict}}</span></td>
+        <td>{{.Challenge}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else}}<p class="empty">No critique has been raised yet.</p>{{end}}
+
+  {{if $c.Demands}}
+  <h3>Evidence the critic demanded</h3>
+  <table class="grid">
+    <thead><tr><th>Demand</th><th>Kind</th><th>Answered by</th><th>Descriptor</th></tr></thead>
+    <tbody>
+    {{range $c.Demands}}
+      <tr>
+        <td class="mono small">{{.ID}}</td>
+        <td>{{.Kind}}</td>
+        <td>{{if .SatisfiedBy}}<code class="eid">{{.SatisfiedBy}}</code>{{else}}<span class="pill warn">unmet</span>{{end}}</td>
+        <td>{{.Descriptor}}</td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{end}}
+</section>
+
+<section class="panel">
+  <h2>Remediation and approval</h2>
+  {{range $c.Actions}}
+  <article class="action">
+    <header>
+      <span class="claim">{{.Title}}</span>
+      <span class="pill risk-{{.Risk}}">{{.Risk}} risk</span>
+    </header>
+    <div class="mono small">{{.Tool}} {{range $k, $v := .Args}}{{$k}}={{$v}} {{end}}</div>
+    {{if .Rollback}}<div class="mono small rollback">rollback: {{.Rollback.Tool}} {{range $k, $v := .Rollback.Args}}{{$k}}={{$v}} {{end}}</div>{{end}}
+    {{if .Verify}}<div class="small">verified by: {{range .Verify}}<code>{{.}}</code> {{end}}</div>{{end}}
+    <p class="small">{{.Rationale}}</p>
+    {{if .Approval}}
+      <div class="decided">Decision: <strong>{{.Approval.Decision}}</strong> by {{.Approval.By}}
+      {{if .Approval.Comment}}— {{.Approval.Comment}}{{end}}</div>
+    {{else if .Risk.RequiresApproval}}
+      <form class="approval" method="post" action="/api/cases/{{$c.ID}}/actions/{{.ID}}/decision">
+        <input type="text" name="by" placeholder="your name" value="demo-operator" required>
+        <input type="text" name="comment" placeholder="comment (optional)">
+        <button type="submit" name="decision" value="approved" class="approve">Approve</button>
+        <button type="submit" name="decision" value="rejected" class="reject">Reject</button>
+      </form>
+    {{end}}
+    {{if .Execution}}
+      <div class="executed {{if ne .Execution.Outcome "executed"}}danger{{end}}">
+        Execution: <strong>{{.Execution.Outcome}}</strong>
+        {{if .Execution.Rule}}({{.Execution.Rule}}){{end}} — {{.Execution.Detail}}
+      </div>
+    {{end}}
+  </article>
+  {{else}}
+  <p class="empty">No action has been proposed.</p>
+  {{end}}
+</section>
+
+{{if $c.Verifications}}
+<section class="panel">
+  <h2>Recovery verification</h2>
+  <table class="grid">
+    <thead><tr><th>Signal</th><th>Before</th><th>After</th><th>Recovered</th></tr></thead>
+    <tbody>
+    {{range $c.Verifications}}
+      <tr><td class="mono">{{.Signal}}</td><td>{{.Before}}</td><td>{{.After}}</td>
+      <td>{{if .Recovered}}<span class="pill ok">yes</span>{{else}}<span class="pill warn">no</span>{{end}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}
+
+<section class="panel">
+  <h2>Report</h2>
+  <p><a href="/api/cases/{{$c.ID}}/report.md">Markdown</a> ·
+     <a href="/api/cases/{{$c.ID}}/report.json">JSON</a> ·
+     <a href="/api/cases/{{$c.ID}}/events">event log</a></p>
+  <pre class="report">{{.Report}}</pre>
+</section>
+{{end}}

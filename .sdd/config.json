@@ -1,0 +1,148 @@
+{
+  "$schema": "./schema/config.schema.json",
+  "project": "IncidentOps Arena",
+  "sddVersion": "1.0.0",
+  "docRoots": ["specs", "docs", ".sdd/memory"],
+  "codeRoots": ["cmd", "internal"],
+  "lockFile": ".sdd/sdd.lock.json",
+  "bilingual": {
+    "enabled": true,
+    "languages": ["en", "zh"],
+    "primary": "en",
+    "pattern": "<base>.<lang>.md",
+    "exempt": [
+      "README.md",
+      "README.zh-CN.md",
+      "project.md",
+      "CHANGELOG.md",
+      "docs/traceability-matrix.md",
+      "docs/evaluation.md",
+      "docs/sample-report.md",
+      "docs/artifact-graph.md"
+    ],
+    "exemptNote": "Generated artifacts and the repository README, which carries its own language pair by file name rather than by suffix."
+  },
+  "stages": [
+    {
+      "name": "constitution",
+      "prefix": "CON",
+      "title": "Constitution / 章程",
+      "parents": []
+    },
+    {
+      "name": "charter",
+      "prefix": "G",
+      "title": "Goal Charter / 目标章程",
+      "parents": ["CON"]
+    },
+    {
+      "name": "specify",
+      "prefix": "REQ",
+      "title": "Requirements Specification / 需求规格",
+      "parents": ["G"]
+    },
+    {
+      "name": "architect",
+      "prefix": "ARC",
+      "title": "Architecture Design / 架构设计",
+      "parents": ["REQ"]
+    },
+    {
+      "name": "decide",
+      "prefix": "ADR",
+      "title": "Architecture Decision Record / 架构决策记录",
+      "parents": ["ARC", "REQ"]
+    },
+    {
+      "name": "hld",
+      "prefix": "HLD",
+      "title": "High Level Design / 概要设计",
+      "parents": ["ARC", "ADR"]
+    },
+    {
+      "name": "dld",
+      "prefix": "DLD",
+      "title": "Detailed Design / 详细设计",
+      "parents": ["HLD"]
+    },
+    {
+      "name": "plan",
+      "prefix": "T",
+      "title": "Task Breakdown / 任务分解",
+      "parents": ["DLD"]
+    },
+    {
+      "name": "verify",
+      "prefix": "TC",
+      "title": "Test Case / 测试用例",
+      "parents": ["REQ", "DLD"]
+    }
+  ],
+  "codeAnchors": {
+    "impl": {
+      "keyword": "sdd:impl",
+      "targetPrefixes": ["DLD", "T"],
+      "description": "Source file implements the referenced detailed-design item"
+    },
+    "verify": {
+      "keyword": "sdd:verify",
+      "targetPrefixes": ["TC"],
+      "description": "Test function verifies the referenced test case"
+    }
+  },
+  "gates": [
+    {
+      "stage": "charter",
+      "requires": ["constitution-approved"],
+      "description": "Goals may only be written against an approved constitution"
+    },
+    {
+      "stage": "specify",
+      "requires": ["charter-approved", "no-orphan-goals"],
+      "description": "Every requirement must derive from an approved goal"
+    },
+    {
+      "stage": "architect",
+      "requires": ["specify-approved", "no-orphan-requirements"],
+      "description": "Every requirement must be covered by at least one architecture item"
+    },
+    {
+      "stage": "hld",
+      "requires": ["architect-approved", "no-drift"],
+      "description": "High level design requires a non-stale architecture"
+    },
+    {
+      "stage": "dld",
+      "requires": ["hld-approved", "no-drift"],
+      "description": "Detailed design requires a non-stale high level design"
+    },
+    {
+      "stage": "implement",
+      "requires": ["dld-approved", "no-drift", "no-unimplemented-dld", "no-orphan-code"],
+      "description": "Code may only exist for approved, sealed detailed-design items"
+    },
+    {
+      "stage": "deliver",
+      "requires": ["no-drift", "no-untested-requirements", "bilingual-parity"],
+      "description": "Artifacts may only ship from a fully sealed and tested spec tree"
+    }
+  ],
+  "severity": {
+    "orphanItem": "error",
+    "unknownParent": "error",
+    "illegalParentStage": "error",
+    "duplicateId": "error",
+    "bilingualMissingCounterpart": "error",
+    "bilingualStructureMismatch": "error",
+    "bilingualVersionMismatch": "error",
+    "orphanCodeAnchor": "error",
+    "nonBilingualDoc": "error",
+    "unimplementedDld": "warn",
+    "unverifiedTestCase": "warn",
+    "untestedRequirement": "warn",
+    "modifiedItem": "warn",
+    "unsealedItem": "warn",
+    "removedItem": "warn",
+    "staleDownstream": "error"
+  }
+}

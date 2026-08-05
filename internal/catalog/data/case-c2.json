@@ -1,0 +1,2092 @@
+{
+  "id": "C2",
+  "title": "Checkout 502s after a dependency URL change",
+  "description": "A configuration change pointed PAYMENT_URL at a retired host. Every checkout call fails upstream connect. Error rate rises without any traffic change.",
+  "alert": {
+    "alert_name": "OrderApiUpstreamErrors",
+    "service": "order-api",
+    "severity": "P1",
+    "starts_at": "2026-07-27T14:30:00Z",
+    "ends_at": "2026-07-27T14:50:00Z",
+    "labels": {
+      "env": "demo",
+      "team": "checkout"
+    },
+    "annotations": {
+      "summary": "502 rate above 20%; upstream connect failures"
+    },
+    "case_ref": "C2"
+  },
+  "default_series": [
+    "http_5xx_rate",
+    "http_requests_total"
+  ],
+  "series": [
+    {
+      "name": "http_5xx_rate",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-07-27T14:20:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:21:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:22:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:23:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:24:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:25:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:26:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:27:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:28:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:29:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:30:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:31:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:32:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:33:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:34:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:35:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:36:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:37:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:38:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:39:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:40:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:41:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:42:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:43:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:44:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:45:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:46:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:47:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:48:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:49:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:50:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:51:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:52:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:53:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:54:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:55:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:56:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:57:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:58:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:59:00Z",
+          "value": 0.34
+        }
+      ]
+    },
+    {
+      "name": "http_requests_total",
+      "unit": "rps",
+      "points": [
+        {
+          "at": "2026-07-27T14:20:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:21:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:22:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:23:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:24:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:25:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:26:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:27:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:28:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:29:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:30:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:31:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:32:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:33:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:34:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:35:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:36:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:37:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:38:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:39:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:40:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:41:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:42:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:43:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:44:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:45:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:46:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:47:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:48:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:49:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:50:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:51:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:52:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:53:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:54:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:55:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:56:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:57:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:58:00Z",
+          "value": 90
+        },
+        {
+          "at": "2026-07-27T14:59:00Z",
+          "value": 90
+        }
+      ]
+    },
+    {
+      "name": "upstream_connect_errors",
+      "unit": "count",
+      "points": [
+        {
+          "at": "2026-07-27T14:20:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:21:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:22:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:23:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:24:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:25:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:26:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:27:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:28:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:29:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:30:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:31:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:32:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:33:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:34:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:35:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:36:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:37:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:38:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:39:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:40:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:41:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:42:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:43:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:44:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:45:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:46:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:47:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:48:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:49:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:50:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:51:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:52:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:53:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:54:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:55:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:56:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:57:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:58:00Z",
+          "value": 220
+        },
+        {
+          "at": "2026-07-27T14:59:00Z",
+          "value": 220
+        }
+      ]
+    }
+  ],
+  "post_recovery_series": [
+    {
+      "name": "http_5xx_rate",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-07-27T14:20:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:21:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:22:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:23:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:24:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:25:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:26:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:27:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:28:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:29:00Z",
+          "value": 0.001
+        },
+        {
+          "at": "2026-07-27T14:30:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:31:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:32:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:33:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:34:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:35:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:36:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:37:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:38:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:39:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:40:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:41:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:42:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:43:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:44:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:45:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:46:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:47:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:48:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:49:00Z",
+          "value": 0.34
+        },
+        {
+          "at": "2026-07-27T14:50:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:51:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:52:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:53:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:54:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:55:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:56:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:57:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:58:00Z",
+          "value": 0.002
+        },
+        {
+          "at": "2026-07-27T14:59:00Z",
+          "value": 0.002
+        }
+      ]
+    }
+  ],
+  "logs": [
+    {
+      "at": "2026-07-27T14:30:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1000)"
+    },
+    {
+      "at": "2026-07-27T14:30:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1001)"
+    },
+    {
+      "at": "2026-07-27T14:30:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1002)"
+    },
+    {
+      "at": "2026-07-27T14:30:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1003)"
+    },
+    {
+      "at": "2026-07-27T14:30:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1004)"
+    },
+    {
+      "at": "2026-07-27T14:30:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1005)"
+    },
+    {
+      "at": "2026-07-27T14:30:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1006)"
+    },
+    {
+      "at": "2026-07-27T14:30:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1007)"
+    },
+    {
+      "at": "2026-07-27T14:30:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1008)"
+    },
+    {
+      "at": "2026-07-27T14:30:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1009)"
+    },
+    {
+      "at": "2026-07-27T14:30:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1010)"
+    },
+    {
+      "at": "2026-07-27T14:30:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1011)"
+    },
+    {
+      "at": "2026-07-27T14:30:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1012)"
+    },
+    {
+      "at": "2026-07-27T14:30:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1013)"
+    },
+    {
+      "at": "2026-07-27T14:30:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1014)"
+    },
+    {
+      "at": "2026-07-27T14:30:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1015)"
+    },
+    {
+      "at": "2026-07-27T14:30:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1016)"
+    },
+    {
+      "at": "2026-07-27T14:30:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1017)"
+    },
+    {
+      "at": "2026-07-27T14:31:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1018)"
+    },
+    {
+      "at": "2026-07-27T14:31:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1019)"
+    },
+    {
+      "at": "2026-07-27T14:31:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1020)"
+    },
+    {
+      "at": "2026-07-27T14:31:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1021)"
+    },
+    {
+      "at": "2026-07-27T14:31:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1022)"
+    },
+    {
+      "at": "2026-07-27T14:31:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1023)"
+    },
+    {
+      "at": "2026-07-27T14:31:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1024)"
+    },
+    {
+      "at": "2026-07-27T14:31:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1025)"
+    },
+    {
+      "at": "2026-07-27T14:31:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1026)"
+    },
+    {
+      "at": "2026-07-27T14:31:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1027)"
+    },
+    {
+      "at": "2026-07-27T14:31:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1028)"
+    },
+    {
+      "at": "2026-07-27T14:31:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1029)"
+    },
+    {
+      "at": "2026-07-27T14:31:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1030)"
+    },
+    {
+      "at": "2026-07-27T14:31:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1031)"
+    },
+    {
+      "at": "2026-07-27T14:31:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1032)"
+    },
+    {
+      "at": "2026-07-27T14:31:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1033)"
+    },
+    {
+      "at": "2026-07-27T14:31:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1034)"
+    },
+    {
+      "at": "2026-07-27T14:31:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1035)"
+    },
+    {
+      "at": "2026-07-27T14:31:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1036)"
+    },
+    {
+      "at": "2026-07-27T14:31:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1037)"
+    },
+    {
+      "at": "2026-07-27T14:32:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1038)"
+    },
+    {
+      "at": "2026-07-27T14:32:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1039)"
+    },
+    {
+      "at": "2026-07-27T14:32:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1040)"
+    },
+    {
+      "at": "2026-07-27T14:32:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1041)"
+    },
+    {
+      "at": "2026-07-27T14:32:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1042)"
+    },
+    {
+      "at": "2026-07-27T14:32:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1043)"
+    },
+    {
+      "at": "2026-07-27T14:32:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1044)"
+    },
+    {
+      "at": "2026-07-27T14:32:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1045)"
+    },
+    {
+      "at": "2026-07-27T14:32:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1046)"
+    },
+    {
+      "at": "2026-07-27T14:32:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1047)"
+    },
+    {
+      "at": "2026-07-27T14:32:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1048)"
+    },
+    {
+      "at": "2026-07-27T14:32:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1049)"
+    },
+    {
+      "at": "2026-07-27T14:32:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1050)"
+    },
+    {
+      "at": "2026-07-27T14:32:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1051)"
+    },
+    {
+      "at": "2026-07-27T14:32:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1052)"
+    },
+    {
+      "at": "2026-07-27T14:32:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1053)"
+    },
+    {
+      "at": "2026-07-27T14:32:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1054)"
+    },
+    {
+      "at": "2026-07-27T14:32:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1055)"
+    },
+    {
+      "at": "2026-07-27T14:32:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1056)"
+    },
+    {
+      "at": "2026-07-27T14:32:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1057)"
+    },
+    {
+      "at": "2026-07-27T14:33:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1058)"
+    },
+    {
+      "at": "2026-07-27T14:33:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1059)"
+    },
+    {
+      "at": "2026-07-27T14:33:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1060)"
+    },
+    {
+      "at": "2026-07-27T14:33:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1061)"
+    },
+    {
+      "at": "2026-07-27T14:33:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1062)"
+    },
+    {
+      "at": "2026-07-27T14:33:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1063)"
+    },
+    {
+      "at": "2026-07-27T14:33:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1064)"
+    },
+    {
+      "at": "2026-07-27T14:33:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1065)"
+    },
+    {
+      "at": "2026-07-27T14:33:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1066)"
+    },
+    {
+      "at": "2026-07-27T14:33:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1067)"
+    },
+    {
+      "at": "2026-07-27T14:33:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1068)"
+    },
+    {
+      "at": "2026-07-27T14:33:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1069)"
+    },
+    {
+      "at": "2026-07-27T14:33:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1070)"
+    },
+    {
+      "at": "2026-07-27T14:33:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1071)"
+    },
+    {
+      "at": "2026-07-27T14:33:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1072)"
+    },
+    {
+      "at": "2026-07-27T14:33:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1073)"
+    },
+    {
+      "at": "2026-07-27T14:33:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1074)"
+    },
+    {
+      "at": "2026-07-27T14:33:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1075)"
+    },
+    {
+      "at": "2026-07-27T14:33:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1076)"
+    },
+    {
+      "at": "2026-07-27T14:33:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1077)"
+    },
+    {
+      "at": "2026-07-27T14:34:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1078)"
+    },
+    {
+      "at": "2026-07-27T14:34:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1079)"
+    },
+    {
+      "at": "2026-07-27T14:34:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1080)"
+    },
+    {
+      "at": "2026-07-27T14:34:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1081)"
+    },
+    {
+      "at": "2026-07-27T14:34:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1082)"
+    },
+    {
+      "at": "2026-07-27T14:34:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1083)"
+    },
+    {
+      "at": "2026-07-27T14:34:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1084)"
+    },
+    {
+      "at": "2026-07-27T14:34:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1085)"
+    },
+    {
+      "at": "2026-07-27T14:34:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1086)"
+    },
+    {
+      "at": "2026-07-27T14:34:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1087)"
+    },
+    {
+      "at": "2026-07-27T14:34:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1088)"
+    },
+    {
+      "at": "2026-07-27T14:34:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1089)"
+    },
+    {
+      "at": "2026-07-27T14:34:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1090)"
+    },
+    {
+      "at": "2026-07-27T14:34:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1091)"
+    },
+    {
+      "at": "2026-07-27T14:34:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1092)"
+    },
+    {
+      "at": "2026-07-27T14:34:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1093)"
+    },
+    {
+      "at": "2026-07-27T14:34:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1094)"
+    },
+    {
+      "at": "2026-07-27T14:34:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1095)"
+    },
+    {
+      "at": "2026-07-27T14:34:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1096)"
+    },
+    {
+      "at": "2026-07-27T14:34:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1097)"
+    },
+    {
+      "at": "2026-07-27T14:35:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1098)"
+    },
+    {
+      "at": "2026-07-27T14:35:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1099)"
+    },
+    {
+      "at": "2026-07-27T14:35:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1100)"
+    },
+    {
+      "at": "2026-07-27T14:35:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1101)"
+    },
+    {
+      "at": "2026-07-27T14:35:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1102)"
+    },
+    {
+      "at": "2026-07-27T14:35:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1103)"
+    },
+    {
+      "at": "2026-07-27T14:35:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1104)"
+    },
+    {
+      "at": "2026-07-27T14:35:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1105)"
+    },
+    {
+      "at": "2026-07-27T14:35:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1106)"
+    },
+    {
+      "at": "2026-07-27T14:35:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1107)"
+    },
+    {
+      "at": "2026-07-27T14:35:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1108)"
+    },
+    {
+      "at": "2026-07-27T14:35:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1109)"
+    },
+    {
+      "at": "2026-07-27T14:35:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1110)"
+    },
+    {
+      "at": "2026-07-27T14:35:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1111)"
+    },
+    {
+      "at": "2026-07-27T14:35:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1112)"
+    },
+    {
+      "at": "2026-07-27T14:35:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1113)"
+    },
+    {
+      "at": "2026-07-27T14:35:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1114)"
+    },
+    {
+      "at": "2026-07-27T14:35:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1115)"
+    },
+    {
+      "at": "2026-07-27T14:35:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1116)"
+    },
+    {
+      "at": "2026-07-27T14:35:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1117)"
+    },
+    {
+      "at": "2026-07-27T14:36:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1118)"
+    },
+    {
+      "at": "2026-07-27T14:36:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1119)"
+    },
+    {
+      "at": "2026-07-27T14:36:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1120)"
+    },
+    {
+      "at": "2026-07-27T14:36:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1121)"
+    },
+    {
+      "at": "2026-07-27T14:36:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1122)"
+    },
+    {
+      "at": "2026-07-27T14:36:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1123)"
+    },
+    {
+      "at": "2026-07-27T14:36:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1124)"
+    },
+    {
+      "at": "2026-07-27T14:36:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1125)"
+    },
+    {
+      "at": "2026-07-27T14:36:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1126)"
+    },
+    {
+      "at": "2026-07-27T14:36:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1127)"
+    },
+    {
+      "at": "2026-07-27T14:36:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1128)"
+    },
+    {
+      "at": "2026-07-27T14:36:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1129)"
+    },
+    {
+      "at": "2026-07-27T14:36:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1130)"
+    },
+    {
+      "at": "2026-07-27T14:36:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1131)"
+    },
+    {
+      "at": "2026-07-27T14:36:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1132)"
+    },
+    {
+      "at": "2026-07-27T14:36:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1133)"
+    },
+    {
+      "at": "2026-07-27T14:36:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1134)"
+    },
+    {
+      "at": "2026-07-27T14:36:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1135)"
+    },
+    {
+      "at": "2026-07-27T14:36:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1136)"
+    },
+    {
+      "at": "2026-07-27T14:36:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1137)"
+    },
+    {
+      "at": "2026-07-27T14:37:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1138)"
+    },
+    {
+      "at": "2026-07-27T14:37:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1139)"
+    },
+    {
+      "at": "2026-07-27T14:37:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1140)"
+    },
+    {
+      "at": "2026-07-27T14:37:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1141)"
+    },
+    {
+      "at": "2026-07-27T14:37:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1142)"
+    },
+    {
+      "at": "2026-07-27T14:37:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1143)"
+    },
+    {
+      "at": "2026-07-27T14:37:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1144)"
+    },
+    {
+      "at": "2026-07-27T14:37:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1145)"
+    },
+    {
+      "at": "2026-07-27T14:37:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1146)"
+    },
+    {
+      "at": "2026-07-27T14:37:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1147)"
+    },
+    {
+      "at": "2026-07-27T14:37:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1148)"
+    },
+    {
+      "at": "2026-07-27T14:37:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1149)"
+    },
+    {
+      "at": "2026-07-27T14:37:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1150)"
+    },
+    {
+      "at": "2026-07-27T14:37:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1151)"
+    },
+    {
+      "at": "2026-07-27T14:37:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1152)"
+    },
+    {
+      "at": "2026-07-27T14:37:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1153)"
+    },
+    {
+      "at": "2026-07-27T14:37:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1154)"
+    },
+    {
+      "at": "2026-07-27T14:37:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1155)"
+    },
+    {
+      "at": "2026-07-27T14:37:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1156)"
+    },
+    {
+      "at": "2026-07-27T14:37:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1157)"
+    },
+    {
+      "at": "2026-07-27T14:38:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1158)"
+    },
+    {
+      "at": "2026-07-27T14:38:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1159)"
+    },
+    {
+      "at": "2026-07-27T14:38:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1160)"
+    },
+    {
+      "at": "2026-07-27T14:38:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1161)"
+    },
+    {
+      "at": "2026-07-27T14:38:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1162)"
+    },
+    {
+      "at": "2026-07-27T14:38:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1163)"
+    },
+    {
+      "at": "2026-07-27T14:38:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1164)"
+    },
+    {
+      "at": "2026-07-27T14:38:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1165)"
+    },
+    {
+      "at": "2026-07-27T14:38:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1166)"
+    },
+    {
+      "at": "2026-07-27T14:38:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1167)"
+    },
+    {
+      "at": "2026-07-27T14:38:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1168)"
+    },
+    {
+      "at": "2026-07-27T14:38:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1169)"
+    },
+    {
+      "at": "2026-07-27T14:38:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1170)"
+    },
+    {
+      "at": "2026-07-27T14:38:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1171)"
+    },
+    {
+      "at": "2026-07-27T14:38:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1172)"
+    },
+    {
+      "at": "2026-07-27T14:38:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1173)"
+    },
+    {
+      "at": "2026-07-27T14:38:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1174)"
+    },
+    {
+      "at": "2026-07-27T14:38:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1175)"
+    },
+    {
+      "at": "2026-07-27T14:38:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1176)"
+    },
+    {
+      "at": "2026-07-27T14:38:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1177)"
+    },
+    {
+      "at": "2026-07-27T14:39:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1178)"
+    },
+    {
+      "at": "2026-07-27T14:39:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1179)"
+    },
+    {
+      "at": "2026-07-27T14:39:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1180)"
+    },
+    {
+      "at": "2026-07-27T14:39:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1181)"
+    },
+    {
+      "at": "2026-07-27T14:39:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1182)"
+    },
+    {
+      "at": "2026-07-27T14:39:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1183)"
+    },
+    {
+      "at": "2026-07-27T14:39:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1184)"
+    },
+    {
+      "at": "2026-07-27T14:39:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1185)"
+    },
+    {
+      "at": "2026-07-27T14:39:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1186)"
+    },
+    {
+      "at": "2026-07-27T14:39:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1187)"
+    },
+    {
+      "at": "2026-07-27T14:39:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1188)"
+    },
+    {
+      "at": "2026-07-27T14:39:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1189)"
+    },
+    {
+      "at": "2026-07-27T14:39:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1190)"
+    },
+    {
+      "at": "2026-07-27T14:39:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1191)"
+    },
+    {
+      "at": "2026-07-27T14:39:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1192)"
+    },
+    {
+      "at": "2026-07-27T14:39:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1193)"
+    },
+    {
+      "at": "2026-07-27T14:39:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1194)"
+    },
+    {
+      "at": "2026-07-27T14:39:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1195)"
+    },
+    {
+      "at": "2026-07-27T14:39:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1196)"
+    },
+    {
+      "at": "2026-07-27T14:39:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1197)"
+    },
+    {
+      "at": "2026-07-27T14:40:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1198)"
+    },
+    {
+      "at": "2026-07-27T14:40:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1199)"
+    },
+    {
+      "at": "2026-07-27T14:40:08Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1200)"
+    },
+    {
+      "at": "2026-07-27T14:40:11Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1201)"
+    },
+    {
+      "at": "2026-07-27T14:40:14Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1202)"
+    },
+    {
+      "at": "2026-07-27T14:40:17Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1203)"
+    },
+    {
+      "at": "2026-07-27T14:40:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1204)"
+    },
+    {
+      "at": "2026-07-27T14:40:23Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1205)"
+    },
+    {
+      "at": "2026-07-27T14:40:26Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1206)"
+    },
+    {
+      "at": "2026-07-27T14:40:29Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1207)"
+    },
+    {
+      "at": "2026-07-27T14:40:32Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1208)"
+    },
+    {
+      "at": "2026-07-27T14:40:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1209)"
+    },
+    {
+      "at": "2026-07-27T14:40:38Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1210)"
+    },
+    {
+      "at": "2026-07-27T14:40:41Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1211)"
+    },
+    {
+      "at": "2026-07-27T14:40:44Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1212)"
+    },
+    {
+      "at": "2026-07-27T14:40:47Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1213)"
+    },
+    {
+      "at": "2026-07-27T14:40:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1214)"
+    },
+    {
+      "at": "2026-07-27T14:40:53Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1215)"
+    },
+    {
+      "at": "2026-07-27T14:40:56Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1216)"
+    },
+    {
+      "at": "2026-07-27T14:40:59Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1217)"
+    },
+    {
+      "at": "2026-07-27T14:41:02Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1218)"
+    },
+    {
+      "at": "2026-07-27T14:41:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "upstream connect error: dial tcp payments-old.internal:8443 connection refused (req 1219)"
+    }
+  ],
+  "changes": [
+    {
+      "at": "2026-07-27T14:26:00Z",
+      "service": "order-api",
+      "type": "config",
+      "key": "PAYMENT_URL",
+      "old": "https://payments.internal:8443",
+      "new": "https://payments-old.internal:8443",
+      "author": "deploy-bot",
+      "ref": "release-2026.07.27-2",
+      "revision": "3b81ee9"
+    }
+  ],
+  "topology": {
+    "service": "order-api",
+    "nodes": [
+      {
+        "name": "order-api",
+        "anomalous": true,
+        "first_seen": "2026-07-27T14:30:00Z",
+        "role": "api"
+      },
+      {
+        "name": "payment-api",
+        "anomalous": false,
+        "role": "api"
+      }
+    ],
+    "edges": [
+      {
+        "from": "order-api",
+        "to": "payment-api"
+      }
+    ]
+  },
+  "demand_responses": [
+    {
+      "descriptor": "configuration changes for the service in the 30 minutes before onset",
+      "kind": "change",
+      "source": "deploy-history-fixture",
+      "raw_ref": "deploy-history:order-api?lookback=30m",
+      "confidence": 0.92,
+      "changes": true
+    },
+    {
+      "descriptor": "upstream dependency error metric",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:upstream_connect_errors{service=\"order-api\"}",
+      "confidence": 0.9,
+      "series": "upstream_connect_errors"
+    },
+    {
+      "descriptor": "historical peak traffic comparison at equal load",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:http_requests_total{service=\"order-api\"}[2d:offset 2d]",
+      "confidence": 0.86,
+      "summary": "order-api request rate is unchanged from its usual level of 90 rps, so load is not distinguishing here",
+      "facts": {
+        "current_peak": "90 rps",
+        "counters": "sig-traffic-surge"
+      }
+    }
+  ],
+  "recovery_trigger": {
+    "tool": "set_config",
+    "args": {
+      "service": "order-api",
+      "key": "PAYMENT_URL",
+      "value": "https://payments.internal:8443"
+    }
+  },
+  "initial_config": {
+    "order-api/PAYMENT_URL": "https://payments-old.internal:8443"
+  },
+  "expected_signature": "sig-misconfigured-dependency",
+  "expected_remediation": "set_config order-api PAYMENT_URL https://payments.internal:8443"
+}
