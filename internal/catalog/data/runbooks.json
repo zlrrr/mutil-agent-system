@@ -1,0 +1,34 @@
+{
+  "runbooks": [
+    {
+      "id": "rb-db-pool",
+      "title": "Database connection pool exhaustion",
+      "symptoms": ["connection timeout", "pool", "database", "connection pool", "exhaustion"],
+      "body": "Check the pool saturation metric first. If in-use connections sit at the configured maximum, compare the configured pool size against the last deployment. Restoring the previous size is reversible and its effect is visible within a minute in the 5xx rate. Do not restart the database: an exhausted pool is a client-side limit."
+    },
+    {
+      "id": "rb-capacity",
+      "title": "Capacity shortfall under increased load",
+      "symptoms": ["request rate", "5xx", "latency", "saturation", "scale"],
+      "body": "Confirm the load is genuinely higher than any previously served peak before treating capacity as the cause. Compare against the same weekday and hour. If an equal peak was served without error, the cause lies elsewhere and adding capacity will only mask it."
+    },
+    {
+      "id": "rb-db-outage",
+      "title": "Database unavailable",
+      "symptoms": ["connection refused", "database unavailable", "replica", "failover", "connection timeout"],
+      "body": "Check the availability signal and the primary's health before assuming an outage. Connection errors in an application log are equally consistent with a client-side pool limit, so the availability metric is the discriminating evidence."
+    },
+    {
+      "id": "rb-dependency",
+      "title": "Dependency endpoint misconfiguration",
+      "symptoms": ["connection refused", "upstream", "502", "dependency", "url"],
+      "body": "Compare the configured dependency endpoint against the last known good value. An endpoint change produces connection failures with no change in this service's own request rate, which distinguishes it from a load problem."
+    },
+    {
+      "id": "rb-slow-query",
+      "title": "Slow query after a release",
+      "symptoms": ["slow query", "latency", "database cpu", "index", "sequential scan"],
+      "body": "Correlate the slow query log with the deployment timeline. Rising database CPU alongside latency, with a flat error rate, points at query cost rather than availability. Prefer a feature flag over a rollback when one covers the affected path."
+    }
+  ]
+}
