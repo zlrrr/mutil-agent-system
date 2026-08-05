@@ -132,10 +132,12 @@ claude/project-spec-architecture-78dmtj` 现已成功。本地与远端的领先
 **维护者需要做什么**——两种方式任选其一，产出的 release 完全相同：
 
 ```bash
-git push origin v0.1.0            # 该标签已在本地存在
+git push origin v0.1.0            # 该标签已在本地这个分支上存在
 ```
 
-或者，完全不需要克隆仓库：**Actions → release → Run workflow**，版本填 `0.1.0`。
+或者，等 `release.yml` 进入默认分支之后，完全不需要克隆仓库：**Actions → release →
+Run workflow**，版本填 `0.1.0`。这个前提是 GitHub 的规定、不是我们加的：只有位于默认
+分支上的工作流才会提供 `workflow_dispatch`，因此在本分支合并之前，可走的路径是推送标签。
 
 连同上面那条推送阻塞，这是本里程碑中自主循环仅有的两次需要它并不具备的授权
 （CON-010）。其余决策都不需要：每一处歧义都能由章程、需求或宪章解决。章程记录的三个

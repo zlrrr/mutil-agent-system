@@ -139,14 +139,16 @@ The pipeline is in place, tested and waiting. Because the blocker is specificall
 one permission that is missing — a maintainer who can run workflows but not push tags can
 now cut the release from the Actions UI, and the pipeline creates the tag itself.
 
-**What a maintainer needs to do** — either one, they produce the same release:
+**What a maintainer needs to do** — either one produces the same release:
 
 ```bash
-git push origin v0.1.0            # the tag already exists locally
+git push origin v0.1.0            # the tag already exists locally, on this branch
 ```
 
-or, with no clone at all: **Actions → release → Run workflow**, entering `0.1.0` as the
-version.
+Or, once `release.yml` has reached the default branch, with no clone at all: **Actions →
+release → Run workflow**, entering `0.1.0` as the version. That precondition is GitHub's,
+not ours: `workflow_dispatch` is only offered for workflows present on the default
+branch, so until this branch merges, the tag push is the available route.
 
 This and the push block above are the only points in the milestone where the autonomous
 loop needed authority it did not have (CON-010). No other decision required it: every
