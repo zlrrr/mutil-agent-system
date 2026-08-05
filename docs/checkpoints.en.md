@@ -86,10 +86,35 @@ Recorded here rather than implied by absence.
 | Model-backed reasoner | Port defined and documented; no adapter wired | Open question Q1 in the charter: no provider has been chosen. The deterministic adapter is the default by design, not by omission (ADR-002) |
 | Fault cases C4–C6 | Not written | Milestone M5. Three cases are enough for M1's gate; the misleading-log case in particular exists to test overfitting, which is a fair test only once the catalog has stopped growing alongside it |
 | Multi-tenant authentication | Not implemented | Charter non-goal N6 |
+| Pushing the branch to GitHub | Blocked | See the escalation below. Every commit exists locally on `claude/project-spec-architecture-78dmtj`; nothing is lost, but the remote does not yet have it |
 
 ## Escalations
 
-None. No decision during this milestone required authority outside the specification:
+One, and it is outside the specification's authority to resolve.
+
+**Pushing to the remote is blocked by an organisation policy.** `git push` returns
+`403`, and the GitHub API states the reason directly:
+
+> GitHub access is not enabled for this session. An org admin must connect the Claude
+> GitHub App for this organization.
+
+Read access works — `git ls-remote` and the API's read endpoints both succeed — so this
+is an authorisation boundary, not a network or credential fault, and retrying it would
+be pointless. Pushing the tree through the API instead is not practical: 164 files and
+1.38 MB would have to be re-transmitted file by file, which risks corrupting exactly the
+artifact being delivered.
+
+**What a maintainer needs to do.** Connect the Claude GitHub App for the organisation,
+or grant this session write access to `zlrrr/mutil-agent-system`, then re-run:
+
+```bash
+git push -u origin claude/project-spec-architecture-78dmtj
+```
+
+Every commit is already made, in order, with its message. The branch is complete as it
+stands.
+
+No other decision during this milestone required authority outside the specification:
 every ambiguity was resolvable from the charter, the requirements or the constitution.
 The three open questions the charter records (Q1–Q3) did not block any M1 work, and each
 proceeded under the default the charter states.
