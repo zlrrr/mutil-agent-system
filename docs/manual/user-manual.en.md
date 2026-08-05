@@ -38,6 +38,28 @@ behind the same port — see section 9.
 The container is the recommended deliverable. It carries the API, the console, the
 fault case catalog and the command line tools.
 
+**From a published release** (`linux/amd64`). Every tagged version publishes an image
+built from that exact commit:
+
+```bash
+docker pull ghcr.io/zlrrr/mutil-agent-system:0.1.0
+docker run --rm -p 8080:8080 ghcr.io/zlrrr/mutil-agent-system:0.1.0
+```
+
+If you cannot reach the registry, the same image is attached to the release as a
+loadable tarball, so the release stays usable without registry access:
+
+```bash
+gunzip -c incidentops-arena-0.1.0-linux-amd64-image.tar.gz | docker load
+docker run --rm -p 8080:8080 ghcr.io/zlrrr/mutil-agent-system:0.1.0
+```
+
+Release assets are checksummed; verify them with `sha256sum -c SHA256SUMS` before
+loading. Each image is also tagged with its commit SHA, so a version tag that moves
+does not cost you the ability to name exactly what you ran.
+
+**From source**, if you would rather build it yourself:
+
 ```bash
 docker build -f deploy/docker/Dockerfile -t incidentops-arena:0.1.0-mvp .
 docker run --rm -p 8080:8080 incidentops-arena:0.1.0-mvp

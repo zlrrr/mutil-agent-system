@@ -50,7 +50,14 @@ make serve         # API and console on http://localhost:8080
 make up            # the full demo stack with a live target and Prometheus
 ```
 
-With Docker:
+With Docker, from a published release (`linux/amd64`):
+
+```bash
+docker pull ghcr.io/zlrrr/mutil-agent-system:0.1.0
+docker run --rm -p 8080:8080 ghcr.io/zlrrr/mutil-agent-system:0.1.0
+```
+
+Or build it yourself:
 
 ```bash
 docker build -f deploy/docker/Dockerfile -t incidentops-arena:0.1.0-mvp .
@@ -58,6 +65,10 @@ docker run --rm -p 8080:8080 incidentops-arena:0.1.0-mvp
 ```
 
 Then open <http://localhost:8080>, pick a fault case and press **Open investigation**.
+
+Each release also attaches the image as a loadable tarball and checksums every asset, so
+it stays usable without registry access — see [the manual](docs/manual/user-manual.en.md)
+for that path.
 
 ## Architecture
 

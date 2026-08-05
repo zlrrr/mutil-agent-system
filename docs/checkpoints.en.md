@@ -27,6 +27,7 @@ Each wave closed only when its gate command exited zero.
 | 5 | T-009, T-010 | `go test ./internal/agent/ ./internal/policy/` | pass | TC-0001, TC-0013, TC-0014, TC-0015, TC-0040, TC-0041, TC-0043, TC-0044 |
 | 6 | T-011 | `go test -race ./internal/orchestrator/` | pass | TC-0010, TC-0021, TC-0031, TC-0035, TC-0042, TC-0045, TC-0046, TC-0051, TC-0060, TC-0061, TC-0062, TC-0070, TC-0071, TC-0073 |
 | 7 | T-012, T-013, T-014 | `make check` | pass | TC-0053, TC-0063, TC-0064, TC-0065, TC-0080, TC-0081, TC-0090, TC-0091 |
+| 8 | REQ-0095 (release publishing) | `go test ./internal/httpapi/ && sddctl gate --stage deliver` | pass | TC-0092 |
 
 ## Defects found by the checkpoints
 
@@ -43,6 +44,7 @@ because a checkpoint that never fails is not a checkpoint.
 | D6 | TC-0062 | The triage step emitted `agent_completed` with no duration, so the event log's work records were incomplete | Triage now measures itself and names the collectors it plans to fan out to |
 | D7 | `sddctl gate --stage architect` | 13 requirements had no architecture item deriving from them — a real coverage gap, not a tooling artefact | ARC-003, ARC-004, ARC-006, ARC-010, ARC-011 and ARC-014 were extended to claim them |
 | D8 | TC-0091 | REQ-0091 (no third-party dependencies) had no executed test, because the test verifying it was linked only to the framework's own requirement | TC-9013 now derives from both REQ-9013 and REQ-0091 |
+| D9 | TC-0092 | The release pipeline's ordering assertion matched the file's own header comment, which mentions `docker push` — so it read a comment as a publishing step and failed a correct workflow | The assertion strips whole-line comments first: prose describing a pipeline cannot publish anything. Confirmed live by moving the publish step above the gates, which fails the test, and restoring it, which passes |
 
 ## Cascading updates performed
 

@@ -659,6 +659,24 @@ verification 各类别证据均存在。
 
 **测试函数。** `internal/sdd/manual_test.go` 中的 `TestManualBilingualParity`
 
+<!-- sdd:item id=TC-0092 stage=verify status=approved derives_from=REQ-0095 -->
+#### TC-0092 — 发布流水线产出经门禁把关的 linux/amd64 制品
+
+**层级。** delivery。**验证。** REQ-0095。
+
+**步骤。** 解析 `.github/workflows/release.yml`。
+
+**预期。** 该工作流由 `v*` 标签触发；在任何发布步骤之前运行交付门禁；显式针对
+`linux/amd64` 构建；在发布之前启动所构建的镜像并等待 `/healthz`；同时以版本号与提交
+SHA 两种标签标注镜像；并创建一个资产中包含可加载镜像 tar 包与 `SHA256SUMS` 的
+release。
+
+其中关于顺序的断言才是实质性的。一个先发布、后验证的工作流可以满足 REQ-0095 的每一条
+单独条款，却恰恰瓦解了它的目的，因此测试比较的是字节偏移：门禁与健康检查都必须出现在
+第一次向镜像仓库推送之前。
+
+**测试函数。** `internal/httpapi/delivery_test.go` 中的 `TestReleasePipeline`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

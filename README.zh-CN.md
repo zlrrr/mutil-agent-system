@@ -47,7 +47,14 @@ make serve         # API 与控制台，http://localhost:8080
 make up            # 含在线目标与 Prometheus 的完整演示栈
 ```
 
-使用 Docker：
+使用 Docker，从已发布的 release 获取（`linux/amd64`）：
+
+```bash
+docker pull ghcr.io/zlrrr/mutil-agent-system:0.1.0
+docker run --rm -p 8080:8080 ghcr.io/zlrrr/mutil-agent-system:0.1.0
+```
+
+或者自己构建：
 
 ```bash
 docker build -f deploy/docker/Dockerfile -t incidentops-arena:0.1.0-mvp .
@@ -55,6 +62,9 @@ docker run --rm -p 8080:8080 incidentops-arena:0.1.0-mvp
 ```
 
 然后打开 <http://localhost:8080>，选一个故障样例，按 **Open investigation**。
+
+每个 release 还会把镜像以可加载的 tar 包形式附上，并为每个资产提供校验和，因此在没有
+镜像仓库访问权时它依然可用——具体做法见[用户手册](docs/manual/user-manual.zh.md)。
 
 ## 架构
 

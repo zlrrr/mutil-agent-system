@@ -744,6 +744,33 @@ rather than silently discarding.
 
 **Verified by.** TC-0071
 
+<!-- sdd:item id=REQ-0095 stage=specify status=approved derives_from=G-007 priority=P1 -->
+### REQ-0095 — Published as a versioned release with a linux/amd64 image
+
+**Requirement.** A tagged version MUST publish a GitHub release carrying a container
+image runnable on `linux/amd64`, together with checksummed binaries for the same
+platform. The image MUST be built from the tagged commit by an automated pipeline rather
+than uploaded by hand, MUST be labelled with the commit it came from, and MUST pass the
+same health check the compose stack relies on before the release is published.
+
+The release MUST NOT be publishable from a tree that fails the delivery gate: a version
+that ships is by definition one whose spec tree is sealed, traced and tested.
+
+**Acceptance.**
+- Given a tag matching `v*`, when the pipeline runs, then it builds a `linux/amd64`
+  image, starts it, waits for `/healthz`, publishes the image to a registry under both
+  the version tag and the commit SHA, and creates a release whose assets include the
+  binaries, a loadable image tarball and a `SHA256SUMS` file.
+
+The image tarball is not redundant with the registry. A registry package can be private,
+can require a login the reader does not have, and can be pruned; an asset attached to the
+release is downloadable by anyone who can see the release and loadable with
+`docker load`. The release must remain usable without registry access.
+- Given a tree that fails `sddctl gate --stage deliver`, when the pipeline runs, then it
+  fails before anything is published.
+
+**Verified by.** TC-0092
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

@@ -32,6 +32,27 @@ IncidentOps Arena 用一组各自掌握一类证据的 Agent 来调查生产告�
 
 容器是推荐的交付形态。它自带 API、控制台、故障样例目录与命令行工具。
 
+**从已发布的 release 获取**（`linux/amd64`）。每个打了标签的版本都会发布一个由该提交
+精确构建出的镜像：
+
+```bash
+docker pull ghcr.io/zlrrr/mutil-agent-system:0.1.0
+docker run --rm -p 8080:8080 ghcr.io/zlrrr/mutil-agent-system:0.1.0
+```
+
+如果你访问不了镜像仓库，同一个镜像也以可加载的 tar 包形式挂在 release 上，因此没有
+仓库访问权时 release 依然可用：
+
+```bash
+gunzip -c incidentops-arena-0.1.0-linux-amd64-image.tar.gz | docker load
+docker run --rm -p 8080:8080 ghcr.io/zlrrr/mutil-agent-system:0.1.0
+```
+
+release 资产均带校验和；加载前请用 `sha256sum -c SHA256SUMS` 校验。每个镜像还会额外
+打上其提交 SHA 标签，这样即便版本标签发生移动，你也依然能准确指明自己跑的是哪一份。
+
+**从源码构建**，如果你更愿意自己来：
+
 ```bash
 docker build -f deploy/docker/Dockerfile -t incidentops-arena:0.1.0-mvp .
 docker run --rm -p 8080:8080 incidentops-arena:0.1.0-mvp
