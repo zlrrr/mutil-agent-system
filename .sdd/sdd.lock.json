@@ -1,0 +1,396 @@
+{
+  "sddVersion": "1.0.0",
+  "sealedAt": "2026-08-05T04:59:48Z",
+  "items": {
+    "ARC-901": {
+      "hash": "6edc74c4c0ac4978881610acfb5a68d27760e9fda0e3b294fdd8d6b842a9a78b",
+      "stage": "architect",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "ARC-902": {
+      "hash": "222d9874760ea18a1c051e43365236610194749593c2ae91701f9c69f13e753d",
+      "stage": "architect",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "ARC-903": {
+      "hash": "c26a377c7579b631768b92cb5f23239d22ad264b144f7e0bd36206837a3c4761",
+      "stage": "architect",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "ARC-904": {
+      "hash": "bab6d01f560151641345cc5eb00e7ef133a02a73a29240aba200d00c22737396",
+      "stage": "architect",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "CON-001": {
+      "hash": "c5f34f033a114b1494bb6c7e10bfb8124e7beb42b5bdf810001b8f795c607234",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-002": {
+      "hash": "7f4e35ce114de20e2b8b63b7e91f34a29307a9b55464c88c8e45edb3aea8f82e",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-003": {
+      "hash": "cd7c7d0d8e1fbca86063d8b6e50a076870314f15f6c09ca7e9e9a5d7021be278",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-004": {
+      "hash": "a1e9ff60b0515e7d2a9fe72a555699aaaa442c1859ec88ad17e861b223914ceb",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-005": {
+      "hash": "614edb3a5d7adb11d4af87abce67b2d2027648452deb1860e79fc4696afbb745",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-006": {
+      "hash": "7ae432005cd2de2ccf09a74c78a6f7c77d9140f5f383b2151bdd04d7310a6f3c",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-007": {
+      "hash": "f5cf2f9c0939e9528ff62ea2b3570298fede3768edec371da6bed6a0c0b71590",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-008": {
+      "hash": "344f0fb4f1e2fbd794b83b90728bae89b2e1dcf5704ad69601036a35bb18bc8e",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-009": {
+      "hash": "0f5bbf15c69bebe207c4a375da28808ff5ab181647f3cffae1b0352940e7d6b9",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-010": {
+      "hash": "a7db667c442a9731792cdef20c4f3ef208a0e9571b7cff6d5c73f55861c9d68a",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-011": {
+      "hash": "0d78c30ad66fe747d61e00753635239511d9c5518330821f80d1bb1e7da9b3b7",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "CON-012": {
+      "hash": "57783876f0c21c35825f8ca31bc063ce596a5eb55e24e9b459643504406b79c4",
+      "stage": "constitution",
+      "status": "approved",
+      "file": ".sdd/memory/constitution.en.md"
+    },
+    "DLD-0101": {
+      "hash": "451918592f8fd2e26c61824e22892acba0f96a366e5f281956f453ced89e693d",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0102": {
+      "hash": "47771718fddcb5c04d7eb4df6435105edc17fd4543069793baa2c6e2519ccd1d",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0103": {
+      "hash": "f3b3a60d2f997aa17b6284fee8149cfd09c299b8c0e128fbaa42426668176c18",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0104": {
+      "hash": "48ef1f709fab68df69f7b1306079ca3f027a5315a2a310cd3592b22e96d9961c",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0105": {
+      "hash": "b440b16b1884a27372f99a3dc10177a5b5b57817877e4d51b88c02e2ae52becc",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0106": {
+      "hash": "105ab1b39c527995e8e62b611a05c36cadf05b8f759459027de6ed0bd5ca9438",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0107": {
+      "hash": "30fc35959afa8d6ccf8a7e65e011822a049c0b34d06a9c2f08a4dd6fe3588c55",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0108": {
+      "hash": "d389fe512bcefd8e68134ba95008cedc61f6f50a0c3e5509d670be51b1ab072c",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "DLD-0109": {
+      "hash": "3eb9484559276f8e7fc737c2df32cc00558ed4547dc6c491627015c3c3eb490d",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "G-901": {
+      "hash": "e0afb02952d4074b951aa39759681afc1853b640451c343aade54952aff58802",
+      "stage": "charter",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "G-902": {
+      "hash": "6dad960c610c5df66ed55c4552518dbeb770e5f43faa2e3ec2b97880e651b335",
+      "stage": "charter",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "G-903": {
+      "hash": "4281d6676ef1ff8da76fb975ea94d32c9ae858aa325762400c872e8d05369f5a",
+      "stage": "charter",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "G-904": {
+      "hash": "b41ec2df459e3f833c48c35092d752f684ee23f2684113433bc1ffef9578937f",
+      "stage": "charter",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-901": {
+      "hash": "1d1192e0d518bc658d766030f976148f7d49af92979b9708588b7514f0c23bf7",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-902": {
+      "hash": "f78792a494f1f021bce9b53e203c7474207552a2c551e004d1a372faeaadff47",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-903": {
+      "hash": "d006a7cc917228c625309586fe7b0df08492005090bff99e206f6d9a3669c7ca",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-904": {
+      "hash": "5789001e66b50ce5c9f2d89c0f82b4fb241a5a4c2820d474647e993aad32c80c",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-905": {
+      "hash": "6391173537ba53e10166e6afb7529ce6c084c89c8020c0ed4195059fb2fe9fe7",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-906": {
+      "hash": "86e52ee0d8a3190692f0b55e55a65b35fc2b0a3c84b4cd9708cea8241cbed51c",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-907": {
+      "hash": "b5575dbfb8a256fd2dae8df5be037198dd01ac8fd99620831ab90faa26714790",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-908": {
+      "hash": "e45600ec35f505d031356cadd995942fe434de811c150fbe3a69211efe5f84bc",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "HLD-909": {
+      "hash": "6b5da2e95f220dd45aa84b54d8a7746937a0374958de571f7c492b10b70d4d84",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9001": {
+      "hash": "92d9321512b565a074fc4c04c6cf743249978eb98232417b18708136e7d44662",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9002": {
+      "hash": "cdf768d7e577acb61cf8cd1156b7c7568780618137fb34fced10f274dd8cab02",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9003": {
+      "hash": "e1301d18f492e816c97ff7ba7b5e7cce846c62415740fc49538a68331a9d3313",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9004": {
+      "hash": "54d568d1c388066d40269fa54a6cb882309c8b46f5a1fff78a3f4b76dad1b0a9",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9005": {
+      "hash": "2bc26822866a16ec4f8286abaee971bbde171cd947d0774fbc0364c5852839db",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9006": {
+      "hash": "5134efc51b6a0819f54523416d7507c6dfead4a8f20035088447abc0aa707f91",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9007": {
+      "hash": "d3bde2b09216c3c6296ae3af80c563e41e38df4b674accc424a8fe78fc144978",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9008": {
+      "hash": "8c89fc3b54d96f3f40f8b16093c682390cbafa97320bf950c15ce69695b754ca",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9009": {
+      "hash": "34c11e88cb1eb439637d595aa513ea5b8d4da02df31e296d6a53ac25fba40354",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9010": {
+      "hash": "31ced60e12efa6a6c70b6fc2b167047491d8436a48b6b46e505a09f068dec9c3",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9011": {
+      "hash": "f09ebfe469f86d91fbf0e83af6010f57b1359491fa7aae9cd74d0385ee3a77a6",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9012": {
+      "hash": "b19c6a95013539c4d2f0e05eff99271bb6dba6ab34ae8662984ab8f9fb59cd4c",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "REQ-9013": {
+      "hash": "59f828fdc701a7c221898aebd13ad049a409772c8489ea5d6b04bf232c340807",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9001": {
+      "hash": "f45fd6dc6cc5526192ce8196ad7736335861f5c4199e339eb86f04de58d29132",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9002": {
+      "hash": "96beb60a81e3aa9ace07f30a99c571898341f6a722fbcc591b252a2843a71653",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9003": {
+      "hash": "8072abbbce732d83c87ee6fda96004e3a7fac8535a7a97ffad8a8f92fd6889a1",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9004": {
+      "hash": "8ef7d7c5260c389b950ed3ae94b9151c9c86994b4fc90c814437020b77eb818e",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9005": {
+      "hash": "0a3bc688b8774dad96b45ce1b5b1205cc93f74888b69bb9dc28833fe193ce1a9",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9006": {
+      "hash": "e7ac1db3976eafbf3705458476b5c859071c562bd361d9c01f924a05cba9148f",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9007": {
+      "hash": "13258d4efaf308943495c22cecccb6f2709965b79069a810f4751f493074b700",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9008": {
+      "hash": "7f0d1ba9bddcefbcf33d18db73abc872f585692190a6ad6649759c724573f6d6",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9009": {
+      "hash": "bfc695be219fcc32635536762d35689ddbdaa72a168d6d3f9e4fc2fe6b5992b4",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9010": {
+      "hash": "10e1773010908828b27ab5a732b4ef6b87205e2b553a70d2ca42951e143b5d53",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9011": {
+      "hash": "3d9b61ea09c7f18ad6f520156b9543987ab795f54fc3251a9de0dd43ab951f29",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9012": {
+      "hash": "80d24d967535a2dfb947f61a2afb0e85a8a97c15a4089acd87a6fb7f67a893a3",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9013": {
+      "hash": "32125e277a99d38ea1458e38ecaa8c5332b3864719611c5423b09902fe54e21f",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    },
+    "TC-9014": {
+      "hash": "3703faba86f5077ba4489aec7ba4351db009362776b2b992feafc55092d54a8c",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/000-sdd-framework/framework.en.md"
+    }
+  }
+}
