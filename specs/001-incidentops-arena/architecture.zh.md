@@ -155,7 +155,7 @@ sequenceDiagram
 
 **实现需求。** REQ-0001, REQ-0005
 
-<!-- sdd:item id=ARC-003 stage=architect status=approved derives_from=REQ-0003,REQ-0053,REQ-0062 -->
+<!-- sdd:item id=ARC-003 stage=architect status=approved derives_from=REQ-0003,REQ-0052,REQ-0053,REQ-0062 -->
 ### ARC-003 — Case 状态是只追加日志的折叠
 
 **元素。** 带连续序号的 `Event` 记录，以及通过折叠它们计算出的 `Case` 投影。
@@ -165,9 +165,9 @@ sequenceDiagram
 **约束。** 没有任何组件直接写投影字段。从空状态重放必须产出相等的投影。事件永不被修改或
 删除。
 
-**实现需求。** REQ-0003, REQ-0053, REQ-0062
+**实现需求。** REQ-0003, REQ-0052, REQ-0053, REQ-0062
 
-<!-- sdd:item id=ARC-004 stage=architect status=approved derives_from=REQ-0001,REQ-0004,REQ-0061 -->
+<!-- sdd:item id=ARC-004 stage=architect status=approved derives_from=REQ-0001,REQ-0004,REQ-0061,REQ-0080,REQ-0081 -->
 ### ARC-004 — Agent 是纯的；编排器是唯一写入方
 
 **元素。** `Agent.Run(ctx, Snapshot) ([]Contribution, error)`，以及编排器中负责分配
@@ -179,7 +179,7 @@ sequenceDiagram
 绝不来自时钟或随机源。采集器的贡献在应用前按 `(角色序, Agent 内序号)` 排序，因此完成
 顺序无法影响结果。
 
-**实现需求。** REQ-0001, REQ-0004, REQ-0061
+**实现需求。** REQ-0001, REQ-0004, REQ-0061, REQ-0080, REQ-0081
 
 <!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090 -->
 ### ARC-005 — 推理器端口把"想什么"和"怎么想"分开
@@ -198,7 +198,7 @@ sequenceDiagram
 
 **实现需求。** REQ-0011, REQ-0020, REQ-0090
 
-<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0016,REQ-0082 -->
+<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082 -->
 ### ARC-006 — 信号端口以夹具优先
 
 **元素。** 六个端口——指标、日志、变更、拓扑、知识、执行器——每个都有夹具适配器与在线
@@ -210,7 +210,7 @@ sequenceDiagram
 配合 REQ-0082），因此新增故障场景是一个数据文件，而不是一次代码变更。执行器的在线适配器
 只能指向演示栈。
 
-**实现需求。** REQ-0010, REQ-0016, REQ-0082
+**实现需求。** REQ-0010, REQ-0012, REQ-0013, REQ-0014, REQ-0015, REQ-0016, REQ-0082
 
 <!-- sdd:item id=ARC-007 stage=architect status=approved derives_from=REQ-0021,REQ-0035 -->
 ### ARC-007 — 证据覆盖是一个格，推进由它守卫
@@ -255,7 +255,7 @@ sequenceDiagram
 
 **实现需求。** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036
 
-<!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0041,REQ-0042,REQ-0043,REQ-0044 -->
+<!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0040,REQ-0041,REQ-0042,REQ-0043,REQ-0044,REQ-0045,REQ-0046 -->
 ### ARC-010 — 策略引擎是执行前的咽喉点
 
 **元素。** 一个评估函数，在两个时刻被调用：动作被提议时（用于分级与设门）、以及执行前
@@ -267,9 +267,9 @@ sequenceDiagram
 也不存在特权模式。对 shell、SQL、删除与跨服务批量操作的拒绝是无条件的——它们作为*类别*
 被拒绝，在查阅任何白名单之前。检索到的内容永远无法进入策略输入；执行器只接受带类型的动作。
 
-**实现需求。** REQ-0041, REQ-0042, REQ-0043, REQ-0044
+**实现需求。** REQ-0040, REQ-0041, REQ-0042, REQ-0043, REQ-0044, REQ-0045, REQ-0046
 
-<!-- sdd:item id=ARC-011 stage=architect status=approved derives_from=REQ-0031,REQ-0051,REQ-0060,REQ-0094 -->
+<!-- sdd:item id=ARC-011 stage=architect status=approved derives_from=REQ-0031,REQ-0050,REQ-0051,REQ-0060,REQ-0094 -->
 ### ARC-011 — 有界预算是终止性保证
 
 **元素。** 轮次预算、每轮假设与质疑上限，以及证据保留上限。
@@ -279,7 +279,7 @@ sequenceDiagram
 **约束。** 状态机中每条回环边都会消耗一份预算。预算耗尽绝不静默丢失信息：未满足的索证、
 被截断的证据与未验证的恢复都会被记录，并出现在报告中。
 
-**实现需求。** REQ-0031, REQ-0051, REQ-0060, REQ-0094
+**实现需求。** REQ-0031, REQ-0050, REQ-0051, REQ-0060, REQ-0094
 
 <!-- sdd:item id=ARC-012 stage=architect status=approved derives_from=REQ-0064 -->
 ### ARC-012 — 事件扇出按订阅者缓冲，游标可续传
@@ -307,7 +307,7 @@ sequenceDiagram
 
 **实现需求。** REQ-0002, REQ-0003
 
-<!-- sdd:item id=ARC-014 stage=architect status=approved derives_from=REQ-0063,REQ-0065,REQ-0092 -->
+<!-- sdd:item id=ARC-014 stage=architect status=approved derives_from=REQ-0063,REQ-0065,REQ-0091,REQ-0092,REQ-0093 -->
 ### ARC-014 — 单一二进制，内嵌控制台，内嵌夹具
 
 **元素。** 单个可执行文件，提供 API、事件流与服务端渲染的控制台，夹具数据与控制台资源
@@ -318,7 +318,7 @@ sequenceDiagram
 **约束。** 构建期无需网络访问、无第二个运行时、无外部资源路径。容器镜像只额外添加一个
 非 root 用户、一个健康检查与该二进制。
 
-**实现需求。** REQ-0063, REQ-0065, REQ-0092
+**实现需求。** REQ-0063, REQ-0065, REQ-0091, REQ-0092, REQ-0093
 
 ## 5. 端口与适配器
 

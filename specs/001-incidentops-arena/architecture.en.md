@@ -165,7 +165,7 @@ bookkeeping discipline that decays.
 
 **Realises.** REQ-0001, REQ-0005
 
-<!-- sdd:item id=ARC-003 stage=architect status=approved derives_from=REQ-0003,REQ-0053,REQ-0062 -->
+<!-- sdd:item id=ARC-003 stage=architect status=approved derives_from=REQ-0003,REQ-0052,REQ-0053,REQ-0062 -->
 ### ARC-003 — Case state is a fold over an append-only log
 
 **Element.** `Event` records with contiguous sequence numbers, and a `Case` projection
@@ -177,9 +177,9 @@ because they are produced by the same function.
 **Constraints.** No component writes a projection field directly. Replay from empty MUST
 yield an equal projection. Events are never mutated or deleted.
 
-**Realises.** REQ-0003, REQ-0053, REQ-0062
+**Realises.** REQ-0003, REQ-0052, REQ-0053, REQ-0062
 
-<!-- sdd:item id=ARC-004 stage=architect status=approved derives_from=REQ-0001,REQ-0004,REQ-0061 -->
+<!-- sdd:item id=ARC-004 stage=architect status=approved derives_from=REQ-0001,REQ-0004,REQ-0061,REQ-0080,REQ-0081 -->
 ### ARC-004 — Agents are pure; the orchestrator is the single writer
 
 **Element.** `Agent.Run(ctx, Snapshot) ([]Contribution, error)` plus an orchestrator
@@ -192,7 +192,7 @@ sequence)` — never inside an agent, never from a clock or a random source. Col
 contributions are sorted by `(role order, agent-local index)` before application, so
 completion order cannot influence the result.
 
-**Realises.** REQ-0001, REQ-0004, REQ-0061
+**Realises.** REQ-0001, REQ-0004, REQ-0061, REQ-0080, REQ-0081
 
 <!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090 -->
 ### ARC-005 — The Reasoner port separates what to think from how to think
@@ -214,7 +214,7 @@ so the offline system is a working product, not a placeholder.
 
 **Realises.** REQ-0011, REQ-0020, REQ-0090
 
-<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0016,REQ-0082 -->
+<!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082 -->
 ### ARC-006 — Signal ports are fixture-first
 
 **Element.** Six ports — metric, log, change, topology, knowledge, actuator — each with
@@ -227,7 +227,7 @@ truncation. Fixture data is declarative case data (ARC-006 with REQ-0082), so a 
 fault scenario is a data file, not a code change. The live adapter for the actuator may
 target only the demo stack.
 
-**Realises.** REQ-0010, REQ-0016, REQ-0082
+**Realises.** REQ-0010, REQ-0012, REQ-0013, REQ-0014, REQ-0015, REQ-0016, REQ-0082
 
 <!-- sdd:item id=ARC-007 stage=architect status=approved derives_from=REQ-0021,REQ-0035 -->
 ### ARC-007 — Evidence coverage is a lattice, and progression is guarded by it
@@ -284,7 +284,7 @@ rule's absence is detectable by a test.
 
 **Realises.** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036
 
-<!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0041,REQ-0042,REQ-0043,REQ-0044 -->
+<!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0040,REQ-0041,REQ-0042,REQ-0043,REQ-0044,REQ-0045,REQ-0046 -->
 ### ARC-010 — The policy engine is a pre-execution chokepoint
 
 **Element.** A single evaluation function invoked at two moments: when an action is
@@ -298,9 +298,9 @@ Denials are unconditional for shell, SQL, deletion and cross-service bulk operat
 these are refused as *categories*, before any allowlist is consulted. Retrieved content
 can never reach policy input; the executor accepts typed actions only.
 
-**Realises.** REQ-0041, REQ-0042, REQ-0043, REQ-0044
+**Realises.** REQ-0040, REQ-0041, REQ-0042, REQ-0043, REQ-0044, REQ-0045, REQ-0046
 
-<!-- sdd:item id=ARC-011 stage=architect status=approved derives_from=REQ-0031,REQ-0051,REQ-0060,REQ-0094 -->
+<!-- sdd:item id=ARC-011 stage=architect status=approved derives_from=REQ-0031,REQ-0050,REQ-0051,REQ-0060,REQ-0094 -->
 ### ARC-011 — Bounded budgets are the termination guarantee
 
 **Element.** A round budget, per-round hypothesis and critique caps, and an evidence
@@ -313,7 +313,7 @@ accepts and verification never succeeds.
 never silently drops information: unmet demands, truncated evidence and unverified
 recoveries are recorded and surface in the report.
 
-**Realises.** REQ-0031, REQ-0051, REQ-0060, REQ-0094
+**Realises.** REQ-0031, REQ-0050, REQ-0051, REQ-0060, REQ-0094
 
 <!-- sdd:item id=ARC-012 stage=architect status=approved derives_from=REQ-0064 -->
 ### ARC-012 — Event fan-out is buffered per subscriber with a resumable cursor
@@ -345,7 +345,7 @@ it, a database adapter implements the same port without touching any plane above
 
 **Realises.** REQ-0002, REQ-0003
 
-<!-- sdd:item id=ARC-014 stage=architect status=approved derives_from=REQ-0063,REQ-0065,REQ-0092 -->
+<!-- sdd:item id=ARC-014 stage=architect status=approved derives_from=REQ-0063,REQ-0065,REQ-0091,REQ-0092,REQ-0093 -->
 ### ARC-014 — One binary, embedded console, embedded fixtures
 
 **Element.** A single executable serving the API, the event stream and the
@@ -357,7 +357,7 @@ misconfigure.
 **Constraints.** No build-time network access, no second runtime, no external asset
 path. The container image adds only a non-root user, a health check and the binary.
 
-**Realises.** REQ-0063, REQ-0065, REQ-0092
+**Realises.** REQ-0063, REQ-0065, REQ-0091, REQ-0092, REQ-0093
 
 ## 5. Ports and adapters
 
