@@ -1,6 +1,6 @@
 {
   "sddVersion": "1.0.0",
-  "sealedAt": "2026-08-05T05:32:27Z",
+  "sealedAt": "2026-08-05T10:00:24Z",
   "items": {
     "ADR-001": {
       "hash": "042ab491cf6bfc8c6fd827484c62231a5461575aa66e323f819683eb46a8ea7d",
@@ -1551,7 +1551,7 @@
       "file": "specs/000-sdd-framework/framework.en.md"
     },
     "TC-9013": {
-      "hash": "32125e277a99d38ea1458e38ecaa8c5332b3864719611c5423b09902fe54e21f",
+      "hash": "5020de20f9e25e504c5adc125bc78ac9771b6fa9a0a38b7b0925ec3065bef9a0",
       "stage": "verify",
       "status": "approved",
       "file": "specs/000-sdd-framework/framework.en.md"

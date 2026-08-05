@@ -8,6 +8,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/orchestrator"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
+	"github.com/zlrrr/mutil-agent-system/internal/signal/fixture"
 )
 
 // sdd:verify TC-0060
@@ -251,4 +252,63 @@ func lower(s string) string {
 		}
 	}
 	return string(b)
+}
+
+// sdd:verify TC-0052
+func TestFailedRecoveryReturns(t *testing.T) {
+	// A recording actuator with no inner target accepts the call but never flips the
+	// environment to recovered, so verification observes no improvement.
+	recorder := &fixture.RecordingActuator{}
+	b := build(t, func(p *arena.Params) { p.Actuator = recorder })
+	c := runToHalt(t, b, domain.ModeMultiWithCritic)
+
+	a, ok := c.PendingAction()
+	if !ok {
+		t.Fatalf("the case did not reach the approval gate (status %s)", c.Status)
+	}
+	acted := a.HypothesisID
+
+	c, err := b.Engine.Decide(context.Background(), c.ID, a.ID, domain.ApprovalDecision{
+		Decision: "approved", By: "demo-operator",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if recorder.Count() != 1 {
+		t.Fatalf("the actuator was invoked %d time(s), want 1", recorder.Count())
+	}
+
+	recovered, any := c.Recovered()
+	if !any {
+		t.Fatal("no verification was recorded")
+	}
+	if recovered {
+		t.Fatal("this test needs a run in which the signals do not recover")
+	}
+
+	// The hypothesis that motivated the action is challenged, not left standing.
+	var challenged bool
+	for _, h := range c.Hypotheses {
+		if h.ID == acted && h.Status == domain.HypothesisChallenged {
+			challenged = true
+		}
+	}
+	if !challenged {
+		t.Errorf("the acted-upon hypothesis %s was not marked challenged", acted)
+	}
+
+	// With budget remaining the case returns to collection; either way it terminates.
+	var returned bool
+	for _, ev := range c.Timeline {
+		if ev.Type == domain.EvStateChanged &&
+			containsFold(ev.Summary, "verifying -> collecting") {
+			returned = true
+		}
+	}
+	if c.Round < reasoner.DefaultConfig().MaxRounds && !returned {
+		t.Error("with budget remaining a failed recovery must return to investigation")
+	}
+	if !c.Status.Terminal() {
+		t.Errorf("status = %s; the case must still terminate", c.Status)
+	}
 }

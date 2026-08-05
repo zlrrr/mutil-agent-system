@@ -1,0 +1,37 @@
+# Alert rules for the demo stack. These are the alerts the arena investigates: each
+# corresponds to a fault case in the embedded catalog.
+groups:
+  - name: order-api
+    rules:
+      - alert: OrderApiHighErrorRate
+        expr: http_5xx_rate{service="order-api"} > 0.10
+        for: 1m
+        labels:
+          severity: P1
+          team: checkout
+          env: demo
+        annotations:
+          summary: "5xx rate above 10% for 5 minutes; p99 latency above 2s"
+          case_ref: C1
+
+      - alert: OrderApiHighLatency
+        expr: http_request_duration_mean_ms{service="order-api"} > 800
+        for: 1m
+        labels:
+          severity: P2
+          team: checkout
+          env: demo
+        annotations:
+          summary: "p99 latency above 1.5s; slow query log growing"
+          case_ref: C3
+
+      - alert: OrderApiPoolSaturated
+        expr: db_pool_saturation{service="order-api"} >= 0.95
+        for: 1m
+        labels:
+          severity: P1
+          team: checkout
+          env: demo
+        annotations:
+          summary: "database connection pool has been at capacity for a minute"
+          case_ref: C1

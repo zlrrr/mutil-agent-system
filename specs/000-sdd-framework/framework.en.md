@@ -701,7 +701,7 @@ contains the goal-to-requirement edge.
 
 **Test function.** `TestMatrixAndGraph` in `internal/sdd/matrix_test.go`
 
-<!-- sdd:item id=TC-9013 stage=verify status=approved derives_from=REQ-9013 -->
+<!-- sdd:item id=TC-9013 stage=verify status=approved derives_from=REQ-9013,REQ-0091 -->
 ### TC-9013 — The module declares no external dependency
 
 **Level.** governance

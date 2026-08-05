@@ -1,0 +1,340 @@
+---
+id: MANUAL-001
+lang: en
+counterpart: user-manual.zh.md
+doc_version: 1.0.0
+status: approved
+stage: constitution
+---
+
+# IncidentOps Arena — User Manual
+
+## 1. What this system is
+
+IncidentOps Arena investigates a production alert with a team of agents that each hold
+one kind of evidence, then makes one of them argue against the others.
+
+The problem it addresses is not that nobody looks at an incident. It is that the first
+coherent story tends to end the search. Given a log full of `connection timeout`, a
+single reasoner will confidently narrate a database outage — and stop. Nothing in a
+single pass is structurally obliged to ask *what else would produce this evidence?*
+
+So the system splits evidence gathering by source, and pays one role to disagree. That
+role has real authority: it can demand specific additional evidence, which sends the
+investigation back for another round, and it can refuse to let a conclusion proceed to
+remediation.
+
+**What it is not.** It does not repair production systems by itself. Every action that
+would change a target system above the low-risk class stops at an approval gate until a
+person decides. It is not an "LLM application" either: the default reasoning strategy is
+a deterministic rule engine over a fault signature catalog, which is why the whole thing
+runs offline and reproducibly. A model-backed reasoner is a documented substitution
+behind the same port — see section 9.
+
+## 2. Installation
+
+### 2.1 With Docker
+
+The container is the recommended deliverable. It carries the API, the console, the
+fault case catalog and the command line tools.
+
+```bash
+docker build -f deploy/docker/Dockerfile -t incidentops-arena:0.1.0-mvp .
+docker run --rm -p 8080:8080 incidentops-arena:0.1.0-mvp
+```
+
+Then open <http://localhost:8080>.
+
+The image runs as a non-root user, declares a health check on `/healthz`, and stores
+case logs in the `/data` volume. Nothing inside it reaches the network.
+
+### 2.2 From source
+
+Go 1.22 or newer is the only requirement. The module has no third-party dependencies,
+so there is nothing to download.
+
+```bash
+make build          # produces ./bin/{arena,evalctl,faultctl,sddctl,demo-order-api}
+make check          # vet, the full test suite, and the governance gate
+./bin/arena serve
+```
+
+### 2.3 The full demo stack
+
+To drive the same scenario against a live service rather than fixture data:
+
+```bash
+make up             # arena, the demo order service, a traffic generator, Prometheus
+```
+
+| Service | Address | Purpose |
+|---|---|---|
+| arena | <http://localhost:8080> | API and console |
+| order-api | <http://localhost:8081> | the demo target, with a configurable connection pool |
+| prometheus | <http://localhost:9090> | scrapes the demo target and holds the alert rules |
+
+`make down` stops the stack and removes its volumes.
+
+## 3. The five-minute walkthrough
+
+This is the reference scenario, `C1`. It runs offline and produces the same result
+every time.
+
+```bash
+make demo
+```
+
+You will see the investigation reach the approval gate, approve its own action (the
+demo command does this so the walkthrough completes), verify recovery, and print the
+report. What happened, in order:
+
+**Round 1 — the plausible wrong answer.** Five collectors run in parallel with their
+default queries. Metrics finds the error rate, latency and request rate all elevated.
+Logs finds 184 database connection timeouts. Topology confirms `order-api` is the
+earliest anomalous service. Knowledge matches two runbooks.
+
+The analysis role ranks three explanations:
+
+| Rank | Explanation | Score |
+|---|---|---|
+| 1 | A traffic increase exceeded capacity | 0.49 |
+| 2 | The database connection pool was exhausted | 0.40 |
+| 3 | The database became unavailable | 0.35 |
+
+The leader is **wrong**, and it is wrong for an understandable reason: traffic really
+did rise, and nothing yet contradicts that story.
+
+**The critic intervenes.** Four independent rules fire. The gap between the top two is
+0.09, inside the 0.15 close-call margin, so the ranking is not yet meaningful. The pool
+explanation requires a saturation metric that nobody queried. It also requires a
+configuration change, and the default change query only looks back to the alert.
+Nothing has ruled out the rival explanations.
+
+The critic issues four demands:
+
+- the database connection pool saturation metric
+- configuration changes in the 30 minutes before onset
+- the database availability metric
+- a historical traffic comparison at equal load
+
+**Round 2 — the demands are answered.** The pool metric comes back saturated. The
+extended change query finds `DB_POOL_SIZE` changed from `20` to `2` at 10:05:30, ninety
+seconds before the pool saturated. The historical comparison shows an equal peak served
+two days earlier with a 0.20% error rate — which is counter-evidence against the traffic
+explanation.
+
+The ranking reorders:
+
+| Rank | Explanation | Score | Note |
+|---|---|---|---|
+| 1 | The connection pool size was reduced, exhausting the pool | 0.94 | now supported by five evidence kinds |
+| 2 | The database became unavailable | 0.37 | availability metric shows the database is up |
+| 3 | A traffic increase exceeded capacity | 0.29 | carries counter-evidence, penalised 0.20 |
+
+**The gate.** Remediation proposes `set_config order-api DB_POOL_SIZE 20` at medium
+risk, with a rollback to `2` and verification against the error rate and latency. The
+state machine stops. No actuator has been invoked. To see this for yourself:
+
+```bash
+make demo-gate      # runs to the gate and stops
+```
+
+**After approval.** The executor re-checks policy against the action as it now stands,
+invokes the actuator, and the verification role re-queries both signals over a
+post-action window. The error rate falls from a mean of 0.129 to 0.003 and latency from
+1623ms to 190ms; both are reported as recovered. The report is written and the case
+closes.
+
+## 4. Using the console
+
+Open <http://localhost:8080>, pick a fault case and press **Open investigation**.
+
+| Region | What it shows |
+|---|---|
+| Summary | The alert, the accepted root cause, its confidence and the critic's verdict |
+| Agent timeline | Every event as it happens, streamed live |
+| Evidence | Grouped by kind, each item with its identifier and the exact query behind it |
+| Hypotheses | Ranked, each with the full six-term score breakdown and its evidence chain |
+| Adversarial review | Every critique with its rule, verdict and challenge, plus the evidence demanded |
+| Remediation | The proposed action, its risk, rollback and verification, with the approval control |
+| Report | The rendered root-cause report, also downloadable as Markdown or JSON |
+
+Every evidence identifier on the page resolves to a `RawRef` — the query that produced
+it. That is the point: a claim you cannot trace is a claim you cannot check.
+
+## 5. The command line
+
+```bash
+arena serve   --addr :8080 --store memory|file --data ./data
+arena demo    --case C1 --mode multi_with_critic --approve --out report.md
+arena cases
+evalctl run   --cases C1,C2 --out docs/evaluation.md
+faultctl inject|restore|status --case C1 --target http://localhost:8081
+sddctl        validate|lint|trace|drift|seal|gate|impact|matrix|graph
+```
+
+Configuration precedence is flag, then environment variable, then default:
+
+| Variable | Default | Effect |
+|---|---|---|
+| `ARENA_ADDR` | `:8080` | listen address |
+| `ARENA_STORE` | `memory` | `memory` or `file` |
+| `ARENA_DATA` | `./data` | directory for the file store |
+| `FAULTCTL_TARGET` | `http://localhost:8081` | demo service address |
+
+## 6. The API
+
+| Method and path | Purpose |
+|---|---|
+| `POST /api/cases` | Open a case from an alert, or from a `case_ref` alone |
+| `GET /api/cases` | List cases, newest first |
+| `GET /api/cases/{id}` | The full case projection |
+| `GET /api/cases/{id}/events` | The event log, optionally `?from=N` |
+| `GET /api/cases/{id}/stream` | Live server-sent events, resumable via `Last-Event-ID` |
+| `POST /api/cases/{id}/actions/{actionID}/decision` | Record an approval decision |
+| `GET /api/cases/{id}/report.md` | The report as Markdown |
+| `GET /api/cases/{id}/report.json` | The report as JSON |
+| `GET /api/catalog/cases` | The reproducible fault cases |
+| `GET /healthz` | Health probe |
+
+Opening a case from an alert:
+
+```bash
+curl -sS localhost:8080/api/cases -H 'content-type: application/json' -d '{
+  "alert_name": "OrderApiHighErrorRate",
+  "service": "order-api",
+  "severity": "P1",
+  "starts_at": "2026-07-26T10:07:00Z",
+  "case_ref": "C1"
+}'
+```
+
+Approving the action it proposes:
+
+```bash
+curl -sS -X POST \
+  localhost:8080/api/cases/inc-445761e8c3/actions/a-remediation-001/decision \
+  -H 'content-type: application/json' \
+  -d '{"decision":"approved","by":"you","comment":"restore the pool size"}'
+```
+
+Validation errors return `400` with `{"error": "...", "field": "..."}`; an unknown case
+returns `404`.
+
+## 7. The safety model
+
+This is the part worth reading carefully, because it is what makes the system safe to
+point at anything.
+
+**Read-only tools run autonomously. Writes do not.** Every action carries a risk class.
+`low` may execute automatically; `medium` and `high` halt the state machine until a
+person records a decision.
+
+**Some things are refused as categories, before any allowlist is consulted.** Arbitrary
+shell, free-form SQL, resource deletion and cross-service bulk operations are denied
+unconditionally. No configuration can enable them, and an approval does not override
+them.
+
+**Policy is checked twice.** Once when an action is proposed, and again in the instant
+before it executes — against the action exactly as it then stands. An action whose
+arguments changed after approval is refused as tampered. A policy tightened after
+approval refuses the action it previously allowed.
+
+**Retrieved content is data, never instruction.** Log lines, commit messages, runbooks
+and tickets enter only as evidence payloads. They cannot alter agent roles, tool
+selection, policy or approval state. The executor accepts typed actions only. The
+reference scenario's fixture deliberately contains a log line instructing the system to
+run `rm -rf` and restart every service; it produces no action, and the test suite
+asserts that.
+
+**Every decision is auditable.** Approvals record the decision, the identity, the
+timestamp and the comment. Executions record the outcome, the duration and the target's
+response. Both appear in the event log and in the report.
+
+The allowlist ships with these defaults and is configuration, not code:
+
+| Category | Permitted |
+|---|---|
+| Services | `order-api`, `payment-api`, `inventory-api`, `checkout-web` |
+| Tools | `set_config`, `restart_service`, `scale_service`, `create_ticket` |
+| Configuration keys | `DB_POOL_SIZE`, `FEATURE_FLAG_SAFE_MODE`, `RATE_LIMIT_QPS`, `PAYMENT_URL` |
+| Value ranges | `DB_POOL_SIZE` 1–200, `RATE_LIMIT_QPS` 1–10000 |
+
+## 8. Evaluating the claim
+
+The system claims that the adversarial flow beats a single pass. That claim is computed,
+not asserted:
+
+```bash
+make eval
+```
+
+Three modes run over **identical** fixture inputs, so a difference is attributable to
+the flow rather than to the data:
+
+- `single` — one agent with every tool, one pass, no critique
+- `multi_no_critic` — the collectors and the analysis role, no adversarial round
+- `multi_with_critic` — the full flow
+
+Read the numbers with two caveats, both of which the report prints alongside them.
+First, the sample is three fault cases; a 100% top-1 accuracy on three cases is a
+statement about three cases. Second, the single-agent baseline is given the same tools
+and the same default queries as the full flow — it models "one context window, one
+look", not a weaker toolset. That is the fairest baseline available here, and it is
+also the one that makes the comparison meaningful.
+
+## 9. Extending the system
+
+**Adding a fault scenario** is a data change. Drop a `case-*.json` into
+`internal/catalog/data/` declaring the alert, the fixture signals, the expected root
+cause and the expected remediation. The evaluation picks it up with no code change.
+
+**Adding a fault signature** is also data: declare the evidence patterns it requires,
+the mechanism narrative it produces, the discriminating evidence that would refute it,
+and optionally the remediation it implies.
+
+**Substituting a model-backed reasoner** means implementing one interface:
+
+```go
+type Reasoner interface {
+    Hypothesise(ctx context.Context, s domain.Snapshot) ([]domain.Hypothesis, error)
+    Critique(ctx context.Context, s domain.Snapshot) ([]domain.Critique, []domain.EvidenceDemand, error)
+}
+```
+
+Nothing above the port changes: the same contracts, the same state machine, the same
+storage. Model output is treated as untrusted structured data and passes exactly the
+same validation, evidence binding and policy checks as rule output. The deterministic
+adapter remains the default for tests, because a suite cannot assert on a sampled
+distribution.
+
+**Adding a live signal source** means implementing one of the six port interfaces in
+`internal/signal` and selecting it in `internal/arena`.
+
+## 10. Troubleshooting
+
+| Symptom | Cause and remedy |
+|---|---|
+| `fault case "X" is not in the catalog` | Run `arena cases` for the available identifiers |
+| A case is stuck at `awaiting_approval` | That is the design. Approve or reject it in the console or through the decision endpoint |
+| The console timeline stops updating | The stream reconnects on its own and resumes from its last sequence; reload if it does not |
+| `case ... already exists` | The case identifier is derived from the alert, so the same alert reopens the same case. Change the alert's start time or use a different case |
+| The demo stack starts but `faultctl` cannot reach the target | Check `docker compose ps`; `faultctl --target` must point at the published `order-api` port |
+| `sddctl validate` reports stale items | An upstream specification changed. Run `sddctl drift` for the full impact set, update each artifact, then `sddctl seal` |
+| `go test` fails on `TestPlaneDependencies` | A package imported across an architectural boundary. The failure names both packages and the rule |
+
+## 11. How this repository is developed
+
+Every artifact here — goals, requirements, architecture, designs, tasks, code and tests
+— is linked in a single traceable chain, and the link is machine-checked. Changing a
+goal makes every downstream artifact visibly stale until it is revisited.
+
+```bash
+make sdd-validate          # bilingual parity, traceability and drift
+make sdd-impact ID=G-002   # what changing this goal would oblige you to revisit
+make sdd-matrix            # regenerate the requirement-to-source matrix
+```
+
+The full process is documented in `docs/sdd-workflow.en.md`, and the rules it enforces
+in `.sdd/memory/constitution.en.md`. Both exist in Chinese as well — that pairing is
+itself one of the rules, and `sddctl lint` enforces it.

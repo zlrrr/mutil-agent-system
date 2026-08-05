@@ -317,7 +317,7 @@ func TestTimeWindow(t *testing.T) {
 		t.Error("the window must exclude times before its start")
 	}
 	ext := w.Extend(30 * time.Minute)
-	if !ext.Start.Equal(start.Add(-30 * time.Minute)) || !ext.End.Equal(w.End) {
+	if !ext.Start.Equal(start.Add(-30*time.Minute)) || !ext.End.Equal(w.End) {
 		t.Errorf("Extend moved the wrong endpoint: %s", ext)
 	}
 }

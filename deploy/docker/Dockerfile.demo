@@ -1,0 +1,23 @@
+# Demo target service for the live stack. Same dependency-free build as the arena
+# image: the module has no requires, so the build never reaches a module proxy.
+
+FROM golang:1.24-alpine AS build
+WORKDIR /src
+COPY go.mod ./
+COPY cmd ./cmd
+COPY internal ./internal
+ENV CGO_ENABLED=0 GOFLAGS=-trimpath GOPROXY=off
+RUN go build -ldflags="-s -w" -o /out/demo-order-api ./cmd/demo-order-api
+
+FROM alpine:3.20
+RUN apk add --no-cache wget \
+ && addgroup -g 10002 -S demo \
+ && adduser  -u 10002 -S -G demo demo
+COPY --from=build /out/demo-order-api /usr/local/bin/demo-order-api
+USER demo
+ENV ORDER_API_ADDR=:8081 DB_POOL_SIZE=20
+EXPOSE 8081
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:8081/healthz || exit 1
+ENTRYPOINT ["demo-order-api"]
+CMD ["serve"]

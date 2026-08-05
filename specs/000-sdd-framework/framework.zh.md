@@ -649,7 +649,7 @@ front matter。
 
 **测试函数。** `internal/sdd/matrix_test.go` 中的 `TestMatrixAndGraph`
 
-<!-- sdd:item id=TC-9013 stage=verify status=approved derives_from=REQ-9013 -->
+<!-- sdd:item id=TC-9013 stage=verify status=approved derives_from=REQ-9013,REQ-0091 -->
 ### TC-9013 — 模块未声明任何外部依赖
 
 **层级。** governance

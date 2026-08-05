@@ -74,6 +74,12 @@ func (r *RuleReasoner) Hypothesise(_ context.Context, s domain.Snapshot) ([]doma
 		// new evidence must be able to clear.
 		if prev, ok := existing[match.Signature.ID]; ok {
 			h.ID = prev.ID
+			// A hypothesis that was acted upon without restoring the signals stays
+			// challenged: that outcome does not stop being true in a later round,
+			// unlike a critique the round's new evidence may have answered.
+			if prev.Status == domain.HypothesisChallenged {
+				h.Status = domain.HypothesisChallenged
+			}
 			if prev.Resolved != nil {
 				h.Resolved = map[string]bool{}
 				for k, v := range prev.Resolved {

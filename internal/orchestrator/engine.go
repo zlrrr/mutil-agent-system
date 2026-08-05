@@ -262,10 +262,18 @@ func (e *Engine) Advance(ctx context.Context, caseID string) (*domain.Case, erro
 		}
 		recovered, any := c.Recovered()
 		switch {
-		case any && !recovered && e.budgetRemaining(c):
-			next, reason = domain.StatusCollecting, "the signals did not recover; returning to investigation"
 		case any && !recovered:
-			next, reason = domain.StatusReporting, "the signals did not recover and the round budget is exhausted"
+			// An action that did not work is evidence against the hypothesis that
+			// motivated it, so the hypothesis is challenged rather than left standing
+			// (REQ-0051).
+			events = append(events, e.challengeActedHypothesis(c)...)
+			if e.budgetRemaining(c) {
+				next, reason = domain.StatusCollecting,
+					"the signals did not recover; returning to investigation"
+			} else {
+				next, reason = domain.StatusReporting,
+					"the signals did not recover and the round budget is exhausted"
+			}
 		default:
 			next, reason = domain.StatusReporting, "recovery verified"
 		}
@@ -310,6 +318,27 @@ func (e *Engine) Advance(ctx context.Context, caseID string) (*domain.Case, erro
 		return nil, err
 	}
 	return c, nil
+}
+
+// challengeActedHypothesis marks the hypothesis behind a failed remediation as
+// challenged. Acting on an explanation and observing no recovery is a result, and it
+// belongs on the hypothesis rather than only in the verification record.
+func (e *Engine) challengeActedHypothesis(c *domain.Case) []domain.Event {
+	action, ok := c.ExecutedAction()
+	if !ok {
+		return nil
+	}
+	for _, h := range c.Hypotheses {
+		if h.ID != action.HypothesisID || h.Status == domain.HypothesisChallenged {
+			continue
+		}
+		updated := h
+		updated.Status = domain.HypothesisChallenged
+		return []domain.Event{e.event(c, domain.RoleVerification, domain.EvHypothesisScored,
+			fmt.Sprintf("%q is challenged: acting on it did not restore the signals", h.Claim),
+			h.ID, updated)}
+	}
+	return nil
 }
 
 // investigationPlan names the roles triage will fan out to, so the plan is visible in

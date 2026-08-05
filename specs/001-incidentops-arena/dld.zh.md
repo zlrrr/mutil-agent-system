@@ -714,14 +714,14 @@ reporting      -> closed
 
 | 假设 | metric | log | change | topo | hist | verif | 总分 |
 |---|---|---|---|---|---|---|---|
-| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.02 | 0.05 | **0.47** |
-| `sig-db-pool-exhaustion` | 0.00 | 0.25 | 0.00 | 0.10 | 0.06 | 0.05 | **0.46** |
-| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.03 | 0.05 | **0.43** |
+| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.04 | 0.05 | **0.49** |
+| `sig-db-pool-exhaustion` | 0.00 | 0.25 | 0.00 | 0.10 | 0.00 | 0.05 | **0.40** |
+| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.00 | 0.00 | **0.35** |
 
-领先假设是**错的**，前两名差值为 0.01——低于 `closeCallMargin`——且领先者低于
-`acceptThreshold`。`close_call`、`alternative_explanation` 与 `coverage_gap` 全部触发，
-产生对连接池饱和度指标、`changeLookback` 范围内的配置变更历史，以及等负载历史峰值对比的
-索证。
+领先假设是**错的**，前两名差值为 0.09——低于 `closeCallMargin`——且领先者低于
+`acceptThreshold`。`close_call`、`alternative_explanation`、`coverage_gap` 与
+`unverifiable_remediation` 全部触发，产生对连接池饱和度指标、`changeLookback` 范围内的
+配置变更历史、数据库可用性指标，以及等负载历史峰值对比的索证。
 
 **第 2 轮 — 索证驱动的查询。** `db_pool_in_use` 返回饱和（容量 2，峰值 2，起点 10:06）；
 扩展窗口内的变更查询返回 10:05:30 的 `DB_POOL_SIZE 20 → 2`；流量对比返回两天前的等负载
@@ -729,9 +729,9 @@ reporting      -> closed
 
 | 假设 | metric | log | change | topo | hist | verif | 惩罚 | 总分 |
 |---|---|---|---|---|---|---|---|---|
-| `sig-db-pool-exhaustion` | 0.30 | 0.25 | 0.20 | 0.10 | 0.06 | 0.05 | 0.00 | **0.96** |
-| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.03 | 0.05 | 0.00 | **0.43** |
-| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.02 | 0.05 | 0.20 | **0.27** |
+| `sig-db-pool-exhaustion` | 0.30 | 0.25 | 0.20 | 0.10 | 0.04 | 0.05 | 0.00 | **0.94** |
+| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.02 | 0.00 | 0.00 | **0.37** |
+| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.04 | 0.05 | 0.20 | **0.29** |
 
 排序发生了变化，且首位现在是正确的。时序成立（10:05:30 < 10:06），全部索证已满足，覆盖
 四个类别，总分越过阈值——因此裁决为 `accept`，case 推进到处置阶段，动作为

@@ -10,7 +10,17 @@
     "languages": ["en", "zh"],
     "primary": "en",
     "pattern": "<base>.<lang>.md",
-    "exempt": ["README.md", "project.md", "CHANGELOG.md"]
+    "exempt": [
+      "README.md",
+      "README.zh-CN.md",
+      "project.md",
+      "CHANGELOG.md",
+      "docs/traceability-matrix.md",
+      "docs/evaluation.md",
+      "docs/sample-report.md",
+      "docs/artifact-graph.md"
+    ],
+    "exemptNote": "Generated artifacts and the repository README, which carries its own language pair by file name rather than by suffix."
   },
   "stages": [
     {

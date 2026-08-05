@@ -773,15 +773,16 @@ collector's default pass covers the incident window only, so the 10:05:30 deploy
 
 | Hypothesis | metric | log | change | topo | hist | verif | total |
 |---|---|---|---|---|---|---|---|
-| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.02 | 0.05 | **0.47** |
-| `sig-db-pool-exhaustion` | 0.00 | 0.25 | 0.00 | 0.10 | 0.06 | 0.05 | **0.46** |
-| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.03 | 0.05 | **0.43** |
+| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.04 | 0.05 | **0.49** |
+| `sig-db-pool-exhaustion` | 0.00 | 0.25 | 0.00 | 0.10 | 0.00 | 0.05 | **0.40** |
+| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.00 | 0.00 | **0.35** |
 
-The leading hypothesis is **wrong**, the top-two gap is 0.01 — below
+The leading hypothesis is **wrong**, the top-two gap is 0.09 — below
 `closeCallMargin` — and the leader is below `acceptThreshold`. `close_call`,
-`alternative_explanation` and `coverage_gap` all fire, producing demands for the pool
-saturation metric, the configuration change history over `changeLookback`, and a
-historical peak traffic comparison at equal load.
+`alternative_explanation`, `coverage_gap` and `unverifiable_remediation` all fire,
+producing demands for the pool saturation metric, the configuration change history over
+`changeLookback`, the database availability metric, and a historical peak traffic
+comparison at equal load.
 
 **Round 2 — demand-driven queries.** `db_pool_in_use` returns saturated (capacity 2, peak
 2, onset 10:06); the change query over the extended window returns `DB_POOL_SIZE 20 → 2`
@@ -790,9 +791,9 @@ errors, carrying `Facts["counters"] = "sig-traffic-surge"`.
 
 | Hypothesis | metric | log | change | topo | hist | verif | penalty | total |
 |---|---|---|---|---|---|---|---|---|
-| `sig-db-pool-exhaustion` | 0.30 | 0.25 | 0.20 | 0.10 | 0.06 | 0.05 | 0.00 | **0.96** |
-| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.03 | 0.05 | 0.00 | **0.43** |
-| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.02 | 0.05 | 0.20 | **0.27** |
+| `sig-db-pool-exhaustion` | 0.30 | 0.25 | 0.20 | 0.10 | 0.04 | 0.05 | 0.00 | **0.94** |
+| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.02 | 0.00 | 0.00 | **0.37** |
+| `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.04 | 0.05 | 0.20 | **0.29** |
 
 The ranking has changed and the top-1 is now correct. Temporal order holds
 (10:05:30 < 10:06), every demand is satisfied, coverage is four kinds, and the total
