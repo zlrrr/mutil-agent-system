@@ -83,38 +83,32 @@ CON-003 要求上游变更必须一路跟到每个后代。本里程碑期间执
 | 基于模型的推理器 | 端口已定义并有文档；未接入适配器 | 章程中的开放问题 Q1：尚未选定服务商。确定性适配器是设计上的默认，而非遗漏（ADR-002） |
 | 故障样例 C4–C6 | 未编写 | 里程碑 M5。三个样例足以满足 M1 门禁；尤其是日志误导样例是用来检验过拟合的，而只有当目录不再与它同步生长时，这项检验才公平 |
 | 多租户认证 | 未实现 | 章程非目标 N6 |
-| 把分支推送到 GitHub | 被阻塞 | 见下方升级记录。所有提交都已存在于本地分支 `claude/project-spec-architecture-78dmtj`；内容没有丢失，但远端尚未收到 |
 
 ## 升级记录
 
-有一条，且它超出了规格自身能够解决的授权范围。
+有一条，已经提出并随后解决。这里保留而不是删除，因为 CON-010 要的是这个循环做了什么，
+而不只是它最后停在哪里。
 
-**推送到远端被组织策略阻断。** `git push` 返回 `403`，GitHub API 直接给出了原因：
+**提出：推送到远端曾被组织策略阻断。** `git push` 返回 `403`，API 直接给出了原因——
+*GitHub access is not enabled for this session. An org admin must connect the Claude
+GitHub App for this organization.* 全程读取都是可用的（`git ls-remote` 与 API 的读取
+端点都成功），代理也未报告任何中继失败，因此这是一条授权边界，而不是网络或凭据故障。
+三条写入路径均已尝试，且都被拒绝：
 
-> GitHub access is not enabled for this session. An org admin must connect the Claude
-> GitHub App for this organization.
-
-读取是可用的——`git ls-remote` 与 API 的读取端点都成功——因此这是一条授权边界，而不是网络
-或凭据故障，重试没有意义。三条写入路径均已尝试，且都被拒绝：
-
-| 路径 | 结果 |
+| 路径 | 阻断期间的结果 |
 |---|---|
 | 经 HTTPS 的 `git push` | `403` |
 | 用会话令牌调用 `POST /repos/.../git/refs` | `403 GitHub access is not enabled for this session` |
 | GitHub App 集成 | `403 Resource not accessible by integration` |
 
-代理未报告任何中继失败，说明传输环节没有丢包；这次拒绝是在授权层被明确发出的。因此，
-改用 API 逐文件写出不只是不现实——它同样不被允许；何况那样做还会把九次提交压成一次，
-丢弃掉本身就属于本里程碑交付内容的提交历史。
+既然拒绝发生在授权层，那么重试与绕行都是错的做法：循环就此停下，把阻塞写进本日志，
+使它随制品一同留存、而不是只活在一次对话里，并指明唯一能解除它的那个动作。
 
-**维护者需要做什么。** 为该组织连接 Claude GitHub App，或为本会话授予
-`zlrrr/mutil-agent-system` 的写权限，然后重新执行：
+**解决：写权限已授予，分支已推送。** `git push -u origin
+claude/project-spec-architecture-78dmtj` 现已成功。本地与远端的领先/落后计数均为
+`0 0`，远端因此完整承载了每一次提交、顺序与提交信息俱在——没有压缩历史，也没有逐文件
+重传。
 
-```bash
-git push -u origin claude/project-spec-architecture-78dmtj
-```
-
-所有提交都已按顺序、连同提交信息完成。该分支就其现状而言已经完整。
-
-本里程碑期间没有其他决策需要规格之外的授权：每一处歧义都能由章程、需求或宪章解决。
-章程记录的三个开放问题（Q1–Q3）没有阻塞任何 M1 工作，各自都按章程声明的默认假设推进。
+这是本里程碑中自主循环唯一一次需要它并不具备的授权（CON-010）。其余决策都不需要：
+每一处歧义都能由章程、需求或宪章解决。章程记录的三个开放问题（Q1–Q3）没有阻塞任何
+M1 工作，各自都按章程声明的默认假设推进。

@@ -86,45 +86,38 @@ Recorded here rather than implied by absence.
 | Model-backed reasoner | Port defined and documented; no adapter wired | Open question Q1 in the charter: no provider has been chosen. The deterministic adapter is the default by design, not by omission (ADR-002) |
 | Fault cases C4–C6 | Not written | Milestone M5. Three cases are enough for M1's gate; the misleading-log case in particular exists to test overfitting, which is a fair test only once the catalog has stopped growing alongside it |
 | Multi-tenant authentication | Not implemented | Charter non-goal N6 |
-| Pushing the branch to GitHub | Blocked | See the escalation below. Every commit exists locally on `claude/project-spec-architecture-78dmtj`; nothing is lost, but the remote does not yet have it |
 
 ## Escalations
 
-One, and it is outside the specification's authority to resolve.
+One was raised and has since been resolved. It is recorded rather than deleted, because
+CON-010 asks for what the loop did, not only for where it ended up.
 
-**Pushing to the remote is blocked by an organisation policy.** `git push` returns
-`403`, and the GitHub API states the reason directly:
+**Raised: pushing to the remote was blocked by an organisation policy.** `git push`
+returned `403`, and the API stated the reason directly — *GitHub access is not enabled
+for this session. An org admin must connect the Claude GitHub App for this
+organization.* Read access worked throughout (`git ls-remote` and the API's read
+endpoints both succeeded), and the agent proxy reported no relay failures, so this was
+an authorisation boundary rather than a network or credential fault. All three write
+paths were exercised and each was refused:
 
-> GitHub access is not enabled for this session. An org admin must connect the Claude
-> GitHub App for this organization.
-
-Read access works — `git ls-remote` and the API's read endpoints both succeed — so this
-is an authorisation boundary, not a network or credential fault, and retrying it would
-be pointless. All three write paths were tried and each was refused:
-
-| Path | Result |
+| Path | Result while blocked |
 |---|---|
 | `git push` over HTTPS | `403` |
 | `POST /repos/.../git/refs` with the session token | `403 GitHub access is not enabled for this session` |
 | The GitHub App integration | `403 Resource not accessible by integration` |
 
-The agent proxy reports no relay failures, so nothing is being dropped in transit; the
-refusal is issued deliberately at the authorisation layer. Writing the tree out through
-the API file by file is therefore not merely impractical — it is not permitted either,
-and it would in any case collapse nine commits into one and discard the history that is
-itself part of what this milestone delivers.
+Because the refusal was issued at the authorisation layer, retrying it and routing
+around it were both wrong: the loop stopped, wrote the blocker into this log so it would
+travel with the artifact rather than live only in a conversation, and named the single
+action that would clear it.
 
-**What a maintainer needs to do.** Connect the Claude GitHub App for the organisation,
-or grant this session write access to `zlrrr/mutil-agent-system`, then re-run:
+**Resolved: write access was granted and the branch pushed.** `git push -u origin
+claude/project-spec-architecture-78dmtj` now succeeds. Local and remote report
+`0 0` for ahead/behind, so the remote carries every commit, in order, with its message —
+no history was collapsed and nothing was re-transmitted file by file.
 
-```bash
-git push -u origin claude/project-spec-architecture-78dmtj
-```
-
-Every commit is already made, in order, with its message. The branch is complete as it
-stands.
-
-No other decision during this milestone required authority outside the specification:
-every ambiguity was resolvable from the charter, the requirements or the constitution.
-The three open questions the charter records (Q1–Q3) did not block any M1 work, and each
-proceeded under the default the charter states.
+This is the only point in the milestone where the autonomous loop needed authority it
+did not have (CON-010). No other decision required it: every ambiguity was resolvable
+from the charter, the requirements or the constitution. The three open questions the
+charter records (Q1–Q3) did not block any M1 work, and each proceeded under the default
+the charter states.
