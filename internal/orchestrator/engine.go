@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -165,9 +166,13 @@ func (e *Engine) Advance(ctx context.Context, caseID string) (*domain.Case, erro
 		reason = "alert accepted"
 
 	case domain.StatusTriaging:
-		events = append(events, e.event(c, domain.RoleOrchestrator, domain.EvAgentCompleted,
-			fmt.Sprintf("triage: %s severity %s over %s", c.Alert.Service, c.Alert.Severity,
-				c.Window()), "", nil))
+		started := e.clock.Now()
+		plan := e.investigationPlan(c)
+		triaged := e.event(c, domain.RoleOrchestrator, domain.EvAgentCompleted,
+			fmt.Sprintf("triage: %s severity %s over %s; plan: %s",
+				c.Alert.Service, c.Alert.Severity, c.Window(), plan), "", nil)
+		triaged.Duration = e.clock.Now().Sub(started)
+		events = append(events, triaged)
 		next = domain.StatusCollecting
 		reason = "investigation plan prepared"
 
@@ -305,6 +310,19 @@ func (e *Engine) Advance(ctx context.Context, caseID string) (*domain.Case, erro
 		return nil, err
 	}
 	return c, nil
+}
+
+// investigationPlan names the roles triage will fan out to, so the plan is visible in
+// the timeline rather than implied by what happens next.
+func (e *Engine) investigationPlan(c *domain.Case) string {
+	if c.Mode == domain.ModeSingle {
+		return string(domain.RoleBaseline)
+	}
+	names := make([]string, 0, len(e.agents.Collectors))
+	for _, a := range e.agents.Collectors {
+		names = append(names, string(a.Role()))
+	}
+	return strings.Join(names, ", ")
 }
 
 // afterCritique decides where a criticised case goes next. It is the junction where
