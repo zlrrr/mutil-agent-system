@@ -43,6 +43,9 @@ type Params struct {
 	// Signals selects which adapter serves each port. The zero value is the fixture
 	// profile, so a caller that says nothing gets the offline path (REQ-0098).
 	Signals profile.Config
+	// Reasoner overrides how explanations are selected. Nil means the deterministic
+	// rule engine, which is the default by design rather than by omission (ADR-002).
+	Reasoner reasoner.Reasoner
 }
 
 // NewFixtureBuild assembles an engine over the deterministic fixture adapters for one
@@ -99,7 +102,10 @@ func NewBuild(p Params) (*Build, error) {
 
 	clock := orchestrator.DefaultClock(fc.Alert)
 	pol := policy.New(polCfg)
-	rsn := reasoner.NewRuleReasoner(cat, cfg)
+	var rsn reasoner.Reasoner = reasoner.NewRuleReasoner(cat, cfg)
+	if p.Reasoner != nil {
+		rsn = p.Reasoner
+	}
 
 	engine := orchestrator.New(orchestrator.Options{
 		Agents: orchestrator.Agents{

@@ -30,6 +30,9 @@ var planes = map[string]planeSpec{
 	// all of them and below everything that consumes a port.
 	"internal/signal/profile": {4, "signal-adapter"},
 	"internal/reasoner":       {4, "reasoning"},
+	// The model adapter sits above the reasoner port it implements, and below anything
+	// that consumes a reasoner — the same shape as a signal adapter beneath its port.
+	"internal/reasoner/model": {5, "reasoning-adapter"},
 	"internal/agent":          {5, "reasoning"},
 	"internal/policy":         {5, "control"},
 	"internal/store":          {5, "control"},

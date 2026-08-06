@@ -5,6 +5,7 @@
 //	arena serve  [--addr :8080] [--store memory|file] [--data ./data]
 //	             [--signal-profile fixture|live] [--prometheus-url URL]
 //	             [--container-host HOST] [--series-map FILE]
+//	             [--reasoner rule|model] [--model-endpoint URL] [--model-name NAME]
 //	arena demo   [--case C1] [--mode multi_with_critic] [--approve] [--out report.md]
 //	arena cases
 //	arena version
@@ -30,6 +31,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/httpapi"
 	"github.com/zlrrr/mutil-agent-system/internal/policy"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
+	"github.com/zlrrr/mutil-agent-system/internal/reasoner/model"
 	"github.com/zlrrr/mutil-agent-system/internal/report"
 	"github.com/zlrrr/mutil-agent-system/internal/signal/profile"
 	"github.com/zlrrr/mutil-agent-system/internal/store"
@@ -101,6 +103,11 @@ func serve(args []string) error {
 		"container runtime host, used by the live profile")
 	seriesMap := fs.String("series-map", env("ARENA_SERIES_MAP", ""),
 		"path to a JSON file mapping series names to PromQL, used by the live profile")
+	reasonerKind := fs.String("reasoner", env("ARENA_REASONER", "rule"), "reasoner adapter: rule|model")
+	modelEndpoint := fs.String("model-endpoint", env("ARENA_MODEL_ENDPOINT", ""),
+		"chat-completions URL, required by the model reasoner")
+	modelName := fs.String("model-name", env("ARENA_MODEL_NAME", ""),
+		"model identifier, required by the model reasoner")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -118,8 +125,15 @@ func serve(args []string) error {
 	if err != nil {
 		return err
 	}
-	registry, err := arena.NewRegistryWithSignals(st, eventbus.New(),
-		reasoner.DefaultConfig(), policy.DefaultConfig(), cat, signals)
+	rsn, err := buildReasoner(*reasonerKind, *modelEndpoint, *modelName, cat)
+	if err != nil {
+		return err
+	}
+	registry, err := arena.NewRegistryWith(arena.RegistryOptions{
+		Store: st, Bus: eventbus.New(),
+		Config: reasoner.DefaultConfig(), Policy: policy.DefaultConfig(),
+		Catalog: cat, Signals: signals, Reasoner: rsn,
+	})
 	if err != nil {
 		return err
 	}
@@ -141,8 +155,8 @@ func serve(args []string) error {
 		_ = srv.Shutdown(shutdown)
 	}()
 
-	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, signals=%s, cases=%v)\n",
-		Version, *addr, *kind, signals.Profile, cat.CaseIDs())
+	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, signals=%s, reasoner=%s, cases=%v)\n",
+		Version, *addr, *kind, signals.Profile, *reasonerKind, cat.CaseIDs())
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -287,6 +301,29 @@ func buildSignalConfig(name, promURL, runtimeHost, seriesMapPath string) (profil
 		return cfg, badConfig("-signal-profile", "%w", err)
 	}
 	return cfg, nil
+}
+
+// buildReasoner resolves the reasoner adapter. Nil means the deterministic rule engine,
+// which arena treats as the default (ADR-002) — so "rule" and an unset flag agree.
+func buildReasoner(kind, endpoint, name string, cat *catalog.Catalog) (reasoner.Reasoner, error) {
+	switch kind {
+	case "rule", "":
+		return nil, nil
+	case "model":
+		// No provider has been chosen (charter Q1), so there is no default endpoint to
+		// fall back to and guessing one would be a decision this code cannot make.
+		if endpoint == "" {
+			return nil, badConfig("-model-endpoint", "required by the model reasoner")
+		}
+		if name == "" {
+			return nil, badConfig("-model-name", "required by the model reasoner")
+		}
+		return model.New(endpoint, name, cat, reasoner.DefaultConfig(), model.Options{
+			APIKey: os.Getenv("ARENA_MODEL_API_KEY"),
+		}), nil
+	default:
+		return nil, badConfig("-reasoner", "unknown adapter %q: use rule or model", kind)
+	}
 }
 
 func buildStore(kind, dir string) (store.Store, error) {

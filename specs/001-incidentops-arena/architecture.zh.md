@@ -181,7 +181,7 @@ sequenceDiagram
 
 **实现需求。** REQ-0001, REQ-0004, REQ-0061, REQ-0080, REQ-0081
 
-<!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090 -->
+<!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090,REQ-0100 -->
 ### ARC-005 — 推理器端口把"想什么"和"怎么想"分开
 
 **元素。** 一个端口，其默认适配器是基于故障签名目录的确定性规则引擎，其备选适配器由模型
@@ -196,7 +196,7 @@ sequenceDiagram
 某个端点。规则引擎是真实的推断机制——一个带机理叙述的签名目录——因此离线系统是一个可用
 产品，而不是占位符。
 
-**实现需求。** REQ-0011, REQ-0020, REQ-0090
+**实现需求。** REQ-0011, REQ-0020, REQ-0090, REQ-0100
 
 <!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082,REQ-0096,REQ-0097,REQ-0098 -->
 ### ARC-006 — 信号端口以夹具优先

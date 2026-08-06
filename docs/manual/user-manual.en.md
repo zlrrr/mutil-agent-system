@@ -337,6 +337,35 @@ same validation, evidence binding and policy checks as rule output. The determin
 adapter remains the default for tests, because a suite cannot assert on a sampled
 distribution.
 
+That adapter is implemented. It works against any chat-completions style JSON API:
+
+```bash
+arena serve \
+  --reasoner model \
+  --model-endpoint https://your-provider.example/v1/chat/completions \
+  --model-name your-model
+```
+
+The API key is read from `ARENA_MODEL_API_KEY`. There is deliberately no default
+endpoint: no provider has been chosen for this project, and a default would be a
+decision the code is not entitled to make on your behalf.
+
+**What the model is asked to do, and what it is not.** It selects which of the catalog's
+signatures the evidence supports and which evidence supports each. It does not invent
+explanations, and it does not assign scores — those are computed locally by the same
+scorer the rule engine uses, with the same weights. The reasoning behind that split is
+[ADR-007](../adr/007-model-selects-from-catalog.en.md); the short version is that a
+number a model asserts cannot be decomposed, refuted or acted on, and this system
+requires all three.
+
+Consequently the model reasoner cannot name a cause that is not in the catalog. That is
+a real limitation, stated rather than hidden: adding an explanation means adding a
+signature, which is a data change.
+
+**When the provider fails**, the adapter returns a typed error rather than an empty
+result. An empty hypothesis list means "nothing matched"; a provider that is down must
+not be able to say that.
+
 **Adding a live signal source** means implementing one of the six port interfaces in
 `internal/signal` and registering it in `internal/signal/profile`.
 

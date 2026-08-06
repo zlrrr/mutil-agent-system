@@ -859,6 +859,33 @@ discriminator is only demonstrated by a case where it must decline to object.
 
 **Verified by.** TC-0104
 
+<!-- sdd:item id=REQ-0100 stage=specify status=approved derives_from=G-005 priority=P1 -->
+### REQ-0100 — A model-backed reasoner behind the same port
+
+**Requirement.** The reasoner port MUST have a model-backed adapter that selects
+signatures from the catalog and binds evidence to them. It MUST NOT invent claims outside
+the catalog, and it MUST NOT supply scores: scoring stays deterministic, computed from the
+evidence the adapter bound (ADR-007).
+
+Every response MUST be treated as untrusted structured data. A hypothesis citing an
+evidence identifier that is not in the snapshot MUST be dropped; a signature identifier
+that is not in the catalog MUST be dropped; a verdict outside the closed set MUST be
+dropped. A malformed or unreachable provider MUST surface as a typed error, never as a
+silent empty result — an empty hypothesis list means "nothing matched", and a provider
+failure must not be able to impersonate that.
+
+**Acceptance.**
+- Given a recorded provider response selecting a catalog signature with evidence
+  identifiers from the snapshot, when the adapter maps it, then the resulting hypotheses
+  carry scores computed by the deterministic scorer, not by the provider.
+- Given a response citing an unknown evidence identifier, an unknown signature, or an
+  invalid verdict, when the adapter maps it, then those items are dropped and the rest
+  survive.
+- Given an unreachable provider, when the adapter is called, then it returns a typed
+  error rather than an empty result.
+
+**Verified by.** TC-0105, TC-0106
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

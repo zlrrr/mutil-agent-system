@@ -194,7 +194,7 @@ completion order cannot influence the result.
 
 **Realises.** REQ-0001, REQ-0004, REQ-0061, REQ-0080, REQ-0081
 
-<!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090 -->
+<!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090,REQ-0100 -->
 ### ARC-005 — The Reasoner port separates what to think from how to think
 
 **Element.** A port whose default adapter is a deterministic rule engine over a fault
@@ -212,7 +212,7 @@ assert on a sampled distribution, and a demo cannot depend on an endpoint. The r
 engine is a real inference mechanism — a signature catalog with mechanism narratives —
 so the offline system is a working product, not a placeholder.
 
-**Realises.** REQ-0011, REQ-0020, REQ-0090
+**Realises.** REQ-0011, REQ-0020, REQ-0090, REQ-0100
 
 <!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082,REQ-0096,REQ-0097,REQ-0098 -->
 ### ARC-006 — Signal ports are fixture-first

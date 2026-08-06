@@ -756,6 +756,35 @@ release。
 
 **测试函数。** `internal/orchestrator/e2e_test.go` 中的 `TestMisleadingLogsDoNotWin`
 
+### 3.13 模型推理器
+
+<!-- sdd:item id=TC-0105 stage=verify status=approved derives_from=REQ-0100 -->
+#### TC-0105 — 适配器映射服务商响应并在本地打分
+
+**层级。** unit。**验证。** REQ-0100。
+
+**步骤。** 提供一份录制的服务商响应，它选择了某个目录签名并给出取自快照的证据标识符，
+然后据此形成假设。
+
+**预期。** 返回的假设，其主张与机理来自目录签名，其支持证据恰好是被引用的那些标识符，
+其分数可拆解为所声明的加权项。服务商给出的任何分数都被忽略。
+
+**测试函数。** `internal/reasoner/model/model_test.go` 中的 `TestModelHypothesise`
+
+<!-- sdd:item id=TC-0106 stage=verify status=approved derives_from=REQ-0100 -->
+#### TC-0106 — 服务商输出不可信，且失败不等于沉默
+
+**层级。** unit。**验证。** REQ-0100。
+
+**步骤。** 依次提供引用未知证据标识符、未知签名、非法裁决、以及适配器自行发明主张的响应；
+随后提供一个非 200 状态码与一个不可达端点。
+
+**预期。** 每个非法条目被丢弃，而同一响应中的合法条目保留。没有任何服务商撰写的散文会作为
+假设主张出现。传输或状态失败返回 `ProviderError`，绝不返回空结果——空假设列表意味着"没有
+任何匹配"，出故障的服务商不得冒充这个结论。
+
+**测试函数。** `internal/reasoner/model/model_test.go` 中的 `TestModelOutputIsUntrusted`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

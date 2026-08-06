@@ -21,26 +21,48 @@ import (
 // engine shares one store and one broker — so listing and streaming work across cases
 // even though each case has its own simulated world.
 type Registry struct {
-	mu      sync.Mutex
-	store   store.Store
-	bus     *eventbus.Broker
-	cfg     reasoner.Config
-	pol     policy.Config
-	cat     *catalog.Catalog
-	signals profile.Config
-	engines map[string]*orchestrator.Engine // keyed by case identifier
-	builds  map[string]*Build
+	mu       sync.Mutex
+	store    store.Store
+	bus      *eventbus.Broker
+	cfg      reasoner.Config
+	pol      policy.Config
+	cat      *catalog.Catalog
+	signals  profile.Config
+	reasoner reasoner.Reasoner
+	engines  map[string]*orchestrator.Engine // keyed by case identifier
+	builds   map[string]*Build
+}
+
+// RegistryOptions carries everything a registry needs. Every field has a safe zero
+// value: no signal profile means fixtures, and no reasoner means the deterministic rule
+// engine (ADR-002).
+type RegistryOptions struct {
+	Store    store.Store
+	Bus      *eventbus.Broker
+	Config   reasoner.Config
+	Policy   policy.Config
+	Catalog  *catalog.Catalog
+	Signals  profile.Config
+	Reasoner reasoner.Reasoner
 }
 
 // NewRegistry builds a registry over a shared store and broker, serving every port from
-// the fixture adapters.
+// the fixture adapters and reasoning with the rule engine.
 func NewRegistry(st store.Store, bus *eventbus.Broker, cfg reasoner.Config, pol policy.Config, cat *catalog.Catalog) (*Registry, error) {
-	return NewRegistryWithSignals(st, bus, cfg, pol, cat, profile.Config{})
+	return NewRegistryWith(RegistryOptions{Store: st, Bus: bus, Config: cfg, Policy: pol, Catalog: cat})
 }
 
 // NewRegistryWithSignals builds a registry whose cases use a named adapter profile. The
 // zero profile is the fixture profile, so this and NewRegistry agree by default.
 func NewRegistryWithSignals(st store.Store, bus *eventbus.Broker, cfg reasoner.Config, pol policy.Config, cat *catalog.Catalog, signals profile.Config) (*Registry, error) {
+	return NewRegistryWith(RegistryOptions{
+		Store: st, Bus: bus, Config: cfg, Policy: pol, Catalog: cat, Signals: signals,
+	})
+}
+
+// NewRegistryWith builds a registry from a full option set.
+func NewRegistryWith(o RegistryOptions) (*Registry, error) {
+	st, bus, cfg, pol, cat, signals := o.Store, o.Bus, o.Config, o.Policy, o.Catalog, o.Signals
 	if cat == nil {
 		var err error
 		cat, err = catalog.Load()
@@ -62,8 +84,9 @@ func NewRegistryWithSignals(st store.Store, bus *eventbus.Broker, cfg reasoner.C
 	}
 	return &Registry{
 		store: st, bus: bus, cfg: cfg, pol: pol, cat: cat, signals: signals,
-		engines: map[string]*orchestrator.Engine{},
-		builds:  map[string]*Build{},
+		reasoner: o.Reasoner,
+		engines:  map[string]*orchestrator.Engine{},
+		builds:   map[string]*Build{},
 	}, nil
 }
 
@@ -96,6 +119,7 @@ func (r *Registry) Create(ctx context.Context, alert domain.Alert, mode domain.M
 	build, err := NewBuild(Params{
 		CaseID: ref, Mode: mode, Store: r.store, Bus: r.bus,
 		Config: r.cfg, Policy: r.pol, Catalog: r.cat, Signals: r.signals,
+		Reasoner: r.reasoner,
 	})
 	if err != nil {
 		return nil, err

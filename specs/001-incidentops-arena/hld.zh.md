@@ -424,6 +424,33 @@ func Build(name string, fc FaultCase, cat *Catalog, b Bounds) (signal.Set, error
 
 **细化自。** ARC-006
 
+<!-- sdd:item id=HLD-020 stage=hld status=approved derives_from=ARC-005 -->
+### HLD-020 — 基于模型的推理器适配器
+
+**目的。** 只在"判断确实有帮助"的那一处——即证据支持哪些签名——用判断替代模式匹配，同时让
+打分、反驳与处置原封不动地留在原地（ADR-007）。
+
+**公开接口面。**
+
+```go
+package model
+func New(endpoint, model string, cat *Catalog, cfg reasoner.Config, opts Options) *Reasoner
+// 实现 reasoner.Reasoner
+```
+
+**失败行为。** 不可达的服务商、非 200 状态码或无法解析的响应体都返回
+`model.ProviderError`。它绝不会被报告为空结果：空假设列表意味着"没有任何匹配"，而服务商
+故障不得冒充这个结论。
+
+响应内容是不可信的。引用了快照中不存在的证据标识符的假设会被丢弃；不在目录中的签名标识符
+会被丢弃；落在封闭集合之外的裁决会被丢弃。丢弃是逐条进行的，因此一个坏条目不会让一份本可
+使用的响应整体作废。
+
+**协作者。** 仅由入口装配。分数来自 `reasoner.Score`，使用与规则适配器相同的权重，因此
+无论排序由哪个适配器产生，它都保持可拆解、可争论。
+
+**细化自。** ARC-005
+
 ## 3. 数据模型
 
 | 实体 | 关键字段 | 归属模块 | 生命周期 |

@@ -30,6 +30,7 @@ Each wave closed only when its gate command exited zero.
 | 8 | REQ-0095 (release publishing) | `go test ./internal/httpapi/ && sddctl gate --stage deliver` | pass | TC-0092 |
 | 9 | REQ-0096..0098 (M4 live adapters) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0100, TC-0101, TC-0102, TC-0103 |
 | 10 | REQ-0099 (overfitting case C4) | `go test ./... && go run ./cmd/evalctl run` | pass | TC-0104 |
+| 11 | REQ-0100 (model reasoner) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0105, TC-0106 |
 
 ## Defects found by the checkpoints
 
@@ -49,8 +50,10 @@ because a checkpoint that never fails is not a checkpoint.
 | D9 | TC-0092 | The release pipeline's ordering assertion matched the file's own header comment, which mentions `docker push` — so it read a comment as a publishing step and failed a correct workflow | The assertion strips whole-line comments first: prose describing a pipeline cannot publish anything. Confirmed live by moving the publish step above the gates, which fails the test, and restoring it, which passes |
 | D10 | `TestPlaneDependencies` | The three new adapter packages were not in the dependency table, so nothing constrained what they could import | They were assigned ranks: the live adapters sit beside the fixture adapter as alternatives to it, and profile selection ranks above all adapters and below every port consumer |
 | D11 | Manual CLI check | `arena serve --signal-profile prod` started cleanly. An unknown profile was only rejected when the first case was created, so a mistyped deployment looked healthy and then failed one case at a time, once someone was relying on it | `profile.Config.Validate()` was added and is called at start-up; the entry point exits 2 naming the offending flag |
-| D13 | Building C4 | `sig-traffic-surge` scored 1.00 on the only term it claims and was still capped near 0.55, because terms it never required were charged as zeros. Any explanation requiring one evidence kind is therefore unacceptable at the 0.75 threshold no matter how strong its support | **Not fixed — see the known issue below.** The obvious fix makes things worse, and shipping the wrong fix would have been worse than shipping the defect |
 | D12 | Review of TC-0102 | The "adversarial payload" in the log test contained header-like bytes but no newline, so a naive line-oriented parser would have passed it too — the test asserted nothing the framed parser uniquely provides | The payload became a genuine multi-line record whose continuation begins with header bytes, and the assertion now requires both halves in one record |
+| D13 | Building C4 | `sig-traffic-surge` scored 1.00 on the only term it claims and was still capped near 0.55, because terms it never required were charged as zeros. Any explanation requiring one evidence kind is therefore unacceptable at the 0.75 threshold no matter how strong its support | **Not fixed — see the known issue below.** The obvious fix makes things worse, and shipping the wrong fix would have been worse than shipping the defect |
+| D14 | `sddctl lint` | The new detailed-design item reused `DLD-1034`, which the critique-rules item already held. The tool refused the tree rather than letting two designs answer to one identifier | Renumbered to `DLD-1035`; the source anchor followed |
+| D15 | `sddctl gate --stage architect` | REQ-0100 had no architecture item deriving from it — the same class of gap as D7, caught the same way | ARC-005, which owns the reasoner port, was extended to claim it |
 
 ## Known issues
 
@@ -133,7 +136,7 @@ Recorded here rather than implied by absence.
 
 | Item | Status | Reason |
 |---|---|---|
-| Model-backed reasoner | Port defined and documented; no adapter wired | Open question Q1 in the charter: no provider has been chosen. The deterministic adapter is the default by design, not by omission (ADR-002) |
+| A configured model provider | Adapter implemented and tested; no provider configured | Open question Q1 in the charter remains open: choosing a vendor is not this loop's decision to make. `arena serve --reasoner model --model-endpoint ... --model-name ...` works against any chat-completions API; there is deliberately no default endpoint |
 | Fault cases C5–C6 | Not written | Milestone M5. C4, the misleading-log case, is written and is the one that mattered: it is what distinguishes a discriminating critic from a biased one. C5 (victim versus source) and C6 remain |
 | Multi-tenant authentication | Not implemented | Charter non-goal N6 |
 

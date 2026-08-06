@@ -383,6 +383,38 @@ PrometheusURL, ContainerHost string; SeriesMap map[string]string}`。
 
 **检查点。** TC-0103
 
+<!-- sdd:item id=DLD-1035 stage=dld status=approved derives_from=HLD-020 -->
+### DLD-1035 — 模型推理器适配器
+
+**文件。** `internal/reasoner/model/model.go`
+
+**类型。** `Reasoner{endpoint, model string; client *http.Client; cat *catalog.Catalog;
+cfg reasoner.Config}`、`Options{Timeout time.Duration; Client *http.Client; APIKey
+string; Temperature float64}`、`ProviderError{Endpoint string; Status int; Err error}`。
+
+**行为。** `Hypothesise` 构造一个请求，描述快照中的证据——每条的标识符、类别、来源与
+摘要——以及目录中各签名的标识符与主张。它询问服务商：当前证据支持哪些签名，各自由哪些证据
+标识符支持。响应按
+`{"selections":[{"signature_id","evidence_ids":[],"reasoning"}]}` 解码。
+
+随后每个选择都在本地被校验并打分：
+
+1. 目录中不存在的 `signature_id` 被丢弃。
+2. 快照中不存在的 `evidence_ids` 条目从该选择中剔除；剔除后没有任何证据的选择被整体丢弃，
+   因为 REQ-0021 在下游本来也会拒绝它，而在此处丢弃能让原因保持清晰可读。
+3. 剩余证据被转换为 `catalog.MatchResult`，并由 `reasoner.Score` 以配置的权重打分。
+   **服务商不提供任何分数**（ADR-007）：模型断言的数字是拆不开的，而 REQ-0022 要求它能拆开。
+4. 主张与机理取自目录签名，而非取自响应，因此没有任何服务商文本会作为因果主张进入报告。
+
+`Critique` 针对
+`{"critiques":[{"hypothesis_id","category","challenge","verdict","demands":[]}]}`
+采用同样的形态，丢弃裁决落在封闭集合之外、或假设标识符未知的条目。
+
+**错误。** 传输失败、非 200 状态码或无法解码的响应体返回 `ProviderError`。一个格式正确但
+为空的响应是合法的"没有任何匹配"，返回空切片且不带错误——这两者必须保持可区分。
+
+**检查点。** TC-0105、TC-0106
+
 ## 6. 目录与推理
 
 <!-- sdd:item id=DLD-1030 stage=dld status=approved derives_from=HLD-006 -->

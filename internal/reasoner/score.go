@@ -237,3 +237,24 @@ func runbookValue(s domain.Snapshot, sig catalog.Signature, sup *catalog.MatchRe
 	}
 	return best
 }
+
+// ScoreSignature scores a signature against a chosen subset of the case's evidence,
+// using the same term derivation and weights the rule adapter uses.
+//
+// It exists so an alternative reasoner — the model adapter (ADR-007) — can select which
+// signature the evidence supports without also inheriting the job of scoring it. The
+// selection is the part where judgement helps; the arithmetic is the part that has to
+// stay decomposable and identical whichever adapter produced the selection.
+func ScoreSignature(
+	sig catalog.Signature,
+	cited []domain.Evidence,
+	s domain.Snapshot,
+	w Weights,
+	penalty float64,
+	unresolved int,
+) (domain.ScoreBreakdown, []string) {
+	m := catalog.Match(sig, cited)
+	in := termInputs(m, s, &m)
+	in.Unresolved = unresolved
+	return Score(in, w, penalty), m.Supporting
+}

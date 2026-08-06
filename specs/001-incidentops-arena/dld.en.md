@@ -406,6 +406,45 @@ fixtures would make a live deployment look healthy while reading simulated data.
 
 **Checkpoint.** TC-0103
 
+<!-- sdd:item id=DLD-1035 stage=dld status=approved derives_from=HLD-020 -->
+### DLD-1035 — Model reasoner adapter
+
+**File.** `internal/reasoner/model/model.go`
+
+**Types.** `Reasoner{endpoint, model string; client *http.Client; cat *catalog.Catalog;
+cfg reasoner.Config}`, `Options{Timeout time.Duration; Client *http.Client; APIKey
+string; Temperature float64}`, `ProviderError{Endpoint string; Status int; Err error}`.
+
+**Behaviour.** `Hypothesise` builds a request describing the snapshot's evidence — each
+item's identifier, kind, source and summary — and the catalog's signature identifiers with
+their claims. It asks the provider which signatures the evidence supports and which
+evidence identifiers support each. The response is decoded as
+`{"selections":[{"signature_id","evidence_ids":[],"reasoning"}]}`.
+
+Each selection is then validated and scored locally:
+
+1. A `signature_id` absent from the catalog is dropped.
+2. An `evidence_ids` entry absent from the snapshot is dropped from that selection; a
+   selection left with no evidence is dropped entirely, because REQ-0021 would reject it
+   downstream anyway and dropping here keeps the reason legible.
+3. The remaining evidence is turned into a `catalog.MatchResult` and scored by
+   `reasoner.Score` with the configured weights. **The provider supplies no score**
+   (ADR-007): a number a model asserts does not decompose, and REQ-0022 requires that it
+   does.
+4. Claim and mechanism come from the catalog signature, not from the response, so no
+   provider text reaches a report as a causal claim.
+
+`Critique` follows the same shape against
+`{"critiques":[{"hypothesis_id","category","challenge","verdict","demands":[]}]}`, dropping
+any entry whose verdict is outside the closed set or whose hypothesis identifier is
+unknown.
+
+**Errors.** A transport failure, a non-200 status or an undecodable body returns
+`ProviderError`. An empty but well-formed response is a legitimate "nothing matched" and
+returns an empty slice with no error — the two must stay distinguishable.
+
+**Checkpoint.** TC-0105, TC-0106
+
 ## 6. Catalog and reasoning
 
 <!-- sdd:item id=DLD-1030 stage=dld status=approved derives_from=HLD-006 -->

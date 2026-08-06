@@ -447,6 +447,37 @@ control plane refers to these packages.
 
 **Refines.** ARC-006
 
+<!-- sdd:item id=HLD-020 stage=hld status=approved derives_from=ARC-005 -->
+### HLD-020 — Model-backed reasoner adapter
+
+**Purpose.** Replace pattern matching with judgement in the one place where judgement
+helps — which signatures the evidence supports — while leaving scoring, refutation and
+remediation exactly where they are (ADR-007).
+
+**Public surface.**
+
+```go
+package model
+func New(endpoint, model string, cat *Catalog, cfg reasoner.Config, opts Options) *Reasoner
+// implements reasoner.Reasoner
+```
+
+**Failure behaviour.** An unreachable provider, a non-200 status or an unparseable body
+returns a `model.ProviderError`. It is never reported as an empty result: an empty
+hypothesis list means "nothing matched", and a provider failure must not be able to
+impersonate that conclusion.
+
+Response content is untrusted. A hypothesis citing an evidence identifier absent from the
+snapshot is dropped; a signature identifier absent from the catalog is dropped; a verdict
+outside the closed set is dropped. Dropping is per item, so one bad entry does not
+discard a usable response.
+
+**Collaborators.** Built only by the entry points. Scores come from `reasoner.Score`
+using the same weights the rule adapter uses, so a ranking remains decomposable and
+arguable whichever adapter produced it.
+
+**Refines.** ARC-005
+
 ## 3. Data model
 
 | Entity | Key fields | Owner module | Lifecycle |
