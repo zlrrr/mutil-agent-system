@@ -216,6 +216,17 @@ type demandResponder struct {
 // Respond serves the evidence a fault case has registered against a demand descriptor.
 // A response naming a series is analysed here so collectors stay simple; a response
 // naming changes reaches back over the extended lookback window.
+// changesBefore returns the changes that precede a time, preserving order.
+func changesBefore(changes []signal.Change, t time.Time) []signal.Change {
+	var out []signal.Change
+	for _, ch := range changes {
+		if ch.At.Before(t) {
+			out = append(out, ch)
+		}
+	}
+	return out
+}
+
 func (d *demandResponder) Respond(_ context.Context, descriptor string, kind domain.EvidenceKind) (signal.DemandEvidence, bool) {
 	r, ok := d.fc.ResponseFor(descriptor)
 	if !ok || r.Kind != kind {
@@ -265,6 +276,17 @@ func (d *demandResponder) Respond(_ context.Context, descriptor string, kind dom
 			}
 		}
 		sort.SliceStable(found, func(i, j int) bool { return found[i].At.Before(found[j].At) })
+
+		// The demand asks for changes *before onset*, so the answer must be one — the
+		// latest change that precedes the alert. Taking the last change in the window
+		// regardless would answer a question nobody asked: with two changes present, a
+		// deploy that landed after the incident began would hide the one that preceded
+		// it, and the only change capable of causing anything would never become
+		// evidence at all.
+		if before := changesBefore(found, d.fc.Alert.StartsAt); len(before) > 0 {
+			found = before
+		}
+
 		if len(found) == 0 {
 			out.Summary = "no configuration or deployment change is recorded for " +
 				subject + " in the 30 minutes before onset"

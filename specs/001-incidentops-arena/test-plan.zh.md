@@ -800,6 +800,20 @@ release。
 **测试函数。** `internal/orchestrator/e2e_test.go` 中的
 `TestVictimAlertReachesUpstreamCause`
 
+<!-- sdd:item id=TC-0108 stage=verify status=approved derives_from=REQ-0102 -->
+#### TC-0108 — 晚于起点的变更因时序被拒绝
+
+**层级。** e2e。**验证。** REQ-0102。
+
+**步骤。** 端到端运行样例 `C6`。它包含一次发生在错误开始**之后**四分钟的 `DB_POOL_SIZE`
+变更，而且连接池确实处于饱和——因此连接池解释在指标、日志与变更三方面都匹配，唯一能反驳
+它的就是时序。
+
+**预期。** 连接池解释被拒绝，`temporal_order` 出现在质疑之中，被接受的原因是那个变更早于
+起点的依赖配置错误。
+
+**测试函数。** `internal/orchestrator/e2e_test.go` 中的 `TestPostOnsetChangeIsRejected`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

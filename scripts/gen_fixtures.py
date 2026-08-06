@@ -647,7 +647,130 @@ c5 = {
     "expected_remediation": "set_config order-api DB_POOL_SIZE 20",
 }
 
-for case in (c1, c2, c3, c4, c5):
+# --------------------------------------------------------------------------
+# C6 — the deploy that came after the incident
+# --------------------------------------------------------------------------
+#
+# "We deployed, then it broke" is the most available explanation in an incident, and it
+# survives every check except one. Here the pool explanation matches on metric, log and
+# change: the pool really is saturated, the timeouts really are in the logs, and
+# DB_POOL_SIZE really was changed. It is refuted only by the clock — that change landed
+# four minutes *after* the errors began.
+#
+# The real cause is a dependency URL changed two minutes before onset. Only the ordering
+# separates the two, which is why this case exists: temporal_order was the last critique
+# rule that had never fired in an end-to-end run.
+C6_START = datetime(2026, 8, 5, 16, 5, 0, tzinfo=timezone.utc)
+
+c6 = {
+    "id": "C6",
+    "title": "Order API 5xx with a tempting deploy that landed too late",
+    "description": (
+        "A dependency URL was repointed two minutes before the errors began. Four "
+        "minutes after they began, an unrelated change reduced the database connection "
+        "pool, and the pool duly saturated under the retry storm. The pool explanation "
+        "fits the evidence in every respect except the one that matters: its change "
+        "postdates the symptom it claims to cause."
+    ),
+    "alert": {
+        "alert_name": "OrderApiHighErrorRate",
+        "service": "order-api",
+        "severity": "P1",
+        "starts_at": ts(C6_START),
+        "ends_at": ts(C6_START + timedelta(minutes=20)),
+        "labels": {"env": "demo", "team": "checkout"},
+        "annotations": {"summary": "5xx rate above 10% for 5 minutes"},
+        "case_ref": "C6",
+    },
+    "default_series": ["http_5xx_rate", "http_requests_total"],
+    "series": [
+        series("http_5xx_rate", "ratio", 0.002, [(0, 0.21)], C6_START),
+        series("http_requests_total", "rps", 160, [], C6_START),
+        series("upstream_connect_errors", "rps", 0, [(0, 47)], C6_START),
+        # Saturated, and genuinely so — but only from four minutes after onset, which is
+        # when the pool was shrunk. The red herring is a real observation.
+        series("db_pool_saturation", "ratio", 0.24, [(4, 1.0)], C6_START, capacity=1.0),
+    ],
+    "post_recovery_series": [
+        series("http_5xx_rate", "ratio", 0.002, [(0, 0.21), (20, 0.003)], C6_START),
+        series("upstream_connect_errors", "rps", 0, [(0, 47), (20, 0)], C6_START),
+    ],
+    "logs": logs(C6_START, [
+        ("connection refused calling https://payments-old.internal:8443", "error", 190, 8, 4),
+        ("db connection timeout after 3000ms (attempt {i})", "error", 62, 250, 6),
+    ]),
+    "changes": [
+        # The cause: two minutes before onset.
+        {
+            "at": ts(C6_START - timedelta(minutes=2)),
+            "service": "order-api", "type": "config",
+            "key": "PAYMENT_URL", "old": "https://payments.internal:8443",
+            "new": "https://payments-old.internal:8443",
+            "author": "deploy-bot", "ref": "release-2026.08.05-1",
+            "revision": "6ac2f10",
+        },
+        # The red herring: four minutes after onset. Same key the reference scenario
+        # blames, so it looks exactly like a known-good explanation.
+        {
+            "at": ts(C6_START + timedelta(minutes=4)),
+            "service": "order-api", "type": "config",
+            "key": "DB_POOL_SIZE", "old": "20", "new": "4",
+            "author": "capacity-bot", "ref": "autoscale-2026.08.05-7",
+            "revision": "c40b8d3",
+        },
+    ],
+    "topology": {
+        "service": "order-api",
+        "nodes": [
+            {"name": "order-api", "anomalous": True,
+             "first_seen": ts(C6_START), "role": "api"},
+            {"name": "payment-api", "anomalous": False, "role": "api"},
+        ],
+        "edges": [{"from": "order-api", "to": "payment-api"}],
+    },
+    "demand_responses": [
+        {
+            "descriptor": "configuration changes for the service in the 30 minutes before onset",
+            "kind": "change", "source": "deploy-history-fixture",
+            "raw_ref": "deploy-history:order-api?lookback=30m",
+            "confidence": 0.92, "changes": True,
+        },
+        {
+            "descriptor": "upstream dependency error metric",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:upstream_connect_errors{service=\"order-api\"}",
+            "confidence": 0.9, "series": "upstream_connect_errors",
+        },
+        {
+            "descriptor": "database connection pool saturation metric",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:db_pool_saturation{service=\"order-api\"}",
+            "confidence": 0.9, "series": "db_pool_saturation",
+        },
+        {
+            "descriptor": "historical peak traffic comparison at equal load",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:http_requests_total{service=\"order-api\"}[2d:offset 2d]",
+            "confidence": 0.85,
+            "summary": ("order-api request rate is flat at 160 rps across the window "
+                        "and matches the preceding days"),
+            "facts": {"current_peak": "160 rps", "counters": "sig-traffic-surge"},
+        },
+    ],
+    "recovery_trigger": {
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "PAYMENT_URL",
+                 "value": "https://payments.internal:8443"},
+    },
+    "initial_config": {
+        "order-api/PAYMENT_URL": "https://payments-old.internal:8443",
+        "order-api/DB_POOL_SIZE": "4",
+    },
+    "expected_signature": "sig-misconfigured-dependency",
+    "expected_remediation": "set_config order-api PAYMENT_URL https://payments.internal:8443",
+}
+
+for case in (c1, c2, c3, c4, c5, c6):
     path = os.path.join(OUT, "case-%s.json" % case["id"].lower())
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(case, fh, indent=2, ensure_ascii=False)

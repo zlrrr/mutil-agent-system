@@ -105,8 +105,12 @@ func RunCase(ctx context.Context, cat *catalog.Catalog, caseID string, mode doma
 			out.BlockedActions++
 		}
 	}
-	if len(c.Hypotheses) > 0 {
-		out.Top1 = c.Hypotheses[0].SignatureID
+	// The accepted explanation, not the highest-scoring one. They differ when the
+	// critic rejects the best-fitting candidate — an explanation whose own symptom
+	// postdates the incident, say — and reporting the rejected one as the system's
+	// answer would score the system on a conclusion it explicitly refused to draw.
+	if lead, ok := c.Leading(); ok {
+		out.Top1 = lead.SignatureID
 		out.Top1Correct = out.Top1 == fc.ExpectedSignature
 	}
 	for i, h := range c.Hypotheses {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
+	"github.com/zlrrr/mutil-agent-system/internal/signal"
 )
 
 // sdd:impl DLD-1034
@@ -215,7 +216,36 @@ func (temporalOrderRule) Name() string { return "temporal_order" }
 // anomaly. A cause that arrives after its effect is not a cause.
 func (temporalOrderRule) Apply(rc RuleContext, h domain.Hypothesis, _ int) ([]domain.Critique, []domain.EvidenceDemand) {
 	m, ok := rc.Matches[h.SignatureID]
-	if !ok || m.Signature.AttributesTo != "change" || !m.HasChangeAt {
+	if !ok {
+		return nil, nil
+	}
+
+	// An explanation whose own symptom began materially after the incident did cannot
+	// be what started the incident: it is downstream of whatever did.
+	//
+	// This is checked separately from the change ordering below because HypothesisOnset
+	// measures an explanation against its *own* supporting metrics. That is what lets a
+	// genuine cause survive an unrelated series moving first (DLD-1032), but it also
+	// means a self-consistent sub-story escapes scrutiny — a pool that was shrunk and
+	// then saturated is internally coherent while explaining nothing about an incident
+	// that began four minutes earlier.
+	if onset, ok := HypothesisOnset(m, rc.Snapshot); ok && !rc.Snapshot.Alert.StartsAt.IsZero() {
+		if lag := onset.Sub(rc.Snapshot.Alert.StartsAt); lag > signal.CoMovementWin {
+			return []domain.Critique{{
+				HypothesisID: h.ID,
+				Category:     "temporal_order",
+				Challenge: fmt.Sprintf(
+					"the evidence for this explanation begins at %s, %s after the incident "+
+						"began at %s; it describes a consequence rather than the cause",
+					onset.UTC().Format("15:04:05"), lag.Round(time.Second),
+					rc.Snapshot.Alert.StartsAt.UTC().Format("15:04:05")),
+				Verdict:    domain.VerdictReject,
+				CounterIDs: lateOnsetEvidence(rc, m, rc.Snapshot.Alert.StartsAt),
+			}}, nil
+		}
+	}
+
+	if m.Signature.AttributesTo != "change" || !m.HasChangeAt {
 		return nil, nil
 	}
 	onset, ok := HypothesisOnset(m, rc.Snapshot)
@@ -239,6 +269,33 @@ func (temporalOrderRule) Apply(rc RuleContext, h domain.Hypothesis, _ int) ([]do
 		Verdict:    domain.VerdictReject,
 		CounterIDs: counters,
 	}}, nil
+}
+
+// lateOnsetEvidence returns the matched metric evidence whose onset postdates the
+// incident, so the objection points at the observation that carries it.
+func lateOnsetEvidence(rc RuleContext, m catalog.MatchResult, start time.Time) []string {
+	matched := map[string]bool{}
+	for _, pm := range m.Matched {
+		if pm.Kind == domain.KindMetric {
+			matched[pm.EvidenceID] = true
+		}
+	}
+	var out []string
+	for _, e := range rc.Snapshot.EvidenceOfKind(domain.KindMetric) {
+		if len(matched) > 0 && !matched[e.ID] {
+			continue
+		}
+		ts := e.Fact("onset")
+		if ts == "" {
+			continue
+		}
+		t, err := time.Parse(time.RFC3339, ts)
+		if err != nil || t.Sub(start) <= signal.CoMovementWin {
+			continue
+		}
+		out = append(out, e.ID)
+	}
+	return out
 }
 
 // --------------------------------------------------------- rule: source vs victim

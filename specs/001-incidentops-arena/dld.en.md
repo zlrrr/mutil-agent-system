@@ -198,6 +198,15 @@ for events that create one.
 `Replay(caseID, events)` folds from an empty case and validates that sequence numbers
 are contiguous from 1.
 
+`Leading()` returns the highest-scoring hypothesis the critic has not rejected, and
+`Snapshot.Leading()` mirrors it so an agent and the control plane agree on which
+explanation is the case's answer. Score measures how well the evidence fits; a verdict
+measures whether the explanation is admissible. An explanation can fit beautifully and
+still be impossible, so reporting the top-ranked one as the answer in a report that also
+records its rejection would make the system contradict itself. The ranking is left
+untouched: it still shows the rejected explanation first, with its verdict and
+counter-evidence beside it.
+
 **Invariants.** `Replay(events)` equals the live projection for every case
 (REQ-0003).
 
@@ -566,10 +575,19 @@ within `1e-9`.
 |---|---|---|
 | `coverage_gap` | A required pattern of the hypothesis's signature matched no evidence | Critique `revise` plus a demand carrying that pattern's descriptor |
 | `alternative_explanation` | Another signature matches at least one pattern and its discriminator is unsatisfied | Critique `revise` on the leading hypothesis naming the rival, plus a demand for the discriminator |
-| `temporal_order` | The hypothesis's matched change timestamp is not earlier than the anomaly onset | Critique `reject`, and counter-evidence attached to the hypothesis |
+| `temporal_order` | Either the hypothesis's own evidence begins more than `coMovementWindow` after the alert, or its matched change timestamp is not earlier than the anomaly onset | Critique `reject`, and counter-evidence attached to the hypothesis |
 | `source_vs_victim` | Topology evidence names an upstream service whose onset is earlier, **and** the hypothesis rests on no evidence whose `subject` fact is that service | Critique `revise` naming the upstream candidate, plus a demand for every unanswered requirement descriptor in the catalog |
 | `unverifiable_remediation` | The signature declares no remediation, or one with no verify signal | Critique `accept_with_risk` |
 | `close_call` | Top-two total gap `< closeCallMargin` | Critique `revise` on the leader, plus a demand for the leader's discriminator |
+
+**Why `temporal_order` checks two things.** The change ordering compares a blamed change
+against `HypothesisOnset`, which measures an explanation against its *own* supporting
+metrics. That is what lets a genuine cause survive an unrelated series moving first
+(DLD-1032) — and it is also a hole: a pool that was shrunk and then saturated is
+internally coherent while explaining nothing about an incident that began four minutes
+earlier. The first condition closes it by comparing the explanation's own onset against
+the alert, because an explanation whose symptom postdates the incident is downstream of
+whatever caused it.
 
 **Why `source_vs_victim` carries both a skip and demands.** Without the skip it also
 challenges the explanation that already blames the upstream, using the very topology

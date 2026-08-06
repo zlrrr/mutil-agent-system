@@ -907,6 +907,27 @@ upstream. A challenge that no evidence can answer is a veto, not a critique.
 
 **Verified by.** TC-0107
 
+<!-- sdd:item id=REQ-0102 stage=specify status=approved derives_from=G-001,G-002 priority=P0 -->
+### REQ-0102 — A change that postdates the symptom cannot explain it
+
+**Requirement.** An explanation whose blamed change occurred at or after the onset of the
+symptom it claims to cause MUST be rejected on temporal grounds, with the timing recorded
+as counter-evidence, regardless of how well the rest of its evidence fits.
+
+**Why this needs its own case.** "We deployed, then it broke" is the most available
+explanation in an incident, and it survives every other check: the change is real, the
+symptom is real, and the signature's other requirements can all match. Only the ordering
+refutes it. A catalog in which no case exercises that ordering leaves the check unproven.
+
+**Acceptance.**
+- Given a case containing a change that matches an explanation's requirements but occurred
+  after the symptom's onset, when the full flow runs, then that explanation is rejected
+  and the accepted cause is the one whose change precedes onset.
+- Given that same case, when the critic runs, then `temporal_order` appears among the
+  critiques raised.
+
+**Verified by.** TC-0108
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

@@ -32,6 +32,7 @@ Each wave closed only when its gate command exited zero.
 | 10 | REQ-0099 (overfitting case C4) | `go test ./... && go run ./cmd/evalctl run` | pass | TC-0104 |
 | 11 | REQ-0100 (model reasoner) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0105, TC-0106 |
 | 12 | REQ-0101 (victim case C5) | `go test -race ./... && go run ./cmd/evalctl run` | pass | TC-0107 |
+| 13 | REQ-0102 (post-onset change, C6) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0108 |
 
 ## Defects found by the checkpoints
 
@@ -59,6 +60,15 @@ because a checkpoint that never fails is not a checkpoint.
 | D17 | C5, first run | The rule challenged and demanded nothing, so the case closed after one round on a `revise` verdict having never looked upstream. A challenge no evidence can answer is a veto, not a critique | The rule now demands every unanswered requirement descriptor in the catalog, which is what lets an upstream explanation form |
 | D18 | C5, second run | The rule also challenged the explanation that correctly blamed the upstream, using the topology evidence that supported it. The first fix attempt read intent from the signature's remediation service — but every signature in this catalog remediates `order-api`, so every explanation looked upstream-aware and the rule stopped firing entirely | The skip is decided from evidence: a demand response records the service it concerns in a `subject` fact, and a hypothesis resting on upstream evidence is not describing a victim |
 | D19 | C5, second run | The change and log demand responses filtered by the *alert's* service, so a victim's alert could never retrieve its upstream's history — the assumption that the alerting service is the subject was baked into the fixture, not just the rule | Demand responses may name a `Service`, defaulting to the alert's |
+
+### Defects C6 exposed
+
+| # | Problem | Resolution |
+|---|---|---|
+| D20 | `temporal_order` was the last critique rule never to have fired end to end. C6 made it fire, and immediately showed the check was too narrow: it compares a blamed change against `HypothesisOnset`, which measures an explanation against its *own* metrics. A pool that was shrunk and then saturated is internally coherent while explaining nothing about an incident that began four minutes earlier, so the objection evaporated as soon as the demanded pool metric arrived | The rule now also rejects an explanation whose own evidence begins more than `coMovementWindow` after the alert: a symptom that postdates the incident is downstream of whatever caused it |
+| D21 | The rejected explanation still ranked first and was reported as the answer, in a report that recorded its rejection on the same page | `Leading()` returns the highest-scoring hypothesis the critic has not rejected; the ranking still shows the rejected one first with its verdict beside it. "This fit best and here is why we rejected it" is worth more to a reader than hiding it |
+| D22 | Remediation acted on the top-ranked hypothesis, so it proposed changing the very setting the critic had just ruled out | The remediation role uses `Snapshot.Leading()`, and the evaluation's top-1 metric likewise reports the accepted explanation rather than one the system explicitly refused to draw |
+| D23 | With two changes in the extended window, the change demand returned only the last — so a deploy landing *after* onset hid the change that preceded it, and the only change capable of causing anything never became evidence | The demand asks for changes before onset, so the response now answers with one: the latest change preceding the alert. The post-onset change still arrives through the default pass, where it belongs |
 
 ## Known issues
 

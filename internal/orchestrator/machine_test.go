@@ -155,9 +155,17 @@ func TestRemediationGuard(t *testing.T) {
 		want   string
 	}{
 		{
-			name:   "verdict does not permit",
-			mutate: func(c *domain.Case) { c.Hypotheses[0].Verdict = domain.VerdictRevise },
-			want:   "verdict",
+			// Every candidate, not just the leader: the case picks the best-scoring
+			// explanation the critic has not rejected, so leaving an admissible one
+			// behind would simply promote it. The guard's verdict branch is reached
+			// when nothing admissible remains, which is the state this constructs.
+			name: "verdict does not permit",
+			mutate: func(c *domain.Case) {
+				for i := range c.Hypotheses {
+					c.Hypotheses[i].Verdict = domain.VerdictRevise
+				}
+			},
+			want: "verdict",
 		},
 		{
 			name: "score below the acceptance threshold",

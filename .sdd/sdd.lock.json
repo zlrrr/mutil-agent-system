@@ -1,6 +1,6 @@
 {
   "sddVersion": "1.0.0",
-  "sealedAt": "2026-08-06T08:27:37Z",
+  "sealedAt": "2026-08-06T09:27:14Z",
   "items": {
     "ADR-001": {
       "hash": "042ab491cf6bfc8c6fd827484c62231a5461575aa66e323f819683eb46a8ea7d",
@@ -93,7 +93,7 @@
       "file": "specs/001-incidentops-arena/architecture.en.md"
     },
     "ARC-009": {
-      "hash": "39ac9928a73ed82537cc28ff538e4d1592e4f5edc22a11136a8e7e8452368b94",
+      "hash": "65a7f751853a2e30966d54b757ce10b3a16aa486055633cf34a54b5064ef8fc8",
       "stage": "architect",
       "status": "approved",
       "file": "specs/001-incidentops-arena/architecture.en.md"
@@ -315,7 +315,7 @@
       "file": "specs/001-incidentops-arena/dld.en.md"
     },
     "DLD-1007": {
-      "hash": "39e73b3b17d564b80db151ecd19fc579c0f890b83fa4875f098efa563c9276fc",
+      "hash": "8ebaec9c0558ed72e296fb75ba9b75b30f8618665f975e3cf0047055f938603f",
       "stage": "dld",
       "status": "approved",
       "file": "specs/001-incidentops-arena/dld.en.md"
@@ -405,7 +405,7 @@
       "file": "specs/001-incidentops-arena/dld.en.md"
     },
     "DLD-1034": {
-      "hash": "8a8952624a834dc769af5f16506694343f6b005a1bda4e9b12ae439c0ef520cb",
+      "hash": "9b84d4cae11dc4958f058cf28c52404dc387e3b17637e4f4227f853f762dc2cc",
       "stage": "dld",
       "status": "approved",
       "file": "specs/001-incidentops-arena/dld.en.md"
@@ -1094,6 +1094,12 @@
       "status": "approved",
       "file": "specs/001-incidentops-arena/spec.en.md"
     },
+    "REQ-0102": {
+      "hash": "501a009a7f0ba8e9811eaf56749211cd2ca41bffc7be65d73b7c7cf5d0b07407",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/spec.en.md"
+    },
     "REQ-9001": {
       "hash": "92d9321512b565a074fc4c04c6cf743249978eb98232417b18708136e7d44662",
       "stage": "specify",
@@ -1612,6 +1618,12 @@
     },
     "TC-0107": {
       "hash": "5621b87fb5412b0fa1e2be5bc40adcce2d854855bb8b0a2007c5db46661d6e9a",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/test-plan.en.md"
+    },
+    "TC-0108": {
+      "hash": "bace2fe583a686d0390896cf0c619d0bddf461465099842604921a2932c725d9",
       "stage": "verify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/test-plan.en.md"

@@ -662,3 +662,79 @@ func TestVictimAlertReachesUpstreamCause(t *testing.T) {
 		}
 	})
 }
+
+// sdd:verify TC-0108
+func TestPostOnsetChangeIsRejected(t *testing.T) {
+	b := build(t, func(p *arena.Params) { p.CaseID = "C6" })
+	c := runToHalt(t, b, domain.ModeMultiWithCritic)
+	if c.Status == domain.StatusAwaitingApproval {
+		c = approve(t, b, c)
+	}
+	if len(c.Hypotheses) < 2 {
+		t.Fatal("C6 needs at least the tempting explanation and the real one")
+	}
+
+	const tempting = "sig-db-pool-exhaustion"
+	const actual = "sig-misconfigured-dependency"
+
+	var temptingH *domain.Hypothesis
+	for i := range c.Hypotheses {
+		if c.Hypotheses[i].SignatureID == tempting {
+			temptingH = &c.Hypotheses[i]
+		}
+	}
+	if temptingH == nil {
+		t.Fatalf("%s was never proposed, so nothing here is being refuted", tempting)
+	}
+
+	// The whole point: the pool explanation fits. It is refuted by the clock alone.
+	t.Run("the tempting explanation fits the evidence", func(t *testing.T) {
+		if temptingH.Breakdown.Total < 0.75 {
+			t.Errorf("%s scores %.2f; this case only tests timing if the fit is otherwise strong",
+				tempting, temptingH.Breakdown.Total)
+		}
+	})
+
+	t.Run("it is rejected on timing", func(t *testing.T) {
+		if temptingH.Verdict != domain.VerdictReject {
+			t.Errorf("verdict = %q, want reject", temptingH.Verdict)
+		}
+		var fired bool
+		for _, cr := range c.Critiques {
+			if cr.Rule == "temporal_order" && cr.HypothesisID == temptingH.ID {
+				fired = true
+			}
+		}
+		if !fired {
+			t.Error("temporal_order did not challenge the explanation whose change postdates onset")
+		}
+	})
+
+	// A rejected explanation may still rank first — it fits best. What it must not do is
+	// be reported as the answer while the same report records its rejection.
+	t.Run("the accepted cause is the admissible one", func(t *testing.T) {
+		lead, ok := c.Leading()
+		if !ok {
+			t.Fatal("no leading hypothesis")
+		}
+		if lead.SignatureID != actual {
+			t.Errorf("accepted %s, want %s", lead.SignatureID, actual)
+		}
+		if !lead.Verdict.Permits() {
+			t.Errorf("the accepted explanation carries verdict %q", lead.Verdict)
+		}
+		md := report.Markdown(c)
+		if !strings.Contains(md, actual) {
+			t.Error("the report does not name the accepted cause")
+		}
+	})
+
+	t.Run("the remediation acts on the real cause", func(t *testing.T) {
+		if len(c.Actions) == 0 {
+			t.Fatal("no action was proposed")
+		}
+		if got := c.Actions[0].Args["key"]; got != "PAYMENT_URL" {
+			t.Errorf("action changes %q; the pool change was the red herring", got)
+		}
+	})
+}

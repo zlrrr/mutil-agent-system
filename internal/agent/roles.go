@@ -58,10 +58,13 @@ func Critic(r reasoner.Reasoner) Agent {
 // what actually changed rather than a template default.
 func Remediation(cat *catalog.Catalog, _ reasoner.Config) Agent {
 	return New(domain.RoleRemediation, func(_ context.Context, s domain.Snapshot) ([]domain.Contribution, error) {
-		if len(s.Hypotheses) == 0 {
+		// The accepted explanation, not the highest-scoring one. Acting on an
+		// explanation the critic rejected would remediate a red herring — in C6, the
+		// pool change that landed after the incident began.
+		lead, ok := s.Leading()
+		if !ok {
 			return nil, nil
 		}
-		lead := s.Hypotheses[0]
 		sig, ok := cat.Signature(lead.SignatureID)
 		if !ok || sig.Remediation == nil {
 			return nil, nil

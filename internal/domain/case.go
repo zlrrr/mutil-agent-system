@@ -130,6 +130,32 @@ func (c *Case) Leading() (Hypothesis, bool) {
 	if len(c.Hypotheses) == 0 {
 		return Hypothesis{}, false
 	}
+	// The highest-scoring explanation the critic has not rejected.
+	//
+	// Score measures how well the evidence fits; a verdict measures whether the
+	// explanation is admissible at all. They are different questions, and an
+	// explanation can fit the evidence beautifully while being impossible — one whose
+	// own symptom began after the incident, for instance. Presenting such an
+	// explanation as the answer, in a report that also records its rejection, would
+	// make the system contradict itself.
+	//
+	// The ranking is left alone: it still shows the rejected explanation first, with
+	// the verdict and the counter-evidence beside it. "This fit best and here is why we
+	// rejected it" is worth more to a reader than quietly hiding it.
+	for _, h := range c.Hypotheses {
+		if h.Verdict == "" || h.Verdict.Permits() {
+			return h, true
+		}
+	}
+	return c.Hypotheses[0], true
+}
+
+// TopRanked returns the highest-scoring hypothesis regardless of verdict, which is what
+// the ranking table and the score comparison report.
+func (c *Case) TopRanked() (Hypothesis, bool) {
+	if len(c.Hypotheses) == 0 {
+		return Hypothesis{}, false
+	}
 	return c.Hypotheses[0], true
 }
 
@@ -494,6 +520,21 @@ func (s Snapshot) UnsatisfiedDemands() []EvidenceDemand {
 }
 
 // EvidenceOfKind returns the snapshot's evidence of one kind, in identifier order.
+// Leading returns the highest-scoring hypothesis the critic has not rejected, matching
+// Case.Leading so an agent and the control plane agree on which explanation is the
+// case's answer.
+func (s Snapshot) Leading() (Hypothesis, bool) {
+	if len(s.Hypotheses) == 0 {
+		return Hypothesis{}, false
+	}
+	for _, h := range s.Hypotheses {
+		if h.Verdict == "" || h.Verdict.Permits() {
+			return h, true
+		}
+	}
+	return s.Hypotheses[0], true
+}
+
 func (s Snapshot) EvidenceOfKind(k EvidenceKind) []Evidence {
 	var out []Evidence
 	for _, e := range s.Evidence {
