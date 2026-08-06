@@ -94,18 +94,46 @@ the demonstration the entire project rests on. Four tests caught this — the cl
 rule, the round-count assertions in both mode comparisons, and the escalation test — and
 the change was reverted rather than the tests adjusted to accommodate it.
 
-The real defect is in the catalog, not the arithmetic: "traffic rose" is not evidence
-that traffic *caused* the outage. The explanation should require the historical
-comparison showing the load exceeded what was previously served — the very evidence C1
-uses to refute it and C4 uses to confirm it. That is a modelling change to
-`signatures.json` with its own cascade, and it is deferred rather than rushed alongside a
-new fault case.
+The real defect looked like it was in the catalog rather than the arithmetic: "traffic
+rose" is not evidence that traffic *caused* the outage, so the explanation should require
+the historical comparison showing the load exceeded what was previously served — the very
+evidence C1 uses to refute it and C4 uses to confirm it.
+
+**That was implemented and measured too, and it is also wrong — for a more interesting
+reason.** `sig-traffic-surge` gained two further requirements: the load must exceed any
+previously served level (a fact condition on the comparison evidence), and the service
+must report shedding. This raised its ceiling from 0.55 to 0.80, so acceptance became
+reachable rather than impossible, and C4 rose from 0.47 to 0.72 with an `accept` verdict.
+C2, C3, C5 and C6 were unaffected.
+
+Then two tests failed, and what they said matters more than the change:
+
+> the single-agent mode reached the correct root cause; the comparison would demonstrate nothing
+> multi_no_critic reached the correct root cause; the comparison would be vacuous
+
+A better-specified signature is not attractive enough to win round one of C1 — so the
+critic has nothing left to correct, and the baselines solve the reference scenario
+unaided. **C1's headline result depends on `sig-traffic-surge` being under-specified.**
+The demonstration rests on a modelling weakness, not on a property of single-pass
+reasoning, and fixing the weakness dissolves the demonstration.
+
+That is worth knowing precisely, and it is not something a scoring patch can resolve. The
+real work is to redesign C1 so its round-one error is wrong for a reason that survives a
+well-specified catalog — a plausible explanation that a careful reasoner would still
+reach first and still have to abandon. Until that scenario exists, tightening the
+signature trades an honest defect for a dishonest benchmark.
 
 **Consequence today.** C4 ranks the correct cause first and refutes both rivals with
 counter-evidence, which is what TC-0104 asserts and what the overfitting test needs. It
 stops below the acceptance threshold rather than proposing its declared remediation. The
 case declares `expected_remediation` because that is the correct action; the system does
 not currently reach it.
+
+**Attempts, in order.** Renormalising the weights (wrong: makes a one-requirement
+explanation trivially near-certain, so C1 accepts the wrong answer in round one).
+Tightening the signature (wrong: removes the round-one error C1 exists to demonstrate).
+Both were implemented, measured against all six cases, and reverted on the evidence
+rather than argued about.
 
 ## Cascading updates performed
 
