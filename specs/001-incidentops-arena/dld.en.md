@@ -31,6 +31,7 @@ Every item below becomes one or more `// sdd:impl <ID>` anchors in source.
 | `anomalyFactor` | 3.0 | Peak must exceed baseline by this factor |
 | `anomalySustain` | 2 | Consecutive points required to confirm onset |
 | `coMovementWindow` | 60s | Onset spread within which series are co-moving |
+| `collapseFactor` | 0.25 | Share of baseline a series must fall below to count as collapsed |
 | `bounds.MaxRows` | 200 | Rows any single tool result may carry |
 | `bounds.MaxChars` | 8000 | Characters any single tool result may carry |
 | `bounds.MaxSpan` | 2h | Time span any single tool query may cover |
@@ -268,6 +269,18 @@ reported, never silent (REQ-0016).
 
 **File.** `internal/signal/anomaly.go`
 
+A collapse is detected as the mirror of a rise, and is just as much a finding. An
+availability gauge falling to zero, a throughput series going flat, a queue draining —
+a detector that only recognises growth is blind to all of them, and `sig-db-outage`
+expressed its requirement as `saturated`, which is computed from a declared capacity no
+availability gauge has. The requirement was therefore unsatisfiable and the signature
+could never be fully matched by anything the collectors produce.
+
+The sustain requirement applies to a collapse exactly as to a rise, so a single dipping
+sample is noise rather than a finding, and a series whose baseline was already at zero
+has not fallen. `Summary()` says the series *fell*: describing a collapse as a rise would
+misreport what the data shows, which is the one thing that text must never do.
+
 **Algorithm.**
 
 ```
@@ -277,7 +290,11 @@ Analyse(series, window):
   peak       := max(points within window)
   threshold  := max(baseline * anomalyFactor, baseline + epsilon)
   onset      := first t in window where the next anomalySustain points all exceed threshold
-  anomalous  := onset exists
+  floor      := baseline * collapseFactor              // only when baseline > baselineFloor
+  collapse   := first t in window where the next anomalySustain points all sit at or below floor
+  collapsed  := collapse exists
+  anomalous  := onset exists or collapsed
+  onset      := the earlier of onset and collapse
   saturated  := series.Capacity > 0 and peak >= series.Capacity
   ratio      := peak / baseline        // reported as "n/a" when baseline == 0
 ```

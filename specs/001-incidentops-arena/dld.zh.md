@@ -30,6 +30,7 @@ stage: dld
 | `anomalyFactor` | 3.0 | 峰值需超过基线的倍数 |
 | `anomalySustain` | 2 | 确认起点所需的连续点数 |
 | `coMovementWindow` | 60s | 起点相差在此范围内即判为同步变化 |
+| `collapseFactor` | 0.25 | 序列需跌破基线的该比例才算塌陷 |
 | `bounds.MaxRows` | 200 | 单次工具结果的最大行数 |
 | `bounds.MaxChars` | 8000 | 单次工具结果的最大字符数 |
 | `bounds.MaxSpan` | 2h | 单次工具查询的最大时间跨度 |
@@ -251,6 +252,15 @@ case 折叠，并校验序号从 1 起连续。
 
 **文件。** `internal/signal/anomaly.go`
 
+塌陷按"上升的镜像"来检测，其价值不亚于上升。可用性量表跌到零、吞吐量走平、队列被抽干——
+一个只认得"增长"的检测器对它们全都视而不见；而 `sig-db-outage` 把它的要求表达成了
+`saturated`，后者由"已声明的容量"算出，可任何可用性量表都没有容量。于是该要求不可满足，
+这条签名永远无法被采集器产出的任何证据完整匹配。
+
+持续性要求对塌陷与上升同样适用，因此单个下探采样是噪声而非结论；基线本就为零的序列也谈不上
+"跌落"。`Summary()` 会说该序列**下跌**：把塌陷描述成上升等于错报数据所显示的内容，而这正是
+这段文字绝不能做的事。
+
 **算法。**
 
 ```
@@ -260,6 +270,11 @@ Analyse(series, window):
   peak       := window 内的最大值
   threshold  := max(baseline * anomalyFactor, baseline + epsilon)
   onset      := window 内第一个 t，使其后 anomalySustain 个点全部超过 threshold
+  floor      := baseline * collapseFactor              // 仅当 baseline > baselineFloor
+  collapse   := window 内第一个 t，使其后 anomalySustain 个点全部不高于 floor
+  collapsed  := collapse 存在
+  anomalous  := onset 存在 或 collapsed
+  onset      := onset 与 collapse 中较早的那个
   anomalous  := onset 存在
   saturated  := series.Capacity > 0 且 peak >= series.Capacity
   ratio      := peak / baseline        // baseline == 0 时报告为 "n/a"

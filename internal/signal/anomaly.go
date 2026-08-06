@@ -16,6 +16,9 @@ const (
 	AnomalyFactor  = 3.0
 	AnomalySustain = 2
 	CoMovementWin  = 60 * time.Second
+	// CollapseFactor is the share of its baseline a series must fall below to count as
+	// collapsed, sustained for AnomalySustain samples.
+	CollapseFactor = 0.25
 	anomalyEpsilon = 1e-9
 	baselineFloor  = 1e-6
 )
@@ -29,6 +32,11 @@ type Analysis struct {
 	Onset     time.Time
 	Anomalous bool
 	Saturated bool
+	// Collapsed reports a series that fell far below its baseline and stayed there. A
+	// detector that only recognises growth is blind to an availability gauge going to
+	// zero, a throughput series going flat, or a queue draining — which are among the
+	// most diagnostic signals an incident produces.
+	Collapsed bool
 	Capacity  float64
 	Ratio     float64
 	HasRatio  bool
@@ -86,12 +94,49 @@ func Analyse(s Series, w domain.TimeWindow) Analysis {
 		a.Anomalous = true
 		break
 	}
+	// A collapse is the mirror of a rise, and just as much a finding. It is only
+	// meaningful against a baseline that was meaningfully non-zero: a series that was
+	// already at zero has not fallen.
+	if a.Baseline > baselineFloor {
+		floor := a.Baseline * CollapseFactor
+		for i := range in {
+			if !fallsBelowFrom(in, i, floor, AnomalySustain) {
+				continue
+			}
+			a.Collapsed = true
+			// The earlier of a rise and a collapse is the onset: whichever the series
+			// did first is when it stopped behaving.
+			if !a.Anomalous || in[i].At.Before(a.Onset) {
+				a.Onset = in[i].At
+			}
+			a.Anomalous = true
+			break
+		}
+	}
+
 	// A saturated series is anomalous even when its baseline already sat at capacity.
 	if a.Saturated && !a.Anomalous {
 		a.Onset = in[0].At
 		a.Anomalous = true
 	}
 	return a
+}
+
+// fallsBelowFrom is the mirror of exceedsFrom: it reports a run of samples that all sit
+// at or below a floor, so a single dipping sample is noise rather than a collapse.
+func fallsBelowFrom(pts []Point, i int, floor float64, sustain int) bool {
+	if i+sustain > len(pts) {
+		sustain = len(pts) - i
+	}
+	if sustain <= 0 {
+		return false
+	}
+	for k := 0; k < sustain; k++ {
+		if pts[i+k].Value > floor {
+			return false
+		}
+	}
+	return true
 }
 
 func exceedsFrom(pts []Point, i int, threshold float64, sustain int) bool {
@@ -146,6 +191,7 @@ func (a Analysis) Facts() map[string]string {
 		"peak":      formatValue(a.Peak, a.Unit),
 		"anomalous": boolString(a.Anomalous),
 		"saturated": boolString(a.Saturated),
+		"collapsed": boolString(a.Collapsed),
 	}
 	if a.Anomalous {
 		f["onset"] = a.Onset.UTC().Format(time.RFC3339)
@@ -168,9 +214,17 @@ func (a Analysis) Summary() string {
 		return fmt.Sprintf("%s stayed near its baseline of %s during the window",
 			a.Series, formatValue(a.Baseline, a.Unit))
 	}
-	s := fmt.Sprintf("%s rose from a baseline of %s to a peak of %s starting at %s",
-		a.Series, formatValue(a.Baseline, a.Unit), formatValue(a.Peak, a.Unit),
-		a.Onset.UTC().Format("15:04:05"))
+	// A collapsed series did not rise, and saying it did would be a false report of
+	// what the data shows — the one thing this summary must never be.
+	var s string
+	if a.Collapsed {
+		s = fmt.Sprintf("%s fell from a baseline of %s starting at %s",
+			a.Series, formatValue(a.Baseline, a.Unit), a.Onset.UTC().Format("15:04:05"))
+	} else {
+		s = fmt.Sprintf("%s rose from a baseline of %s to a peak of %s starting at %s",
+			a.Series, formatValue(a.Baseline, a.Unit), formatValue(a.Peak, a.Unit),
+			a.Onset.UTC().Format("15:04:05"))
+	}
 	if a.Saturated {
 		s += fmt.Sprintf("; it reached its declared capacity of %s",
 			formatValue(a.Capacity, a.Unit))

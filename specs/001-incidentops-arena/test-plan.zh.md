@@ -814,6 +814,23 @@ release。
 
 **测试函数。** `internal/orchestrator/e2e_test.go` 中的 `TestPostOnsetChangeIsRejected`
 
+<!-- sdd:item id=TC-0109 stage=verify status=approved derives_from=REQ-0011 -->
+#### TC-0109 — 塌陷的序列被判为异常
+
+**层级。** unit。**验证。** REQ-0011。
+
+**步骤。** 分析一条稳定在 1、并在已知采样点跌到 0 的可用性量表，以及一条跌到其基线一小部分
+的吞吐量序列。
+
+**预期。** 两者都被报告为异常并给出下跌起点，且携带 `collapsed` 事实。仅有单个采样点下探的
+序列不会被报告为塌陷，因此噪声不会变成结论。
+
+这个用例之所以存在，是因为该检测器此前只认得"增长"。`sig-db-outage` 要求它的可用性指标
+发生下跌，而这一点被表达为 `saturated`——后者由"已声明的容量"算出，可任何可用性量表都没有
+容量，于是该要求不可满足，这条签名永远无法被采集器产出的任何证据完整匹配。
+
+**测试函数。** `internal/signal/anomaly_test.go` 中的 `TestCollapseIsAnomalous`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

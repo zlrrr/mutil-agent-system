@@ -33,6 +33,7 @@ Each wave closed only when its gate command exited zero.
 | 11 | REQ-0100 (model reasoner) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0105, TC-0106 |
 | 12 | REQ-0101 (victim case C5) | `go test -race ./... && go run ./cmd/evalctl run` | pass | TC-0107 |
 | 13 | REQ-0102 (post-onset change, C6) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0108 |
+| 14 | REQ-0011 (collapse detection) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0109 |
 
 ## Defects found by the checkpoints
 
@@ -60,6 +61,13 @@ because a checkpoint that never fails is not a checkpoint.
 | D17 | C5, first run | The rule challenged and demanded nothing, so the case closed after one round on a `revise` verdict having never looked upstream. A challenge no evidence can answer is a veto, not a critique | The rule now demands every unanswered requirement descriptor in the catalog, which is what lets an upstream explanation form |
 | D18 | C5, second run | The rule also challenged the explanation that correctly blamed the upstream, using the topology evidence that supported it. The first fix attempt read intent from the signature's remediation service — but every signature in this catalog remediates `order-api`, so every explanation looked upstream-aware and the rule stopped firing entirely | The skip is decided from evidence: a demand response records the service it concerns in a `subject` fact, and a hypothesis resting on upstream evidence is not describing a victim |
 | D19 | C5, second run | The change and log demand responses filtered by the *alert's* service, so a victim's alert could never retrieve its upstream's history — the assumption that the alerting service is the subject was baked into the fixture, not just the rule | Demand responses may name a `Service`, defaulting to the alert's |
+
+### Found while preparing the C1 redesign
+
+| # | Problem | Resolution |
+|---|---|---|
+| D24 | The anomaly detector only recognised growth. A metric *collapsing* — an availability gauge to zero, throughput going flat, a queue draining — was invisible to it, and those are among the most diagnostic signals an incident produces | Collapse is detected as the mirror of a rise, with the same sustain requirement so a single dipping sample stays noise, and `Summary()` says the series *fell* rather than misreporting it as a rise |
+| D25 | `sig-db-outage` required its availability metric to have "dropped" and expressed that as `saturated`, which is computed from a declared capacity that no availability gauge has. **The requirement was unsatisfiable**: the signature could never be fully matched by anything the collectors produce, and nothing had noticed because no case exercises a database outage | Patterns gained a general `Facts` condition — the form `saturated` should always have had — and the signature now requires `collapsed`. All six cases are unchanged, because none has a collapsing gauge; the signature is simply honest now instead of impossible |
 
 ### Defects C6 exposed
 

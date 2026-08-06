@@ -17,7 +17,13 @@ type Pattern struct {
 	Kind      domain.EvidenceKind `json:"kind"`
 	Match     []string            `json:"match"`
 	Saturated bool                `json:"saturated,omitempty"`
-	Label     string              `json:"label"`
+	// Facts requires the matched evidence to carry each of these fact values. It is the
+	// general form of Saturated, and it exists because Saturated could only ever express
+	// "reached a declared capacity" — which no availability gauge has, leaving
+	// sig-db-outage's metric requirement unsatisfiable by anything the collectors
+	// produce.
+	Facts map[string]string `json:"facts,omitempty"`
+	Label string            `json:"label"`
 	// Demand is the descriptor a critic issues when this pattern goes unmatched.
 	Demand string `json:"demand,omitempty"`
 }
@@ -106,6 +112,11 @@ func matchPattern(p Pattern, e domain.Evidence) bool {
 	}
 	if p.Saturated && e.Fact("saturated") != "true" {
 		return false
+	}
+	for key, want := range p.Facts {
+		if e.Fact(key) != want {
+			return false
+		}
 	}
 	hay := e.SearchText()
 	for _, needle := range p.Match {

@@ -131,13 +131,20 @@ the series is anomalous within the incident window, and if so the onset timestam
 MUST report which series moved together, and MUST NOT state a causal relationship
 between series.
 
+A series that *collapses* MUST be reported as anomalous just as one that rises. An
+availability gauge falling to zero, a throughput series going flat, a queue draining —
+these are among the most diagnostic signals an incident produces, and a detector that
+only recognises growth is blind to all of them.
+
 **Acceptance.**
 - Given a fixture series that steps from 0.2% to 18% at a known time, when metrics
   evidence is collected, then the onset is reported within one sample of that time.
 - Given two series that both step at the same time, when evidence is collected, then
   they are reported as co-moving and the summary contains no causal claim.
+- Given a series that falls from a steady non-zero baseline to zero, when evidence is
+  collected, then it is reported as anomalous with the onset of the fall.
 
-**Verified by.** TC-0011
+**Verified by.** TC-0011, TC-0109
 
 <!-- sdd:item id=REQ-0012 stage=specify status=approved derives_from=G-001 priority=P0 -->
 ### REQ-0012 — Log evidence is clustered and bounded

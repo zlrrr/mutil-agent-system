@@ -8,20 +8,26 @@
       "requires": [
         {
           "kind": "metric",
-          "match": ["db_pool_saturation"],
+          "match": [
+            "db_pool_saturation"
+          ],
           "saturated": true,
           "label": "connection pool reached saturation",
           "demand": "database connection pool saturation metric"
         },
         {
           "kind": "log",
-          "match": ["connection timeout"],
+          "match": [
+            "connection timeout"
+          ],
           "label": "requests timed out acquiring a database connection",
           "demand": "database connection timeout log sample"
         },
         {
           "kind": "change",
-          "match": ["db_pool_size"],
+          "match": [
+            "db_pool_size"
+          ],
           "label": "the pool size was changed shortly before onset",
           "demand": "configuration changes for the service in the 30 minutes before onset"
         }
@@ -36,7 +42,10 @@
       "remediation": {
         "title": "Restore the database connection pool size",
         "tool": "set_config",
-        "args": {"service": "order-api", "key": "DB_POOL_SIZE"},
+        "args": {
+          "service": "order-api",
+          "key": "DB_POOL_SIZE"
+        },
         "restore_from_change": "DB_POOL_SIZE",
         "risk": "medium",
         "rationale": "Restoring the previous pool size removes the queueing that produces the timeouts, and is reversible in one step.",
@@ -44,9 +53,14 @@
           "the change that reduced the pool is confirmed by change evidence",
           "the database itself is reachable"
         ],
-        "verify": ["http_5xx_rate", "http_request_duration_p99"]
+        "verify": [
+          "http_5xx_rate",
+          "http_request_duration_p99"
+        ]
       },
-      "runbook_ids": ["rb-db-pool"]
+      "runbook_ids": [
+        "rb-db-pool"
+      ]
     },
     {
       "id": "sig-traffic-surge",
@@ -55,7 +69,9 @@
       "requires": [
         {
           "kind": "metric",
-          "match": ["http_requests_total"],
+          "match": [
+            "http_requests_total"
+          ],
           "label": "request rate rose sharply",
           "demand": "request rate metric"
         }
@@ -70,14 +86,28 @@
       "remediation": {
         "title": "Reduce load on the service",
         "tool": "set_config",
-        "args": {"service": "order-api", "key": "RATE_LIMIT_QPS", "value": "200"},
+        "args": {
+          "service": "order-api",
+          "key": "RATE_LIMIT_QPS",
+          "value": "200"
+        },
         "risk": "medium",
         "rationale": "Rate limiting sheds load while capacity is added, and is reversible.",
-        "preconditions": ["the traffic increase is confirmed to be organic"],
-        "rollback_args": {"service": "order-api", "key": "RATE_LIMIT_QPS", "value": "500"},
-        "verify": ["http_5xx_rate"]
+        "preconditions": [
+          "the traffic increase is confirmed to be organic"
+        ],
+        "rollback_args": {
+          "service": "order-api",
+          "key": "RATE_LIMIT_QPS",
+          "value": "500"
+        },
+        "verify": [
+          "http_5xx_rate"
+        ]
       },
-      "runbook_ids": ["rb-capacity"]
+      "runbook_ids": [
+        "rb-capacity"
+      ]
     },
     {
       "id": "sig-db-outage",
@@ -86,14 +116,20 @@
       "requires": [
         {
           "kind": "metric",
-          "match": ["db_up"],
-          "saturated": true,
-          "label": "database availability signal dropped",
-          "demand": "database availability metric"
+          "match": [
+            "db_up"
+          ],
+          "label": "the database availability signal collapsed",
+          "demand": "database availability metric",
+          "facts": {
+            "collapsed": "true"
+          }
         },
         {
           "kind": "log",
-          "match": ["connection timeout"],
+          "match": [
+            "connection timeout"
+          ],
           "label": "database connection errors in the logs",
           "demand": "database connection timeout log sample"
         }
@@ -105,7 +141,9 @@
           "reason": "an available database rules out an outage and leaves the connection errors to be explained another way"
         }
       ],
-      "runbook_ids": ["rb-db-outage"]
+      "runbook_ids": [
+        "rb-db-outage"
+      ]
     },
     {
       "id": "sig-misconfigured-dependency",
@@ -115,19 +153,25 @@
       "requires": [
         {
           "kind": "log",
-          "match": ["connection refused"],
+          "match": [
+            "connection refused"
+          ],
           "label": "upstream connections refused",
           "demand": "upstream dependency error log sample"
         },
         {
           "kind": "change",
-          "match": ["url"],
+          "match": [
+            "url"
+          ],
           "label": "a dependency URL was changed shortly before onset",
           "demand": "configuration changes for the service in the 30 minutes before onset"
         },
         {
           "kind": "metric",
-          "match": ["upstream_connect_errors"],
+          "match": [
+            "upstream_connect_errors"
+          ],
           "label": "upstream connect errors rose",
           "demand": "upstream dependency error metric"
         }
@@ -142,14 +186,23 @@
       "remediation": {
         "title": "Restore the dependency endpoint",
         "tool": "set_config",
-        "args": {"service": "order-api", "key": "PAYMENT_URL"},
+        "args": {
+          "service": "order-api",
+          "key": "PAYMENT_URL"
+        },
         "restore_from_change": "PAYMENT_URL",
         "risk": "medium",
         "rationale": "Restoring the previous endpoint reverses the change that produced the connection failures.",
-        "preconditions": ["the previous endpoint is confirmed healthy"],
-        "verify": ["http_5xx_rate"]
+        "preconditions": [
+          "the previous endpoint is confirmed healthy"
+        ],
+        "verify": [
+          "http_5xx_rate"
+        ]
       },
-      "runbook_ids": ["rb-dependency"]
+      "runbook_ids": [
+        "rb-dependency"
+      ]
     },
     {
       "id": "sig-slow-query",
@@ -159,19 +212,25 @@
       "requires": [
         {
           "kind": "log",
-          "match": ["slow query"],
+          "match": [
+            "slow query"
+          ],
           "label": "slow query log entries",
           "demand": "slow query log sample"
         },
         {
           "kind": "change",
-          "match": ["image"],
+          "match": [
+            "image"
+          ],
           "label": "a release shortly before onset",
           "demand": "configuration changes for the service in the 30 minutes before onset"
         },
         {
           "kind": "metric",
-          "match": ["db_cpu_utilisation"],
+          "match": [
+            "db_cpu_utilisation"
+          ],
           "label": "database CPU rose",
           "demand": "database cpu utilisation metric"
         }
@@ -186,14 +245,28 @@
       "remediation": {
         "title": "Enable safe mode to bypass the new query path",
         "tool": "set_config",
-        "args": {"service": "order-api", "key": "FEATURE_FLAG_SAFE_MODE", "value": "true"},
+        "args": {
+          "service": "order-api",
+          "key": "FEATURE_FLAG_SAFE_MODE",
+          "value": "true"
+        },
         "risk": "medium",
         "rationale": "Safe mode routes around the new query while an index is prepared, and is reversible by flag.",
-        "preconditions": ["safe mode is known to serve the affected endpoint"],
-        "rollback_args": {"service": "order-api", "key": "FEATURE_FLAG_SAFE_MODE", "value": "false"},
-        "verify": ["http_request_duration_p99"]
+        "preconditions": [
+          "safe mode is known to serve the affected endpoint"
+        ],
+        "rollback_args": {
+          "service": "order-api",
+          "key": "FEATURE_FLAG_SAFE_MODE",
+          "value": "false"
+        },
+        "verify": [
+          "http_request_duration_p99"
+        ]
       },
-      "runbook_ids": ["rb-slow-query"]
+      "runbook_ids": [
+        "rb-slow-query"
+      ]
     }
   ]
 }
