@@ -316,6 +316,13 @@ values. `DemandResponses` are served by the adapter whose `Kind` matches, keyed 
 descriptor, and each carries `Facts["demand"] = descriptor` so the orchestrator can mark
 the demand satisfied.
 
+A demand response may name a `Service` and a `Logs` term. `Service` defaults to the
+alert's service, which is right until the alerting service turns out to be a victim: then
+the change history and log lines that settle the case belong to something upstream of it,
+and a response scoped to the alert would return nothing. A response that names a service
+records it in a `subject` fact, which is how a later rule can tell whether an explanation
+rests on evidence from the upstream (DLD-1034).
+
 **Invariants.** Every returned value derives from the case file; the adapter performs no
 I/O and holds no clock.
 
@@ -560,9 +567,21 @@ within `1e-9`.
 | `coverage_gap` | A required pattern of the hypothesis's signature matched no evidence | Critique `revise` plus a demand carrying that pattern's descriptor |
 | `alternative_explanation` | Another signature matches at least one pattern and its discriminator is unsatisfied | Critique `revise` on the leading hypothesis naming the rival, plus a demand for the discriminator |
 | `temporal_order` | The hypothesis's matched change timestamp is not earlier than the anomaly onset | Critique `reject`, and counter-evidence attached to the hypothesis |
-| `source_vs_victim` | Topology evidence names an upstream service whose onset is earlier | Critique `revise` naming the upstream candidate |
+| `source_vs_victim` | Topology evidence names an upstream service whose onset is earlier, **and** the hypothesis rests on no evidence whose `subject` fact is that service | Critique `revise` naming the upstream candidate, plus a demand for every unanswered requirement descriptor in the catalog |
 | `unverifiable_remediation` | The signature declares no remediation, or one with no verify signal | Critique `accept_with_risk` |
 | `close_call` | Top-two total gap `< closeCallMargin` | Critique `revise` on the leader, plus a demand for the leader's discriminator |
+
+**Why `source_vs_victim` carries both a skip and demands.** Without the skip it also
+challenges the explanation that already blames the upstream, using the very topology
+evidence that supports it. Without the demands it says "you may be looking at the wrong
+service" and asks for nothing, so the investigation closes on a `revise` verdict instead
+of redirecting — a challenge no evidence can answer is a veto, not a critique (REQ-0101).
+
+The skip is decided from the evidence, not from the signature. A signature's remediation
+names a service by catalog convention rather than by inference — every signature here
+remediates `order-api` — so reading intent from that field would make every explanation
+look upstream-aware. Evidence answering a demand records the service it concerns in a
+`subject` fact, and that is what the rule reads.
 
 **Behaviour.** Rules run in table order over the ranked hypotheses. Demands are
 deduplicated by descriptor, ordered by `(rule order, hypothesis rank)`, and capped at

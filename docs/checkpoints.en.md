@@ -31,6 +31,7 @@ Each wave closed only when its gate command exited zero.
 | 9 | REQ-0096..0098 (M4 live adapters) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0100, TC-0101, TC-0102, TC-0103 |
 | 10 | REQ-0099 (overfitting case C4) | `go test ./... && go run ./cmd/evalctl run` | pass | TC-0104 |
 | 11 | REQ-0100 (model reasoner) | `go test -race ./... && sddctl gate --stage deliver` | pass | TC-0105, TC-0106 |
+| 12 | REQ-0101 (victim case C5) | `go test -race ./... && go run ./cmd/evalctl run` | pass | TC-0107 |
 
 ## Defects found by the checkpoints
 
@@ -54,6 +55,10 @@ because a checkpoint that never fails is not a checkpoint.
 | D13 | Building C4 | `sig-traffic-surge` scored 1.00 on the only term it claims and was still capped near 0.55, because terms it never required were charged as zeros. Any explanation requiring one evidence kind is therefore unacceptable at the 0.75 threshold no matter how strong its support | **Not fixed — see the known issue below.** The obvious fix makes things worse, and shipping the wrong fix would have been worse than shipping the defect |
 | D14 | `sddctl lint` | The new detailed-design item reused `DLD-1034`, which the critique-rules item already held. The tool refused the tree rather than letting two designs answer to one identifier | Renumbered to `DLD-1035`; the source anchor followed |
 | D15 | `sddctl gate --stage architect` | REQ-0100 had no architecture item deriving from it — the same class of gap as D7, caught the same way | ARC-005, which owns the reasoner port, was extended to claim it |
+| D16 | Building C5 | `source_vs_victim` had never fired in any end-to-end run: every earlier case alerts on the service that is also the origin. It was unit-tested and otherwise dormant — a rule nobody had watched work | C5 alerts on a victim. Running it exposed D17 and D18 below |
+| D17 | C5, first run | The rule challenged and demanded nothing, so the case closed after one round on a `revise` verdict having never looked upstream. A challenge no evidence can answer is a veto, not a critique | The rule now demands every unanswered requirement descriptor in the catalog, which is what lets an upstream explanation form |
+| D18 | C5, second run | The rule also challenged the explanation that correctly blamed the upstream, using the topology evidence that supported it. The first fix attempt read intent from the signature's remediation service — but every signature in this catalog remediates `order-api`, so every explanation looked upstream-aware and the rule stopped firing entirely | The skip is decided from evidence: a demand response records the service it concerns in a `subject` fact, and a hypothesis resting on upstream evidence is not describing a victim |
+| D19 | C5, second run | The change and log demand responses filtered by the *alert's* service, so a victim's alert could never retrieve its upstream's history — the assumption that the alerting service is the subject was baked into the fixture, not just the rule | Demand responses may name a `Service`, defaulting to the alert's |
 
 ## Known issues
 

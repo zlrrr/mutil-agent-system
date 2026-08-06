@@ -39,14 +39,21 @@ def series(name, unit, base_value, steps, start, minutes=40, capacity=None):
     return s
 
 
-def logs(start, spec):
-    """spec: list of (message, level, count, first_offset_seconds, gap_seconds)."""
+def logs(start, spec, service="order-api"):
+    """spec: list of (message, level, count, first_offset_seconds, gap_seconds).
+
+    Entries may override the service with a 6th element, which is what a victim case
+    needs: the alerting service's own lines and its upstream's lines are different
+    evidence, and the log port filters by service.
+    """
     out = []
-    for message, level, count, first, gap in spec:
+    for entry in spec:
+        message, level, count, first, gap = entry[:5]
+        svc = entry[5] if len(entry) > 5 else service
         for i in range(count):
             t = start + timedelta(seconds=first + i * gap)
             out.append({
-                "at": ts(t), "service": "order-api", "level": level,
+                "at": ts(t), "service": svc, "level": level,
                 "message": message.replace("{i}", str(1000 + i)),
             })
     out.sort(key=lambda l: l["at"])
@@ -506,7 +513,141 @@ c4 = {
     "expected_remediation": "set_config order-api RATE_LIMIT_QPS 200",
 }
 
-for case in (c1, c2, c3, c4):
+# --------------------------------------------------------------------------
+# C5 — the alert lands on the victim, the fault is upstream
+# --------------------------------------------------------------------------
+#
+# checkout-web is what pages. It is not what broke. order-api became anomalous three
+# minutes earlier, and its connection pool is what was reduced.
+#
+# This case exists because the source_vs_victim critique rule had never fired in any
+# end-to-end run: every earlier case alerts on the service that is also the origin, so
+# the rule was unit-tested and otherwise dormant. A rule that only ever fires in its own
+# unit test is a rule nobody has watched work.
+C5_START = datetime(2026, 8, 4, 13, 20, 0, tzinfo=timezone.utc)
+C5_UPSTREAM = C5_START - timedelta(minutes=3)
+
+c5 = {
+    "id": "C5",
+    "title": "Checkout 5xx while the fault sits upstream in the order API",
+    "description": (
+        "checkout-web returns 5xx and is what alerts. Its upstream order-api became "
+        "anomalous three minutes earlier, after a configuration change reduced its "
+        "database connection pool. The remediation therefore targets order-api, not the "
+        "service that paged."
+    ),
+    "alert": {
+        "alert_name": "CheckoutWebHighErrorRate",
+        "service": "checkout-web",
+        "severity": "P1",
+        "starts_at": ts(C5_START),
+        "ends_at": ts(C5_START + timedelta(minutes=20)),
+        "labels": {"env": "demo", "team": "checkout"},
+        "annotations": {"summary": "checkout 5xx above 10% for 5 minutes"},
+        "case_ref": "C5",
+    },
+    "default_series": [
+        "http_5xx_rate", "http_request_duration_p99", "http_requests_total",
+    ],
+    "series": [
+        # The victim's own symptoms, starting at the alert.
+        series("http_5xx_rate", "ratio", 0.003, [(0, 0.19)], C5_START),
+        series("http_request_duration_p99", "ms", 210, [(0, 3100)], C5_START),
+        # Traffic is flat: nothing here supports a load explanation.
+        series("http_requests_total", "rps", 145, [], C5_START),
+        # The upstream's saturation, three minutes earlier than the alert.
+        series("db_pool_saturation", "ratio", 0.19, [(-3, 1.0)], C5_START, capacity=1.0),
+        series("db_up", "count", 1, [], C5_START),
+    ],
+    "post_recovery_series": [
+        series("http_5xx_rate", "ratio", 0.003, [(0, 0.19), (20, 0.004)], C5_START),
+        series("http_request_duration_p99", "ms", 210, [(0, 3100), (20, 215)], C5_START),
+        series("db_pool_saturation", "ratio", 0.19, [(-3, 1.0), (20, 0.21)],
+               C5_START, capacity=1.0),
+    ],
+    # The victim's own lines say only that its upstream is failing. The lines that
+    # identify the fault belong to order-api, and the log port filters by service — so
+    # nothing finds them until the critic asks about the upstream.
+    "logs": logs(C5_START, [
+        ("upstream order-api returned 503, retrying", "warn", 88, 14, 9, "checkout-web"),
+        ("gateway timeout calling order-api", "error", 41, 20, 17, "checkout-web"),
+        ("db connection timeout after 3000ms (attempt {i})", "error", 156, 10, 5, "order-api"),
+        ("pool exhausted, waiters=22 elapsed=2900ms", "warn", 33, 22, 19, "order-api"),
+    ]),
+    "changes": [
+        {
+            "at": ts(C5_UPSTREAM - timedelta(seconds=60)),
+            "service": "order-api", "type": "config",
+            "key": "DB_POOL_SIZE", "old": "20", "new": "3",
+            "author": "deploy-bot", "ref": "release-2026.08.04-1",
+            "revision": "b31f70c",
+        },
+    ],
+    # The shape the whole case turns on: the service that alerted is not the earliest
+    # anomalous service in its own neighbourhood.
+    "topology": {
+        "service": "checkout-web",
+        "nodes": [
+            {"name": "checkout-web", "anomalous": True,
+             "first_seen": ts(C5_START), "role": "frontend"},
+            {"name": "order-api", "anomalous": True,
+             "first_seen": ts(C5_UPSTREAM), "role": "api"},
+            {"name": "postgres", "anomalous": False, "role": "datastore"},
+        ],
+        "edges": [
+            {"from": "checkout-web", "to": "order-api"},
+            {"from": "order-api", "to": "postgres"},
+        ],
+    },
+    "demand_responses": [
+        {
+            "descriptor": "database connection pool saturation metric",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:db_pool_saturation{service=\"order-api\"}",
+            "confidence": 0.92, "series": "db_pool_saturation",
+        },
+        {
+            "descriptor": "configuration changes for the service in the 30 minutes before onset",
+            "kind": "change", "source": "deploy-history-fixture",
+            "raw_ref": "deploy-history:order-api?lookback=30m",
+            "confidence": 0.92, "changes": True, "service": "order-api",
+        },
+        {
+            "descriptor": "database connection timeout log sample",
+            "kind": "log", "source": "logs-fixture",
+            "raw_ref": "logs:order-api?q=connection+timeout",
+            "confidence": 0.9, "logs": "connection timeout", "service": "order-api",
+        },
+        {
+            "descriptor": "database availability metric",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:db_up{service=\"order-api\"}",
+            "confidence": 0.88, "series": "db_up",
+            "facts": {"counters": "sig-db-outage"},
+        },
+        {
+            "descriptor": "historical peak traffic comparison at equal load",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:http_requests_total{service=\"checkout-web\"}[2d:offset 2d]",
+            "confidence": 0.88,
+            "summary": ("checkout-web request rate is flat at 145 rps across the window "
+                        "and matches the preceding days"),
+            "facts": {"current_peak": "145 rps", "counters": "sig-traffic-surge"},
+        },
+    ],
+    "recovery_trigger": {
+        "tool": "set_config",
+        "args": {"service": "order-api", "key": "DB_POOL_SIZE", "value": "20"},
+    },
+    "initial_config": {
+        "order-api/DB_POOL_SIZE": "3",
+        "checkout-web/RATE_LIMIT_QPS": "500",
+    },
+    "expected_signature": "sig-db-pool-exhaustion",
+    "expected_remediation": "set_config order-api DB_POOL_SIZE 20",
+}
+
+for case in (c1, c2, c3, c4, c5):
     path = os.path.join(OUT, "case-%s.json" % case["id"].lower())
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(case, fh, indent=2, ensure_ascii=False)

@@ -139,17 +139,19 @@ make eval
 
 | Mode | Samples | Top-1 accuracy | Top-3 coverage | Evidence kinds | Rounds |
 |---|---|---|---|---|---|
-| single | 4 | 25% | 100% | 5.0 | 1.0 |
-| multi_no_critic | 4 | 25% | 100% | 5.0 | 1.0 |
-| multi_with_critic | 4 | 100% | 100% | 5.8 | 2.0 |
+| single | 5 | 20% | 80% | 5.0 | 1.0 |
+| multi_no_critic | 5 | 20% | 80% | 5.0 | 1.0 |
+| multi_with_critic | 5 | 100% | 100% | 5.8 | 2.2 |
 
-The baselines are not uniformly useless: they get `C4` right. That case's correct answer
-is `sig-traffic-surge` — the explanation the reference scenario spends its whole second
-round demoting. It is in the catalog precisely so that a system which had learned "the
-leading explanation is wrong" would fail somewhere, and it is why the adversarial flow's
-100% means it discriminates rather than objects by reflex.
+Two cases in that set do specific work. `C4`'s correct answer is `sig-traffic-surge` —
+the explanation the reference scenario spends its whole second round demoting — and both
+baselines get it right. It is there so that a system which had merely learned "the leading
+explanation is wrong" would fail somewhere, which is what makes the adversarial flow's
+100% a claim about discrimination rather than reflex. `C5` alerts on a service that is
+downstream of the fault; it is the only case where the baselines' top-3 does not even
+contain the answer, which is why their coverage is 80% rather than 100%.
 
-Two caveats, printed alongside the numbers rather than buried: the sample is four fault
+Two caveats, printed alongside the numbers rather than buried: the sample is five fault
 cases, and the single-agent baseline is given the *same tools and the same default
 queries* as the full flow. It models "one context window, one look", not a weaker
 toolset — which is the fairest comparison available, and the only one that makes the

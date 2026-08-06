@@ -582,3 +582,83 @@ func TestMisleadingLogsDoNotWin(t *testing.T) {
 		}
 	})
 }
+
+// sdd:verify TC-0107
+func TestVictimAlertReachesUpstreamCause(t *testing.T) {
+	b := build(t, func(p *arena.Params) { p.CaseID = "C5" })
+	c := runToHalt(t, b, domain.ModeMultiWithCritic)
+	if c.Status == domain.StatusAwaitingApproval {
+		c = approve(t, b, c)
+	}
+	if len(c.Hypotheses) == 0 {
+		t.Fatal("C5 produced no hypothesis")
+	}
+
+	const upstream = "order-api"
+
+	t.Run("the accepted cause is the upstream one", func(t *testing.T) {
+		if got := c.Hypotheses[0].SignatureID; got != "sig-db-pool-exhaustion" {
+			t.Errorf("accepted %s; the fault is upstream, in %s", got, upstream)
+		}
+		if c.Alert.Service == upstream {
+			t.Fatal("this case is pointless unless the alert names the victim")
+		}
+	})
+
+	// The system alerted on one service and acted on another. That is the whole point:
+	// the page names the symptom, not the subject.
+	t.Run("the action targets the upstream, not the service that alerted", func(t *testing.T) {
+		if len(c.Actions) == 0 {
+			t.Fatal("no action was proposed, so the case never reached the upstream")
+		}
+		a := c.Actions[0]
+		if got := a.Args["service"]; got != upstream {
+			t.Errorf("action targets %q, want %q — it is remediating the victim", got, upstream)
+		}
+		if a.Args["service"] == c.Alert.Service {
+			t.Error("the action targets the alerting service, which is the victim")
+		}
+	})
+
+	// The rule existed and was unit-tested from the start, but no fault case had ever
+	// made it fire end to end. A rule that only runs in its own unit test is a rule
+	// nobody has watched work.
+	t.Run("the source_vs_victim rule fires", func(t *testing.T) {
+		var fired bool
+		for _, cr := range c.Critiques {
+			if cr.Rule == "source_vs_victim" {
+				fired = true
+			}
+		}
+		if !fired {
+			t.Error("source_vs_victim never fired, so this case does not exercise it")
+		}
+	})
+
+	// Without this, the rule objects to the answer it exists to reach, using the very
+	// evidence that supports it.
+	t.Run("it does not challenge the explanation that already looks upstream", func(t *testing.T) {
+		accepted := c.Hypotheses[0].ID
+		for _, cr := range c.Critiques {
+			if cr.Rule == "source_vs_victim" && cr.HypothesisID == accepted {
+				t.Errorf("source_vs_victim challenged %s, the upstream explanation itself", accepted)
+			}
+		}
+	})
+
+	// A challenge that demands nothing ends the investigation instead of redirecting it.
+	t.Run("the challenge redirects rather than vetoes", func(t *testing.T) {
+		if c.Round < 2 {
+			t.Errorf("the case closed after %d round(s); the victim challenge asked for nothing", c.Round)
+		}
+		var upstreamEvidence int
+		for _, e := range c.Evidence {
+			if e.Fact("subject") == upstream {
+				upstreamEvidence++
+			}
+		}
+		if upstreamEvidence == 0 {
+			t.Error("no evidence about the upstream service was ever collected")
+		}
+	})
+}

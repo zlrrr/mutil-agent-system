@@ -1,0 +1,3379 @@
+{
+  "id": "C5",
+  "title": "Checkout 5xx while the fault sits upstream in the order API",
+  "description": "checkout-web returns 5xx and is what alerts. Its upstream order-api became anomalous three minutes earlier, after a configuration change reduced its database connection pool. The remediation therefore targets order-api, not the service that paged.",
+  "alert": {
+    "alert_name": "CheckoutWebHighErrorRate",
+    "service": "checkout-web",
+    "severity": "P1",
+    "starts_at": "2026-08-04T13:20:00Z",
+    "ends_at": "2026-08-04T13:40:00Z",
+    "labels": {
+      "env": "demo",
+      "team": "checkout"
+    },
+    "annotations": {
+      "summary": "checkout 5xx above 10% for 5 minutes"
+    },
+    "case_ref": "C5"
+  },
+  "default_series": [
+    "http_5xx_rate",
+    "http_request_duration_p99",
+    "http_requests_total"
+  ],
+  "series": [
+    {
+      "name": "http_5xx_rate",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 0.19
+        }
+      ]
+    },
+    {
+      "name": "http_request_duration_p99",
+      "unit": "ms",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 3100
+        }
+      ]
+    },
+    {
+      "name": "http_requests_total",
+      "unit": "rps",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 145
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 145
+        }
+      ]
+    },
+    {
+      "name": "db_pool_saturation",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 1.0
+        }
+      ],
+      "capacity": 1.0
+    },
+    {
+      "name": "db_up",
+      "unit": "count",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "post_recovery_series": [
+    {
+      "name": "http_5xx_rate",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 0.003
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 0.004
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 0.004
+        }
+      ]
+    },
+    {
+      "name": "http_request_duration_p99",
+      "unit": "ms",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 210
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 3100
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 215
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 215
+        }
+      ]
+    },
+    {
+      "name": "db_pool_saturation",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-08-04T13:10:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:11:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:12:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:13:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:14:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:15:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:16:00Z",
+          "value": 0.19
+        },
+        {
+          "at": "2026-08-04T13:17:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:18:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:19:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:20:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:21:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:22:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:23:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:24:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:25:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:26:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:27:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:28:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:29:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:30:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:31:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:32:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:33:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:34:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:35:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:36:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:37:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:38:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:39:00Z",
+          "value": 1.0
+        },
+        {
+          "at": "2026-08-04T13:40:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:41:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:42:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:43:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:44:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:45:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:46:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:47:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:48:00Z",
+          "value": 0.21
+        },
+        {
+          "at": "2026-08-04T13:49:00Z",
+          "value": 0.21
+        }
+      ],
+      "capacity": 1.0
+    }
+  ],
+  "logs": [
+    {
+      "at": "2026-08-04T13:20:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1000)"
+    },
+    {
+      "at": "2026-08-04T13:20:14Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:20:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1001)"
+    },
+    {
+      "at": "2026-08-04T13:20:20Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:20:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1002)"
+    },
+    {
+      "at": "2026-08-04T13:20:22Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:20:23Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:20:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1003)"
+    },
+    {
+      "at": "2026-08-04T13:20:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1004)"
+    },
+    {
+      "at": "2026-08-04T13:20:32Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:20:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1005)"
+    },
+    {
+      "at": "2026-08-04T13:20:37Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:20:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1006)"
+    },
+    {
+      "at": "2026-08-04T13:20:41Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:20:41Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:20:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1007)"
+    },
+    {
+      "at": "2026-08-04T13:20:50Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:20:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1008)"
+    },
+    {
+      "at": "2026-08-04T13:20:54Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:20:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1009)"
+    },
+    {
+      "at": "2026-08-04T13:20:59Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1010)"
+    },
+    {
+      "at": "2026-08-04T13:21:00Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:21:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1011)"
+    },
+    {
+      "at": "2026-08-04T13:21:08Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1012)"
+    },
+    {
+      "at": "2026-08-04T13:21:11Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:21:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1013)"
+    },
+    {
+      "at": "2026-08-04T13:21:17Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:19Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:21:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1014)"
+    },
+    {
+      "at": "2026-08-04T13:21:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1015)"
+    },
+    {
+      "at": "2026-08-04T13:21:26Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:28Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:21:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1016)"
+    },
+    {
+      "at": "2026-08-04T13:21:35Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1017)"
+    },
+    {
+      "at": "2026-08-04T13:21:38Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:21:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1018)"
+    },
+    {
+      "at": "2026-08-04T13:21:44Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:45Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:21:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1019)"
+    },
+    {
+      "at": "2026-08-04T13:21:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1020)"
+    },
+    {
+      "at": "2026-08-04T13:21:53Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:21:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1021)"
+    },
+    {
+      "at": "2026-08-04T13:21:57Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:22:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1022)"
+    },
+    {
+      "at": "2026-08-04T13:22:02Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:22:02Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:22:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1023)"
+    },
+    {
+      "at": "2026-08-04T13:22:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1024)"
+    },
+    {
+      "at": "2026-08-04T13:22:11Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:22:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1025)"
+    },
+    {
+      "at": "2026-08-04T13:22:16Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:22:19Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:22:20Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:22:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1026)"
+    },
+    {
+      "at": "2026-08-04T13:22:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1027)"
+    },
+    {
+      "at": "2026-08-04T13:22:29Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:22:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1028)"
+    },
+    {
+      "at": "2026-08-04T13:22:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1029)"
+    },
+    {
+      "at": "2026-08-04T13:22:35Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:22:36Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:22:38Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:22:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1030)"
+    },
+    {
+      "at": "2026-08-04T13:22:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1031)"
+    },
+    {
+      "at": "2026-08-04T13:22:47Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:22:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1032)"
+    },
+    {
+      "at": "2026-08-04T13:22:53Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:22:54Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:22:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1033)"
+    },
+    {
+      "at": "2026-08-04T13:22:56Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1034)"
+    },
+    {
+      "at": "2026-08-04T13:23:05Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1035)"
+    },
+    {
+      "at": "2026-08-04T13:23:10Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:23:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1036)"
+    },
+    {
+      "at": "2026-08-04T13:23:13Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:23:14Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1037)"
+    },
+    {
+      "at": "2026-08-04T13:23:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1038)"
+    },
+    {
+      "at": "2026-08-04T13:23:23Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1039)"
+    },
+    {
+      "at": "2026-08-04T13:23:27Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:23:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1040)"
+    },
+    {
+      "at": "2026-08-04T13:23:32Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:32Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:23:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1041)"
+    },
+    {
+      "at": "2026-08-04T13:23:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1042)"
+    },
+    {
+      "at": "2026-08-04T13:23:41Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:44Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:23:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1043)"
+    },
+    {
+      "at": "2026-08-04T13:23:50Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:23:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1044)"
+    },
+    {
+      "at": "2026-08-04T13:23:51Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:23:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1045)"
+    },
+    {
+      "at": "2026-08-04T13:23:59Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1046)"
+    },
+    {
+      "at": "2026-08-04T13:24:01Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:24:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1047)"
+    },
+    {
+      "at": "2026-08-04T13:24:08Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1048)"
+    },
+    {
+      "at": "2026-08-04T13:24:10Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:24:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1049)"
+    },
+    {
+      "at": "2026-08-04T13:24:17Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:18Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:24:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1050)"
+    },
+    {
+      "at": "2026-08-04T13:24:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1051)"
+    },
+    {
+      "at": "2026-08-04T13:24:26Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:29Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:24:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1052)"
+    },
+    {
+      "at": "2026-08-04T13:24:35Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:35Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:24:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1053)"
+    },
+    {
+      "at": "2026-08-04T13:24:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1054)"
+    },
+    {
+      "at": "2026-08-04T13:24:44Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1055)"
+    },
+    {
+      "at": "2026-08-04T13:24:48Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:24:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1056)"
+    },
+    {
+      "at": "2026-08-04T13:24:52Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:24:53Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:24:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1057)"
+    },
+    {
+      "at": "2026-08-04T13:25:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1058)"
+    },
+    {
+      "at": "2026-08-04T13:25:02Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:25:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1059)"
+    },
+    {
+      "at": "2026-08-04T13:25:07Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:25:09Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:25:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1060)"
+    },
+    {
+      "at": "2026-08-04T13:25:11Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:25:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1061)"
+    },
+    {
+      "at": "2026-08-04T13:25:20Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:25:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1062)"
+    },
+    {
+      "at": "2026-08-04T13:25:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1063)"
+    },
+    {
+      "at": "2026-08-04T13:25:26Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:25:26Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:25:29Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:25:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1064)"
+    },
+    {
+      "at": "2026-08-04T13:25:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1065)"
+    },
+    {
+      "at": "2026-08-04T13:25:38Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:25:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1066)"
+    },
+    {
+      "at": "2026-08-04T13:25:43Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:25:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1067)"
+    },
+    {
+      "at": "2026-08-04T13:25:45Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:25:47Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:25:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1068)"
+    },
+    {
+      "at": "2026-08-04T13:25:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1069)"
+    },
+    {
+      "at": "2026-08-04T13:25:56Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:00Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:26:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1070)"
+    },
+    {
+      "at": "2026-08-04T13:26:04Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:26:05Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1071)"
+    },
+    {
+      "at": "2026-08-04T13:26:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1072)"
+    },
+    {
+      "at": "2026-08-04T13:26:14Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1073)"
+    },
+    {
+      "at": "2026-08-04T13:26:17Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:26:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1074)"
+    },
+    {
+      "at": "2026-08-04T13:26:23Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:23Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:26:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1075)"
+    },
+    {
+      "at": "2026-08-04T13:26:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1076)"
+    },
+    {
+      "at": "2026-08-04T13:26:32Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:34Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:26:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1077)"
+    },
+    {
+      "at": "2026-08-04T13:26:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1078)"
+    },
+    {
+      "at": "2026-08-04T13:26:41Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:42Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:26:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1079)"
+    },
+    {
+      "at": "2026-08-04T13:26:50Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:26:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1080)"
+    },
+    {
+      "at": "2026-08-04T13:26:51Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:26:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1081)"
+    },
+    {
+      "at": "2026-08-04T13:26:59Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1082)"
+    },
+    {
+      "at": "2026-08-04T13:27:01Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:27:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1083)"
+    },
+    {
+      "at": "2026-08-04T13:27:08Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:08Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:27:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1084)"
+    },
+    {
+      "at": "2026-08-04T13:27:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1085)"
+    },
+    {
+      "at": "2026-08-04T13:27:17Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1086)"
+    },
+    {
+      "at": "2026-08-04T13:27:20Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:27:25Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:27:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1087)"
+    },
+    {
+      "at": "2026-08-04T13:27:26Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1088)"
+    },
+    {
+      "at": "2026-08-04T13:27:35Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1089)"
+    },
+    {
+      "at": "2026-08-04T13:27:39Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:27:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1090)"
+    },
+    {
+      "at": "2026-08-04T13:27:42Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:27:44Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1091)"
+    },
+    {
+      "at": "2026-08-04T13:27:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1092)"
+    },
+    {
+      "at": "2026-08-04T13:27:53Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:27:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1093)"
+    },
+    {
+      "at": "2026-08-04T13:27:58Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:27:59Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:28:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1094)"
+    },
+    {
+      "at": "2026-08-04T13:28:02Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:28:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1095)"
+    },
+    {
+      "at": "2026-08-04T13:28:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1096)"
+    },
+    {
+      "at": "2026-08-04T13:28:11Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:28:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1097)"
+    },
+    {
+      "at": "2026-08-04T13:28:16Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:28:17Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:28:20Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:28:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1098)"
+    },
+    {
+      "at": "2026-08-04T13:28:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1099)"
+    },
+    {
+      "at": "2026-08-04T13:28:29Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:28:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1100)"
+    },
+    {
+      "at": "2026-08-04T13:28:33Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:28:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1101)"
+    },
+    {
+      "at": "2026-08-04T13:28:36Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:28:38Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:28:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1102)"
+    },
+    {
+      "at": "2026-08-04T13:28:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1103)"
+    },
+    {
+      "at": "2026-08-04T13:28:47Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:28:50Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:28:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1104)"
+    },
+    {
+      "at": "2026-08-04T13:28:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1105)"
+    },
+    {
+      "at": "2026-08-04T13:28:55Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:28:56Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1106)"
+    },
+    {
+      "at": "2026-08-04T13:29:05Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1107)"
+    },
+    {
+      "at": "2026-08-04T13:29:07Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:29:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1108)"
+    },
+    {
+      "at": "2026-08-04T13:29:14Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:14Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:29:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1109)"
+    },
+    {
+      "at": "2026-08-04T13:29:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1110)"
+    },
+    {
+      "at": "2026-08-04T13:29:23Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:24Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:29:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1111)"
+    },
+    {
+      "at": "2026-08-04T13:29:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1112)"
+    },
+    {
+      "at": "2026-08-04T13:29:32Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:33Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:29:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1113)"
+    },
+    {
+      "at": "2026-08-04T13:29:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1114)"
+    },
+    {
+      "at": "2026-08-04T13:29:41Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:41Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:29:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1115)"
+    },
+    {
+      "at": "2026-08-04T13:29:50Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:29:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1116)"
+    },
+    {
+      "at": "2026-08-04T13:29:52Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:29:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1117)"
+    },
+    {
+      "at": "2026-08-04T13:29:58Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:29:59Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1118)"
+    },
+    {
+      "at": "2026-08-04T13:30:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1119)"
+    },
+    {
+      "at": "2026-08-04T13:30:08Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1120)"
+    },
+    {
+      "at": "2026-08-04T13:30:11Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:30:15Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:30:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1121)"
+    },
+    {
+      "at": "2026-08-04T13:30:17Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1122)"
+    },
+    {
+      "at": "2026-08-04T13:30:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1123)"
+    },
+    {
+      "at": "2026-08-04T13:30:26Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1124)"
+    },
+    {
+      "at": "2026-08-04T13:30:30Z",
+      "service": "order-api",
+      "level": "warn",
+      "message": "pool exhausted, waiters=22 elapsed=2900ms"
+    },
+    {
+      "at": "2026-08-04T13:30:32Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:30:35Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1125)"
+    },
+    {
+      "at": "2026-08-04T13:30:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1126)"
+    },
+    {
+      "at": "2026-08-04T13:30:44Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1127)"
+    },
+    {
+      "at": "2026-08-04T13:30:49Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:30:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1128)"
+    },
+    {
+      "at": "2026-08-04T13:30:53Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:30:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1129)"
+    },
+    {
+      "at": "2026-08-04T13:31:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1130)"
+    },
+    {
+      "at": "2026-08-04T13:31:02Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:31:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1131)"
+    },
+    {
+      "at": "2026-08-04T13:31:06Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:31:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1132)"
+    },
+    {
+      "at": "2026-08-04T13:31:11Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:31:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1133)"
+    },
+    {
+      "at": "2026-08-04T13:31:20Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:31:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1134)"
+    },
+    {
+      "at": "2026-08-04T13:31:23Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:31:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1135)"
+    },
+    {
+      "at": "2026-08-04T13:31:29Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:31:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1136)"
+    },
+    {
+      "at": "2026-08-04T13:31:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1137)"
+    },
+    {
+      "at": "2026-08-04T13:31:38Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:31:40Z",
+      "service": "checkout-web",
+      "level": "error",
+      "message": "gateway timeout calling order-api"
+    },
+    {
+      "at": "2026-08-04T13:31:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1138)"
+    },
+    {
+      "at": "2026-08-04T13:31:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1139)"
+    },
+    {
+      "at": "2026-08-04T13:31:47Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:31:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1140)"
+    },
+    {
+      "at": "2026-08-04T13:31:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1141)"
+    },
+    {
+      "at": "2026-08-04T13:31:56Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1142)"
+    },
+    {
+      "at": "2026-08-04T13:32:05Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1143)"
+    },
+    {
+      "at": "2026-08-04T13:32:10Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1144)"
+    },
+    {
+      "at": "2026-08-04T13:32:14Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:15Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1145)"
+    },
+    {
+      "at": "2026-08-04T13:32:20Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1146)"
+    },
+    {
+      "at": "2026-08-04T13:32:23Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:25Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1147)"
+    },
+    {
+      "at": "2026-08-04T13:32:30Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1148)"
+    },
+    {
+      "at": "2026-08-04T13:32:32Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:35Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1149)"
+    },
+    {
+      "at": "2026-08-04T13:32:40Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1150)"
+    },
+    {
+      "at": "2026-08-04T13:32:41Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:45Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1151)"
+    },
+    {
+      "at": "2026-08-04T13:32:50Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:32:50Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1152)"
+    },
+    {
+      "at": "2026-08-04T13:32:55Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1153)"
+    },
+    {
+      "at": "2026-08-04T13:32:59Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:33:00Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1154)"
+    },
+    {
+      "at": "2026-08-04T13:33:05Z",
+      "service": "order-api",
+      "level": "error",
+      "message": "db connection timeout after 3000ms (attempt 1155)"
+    },
+    {
+      "at": "2026-08-04T13:33:08Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    },
+    {
+      "at": "2026-08-04T13:33:17Z",
+      "service": "checkout-web",
+      "level": "warn",
+      "message": "upstream order-api returned 503, retrying"
+    }
+  ],
+  "changes": [
+    {
+      "at": "2026-08-04T13:16:00Z",
+      "service": "order-api",
+      "type": "config",
+      "key": "DB_POOL_SIZE",
+      "old": "20",
+      "new": "3",
+      "author": "deploy-bot",
+      "ref": "release-2026.08.04-1",
+      "revision": "b31f70c"
+    }
+  ],
+  "topology": {
+    "service": "checkout-web",
+    "nodes": [
+      {
+        "name": "checkout-web",
+        "anomalous": true,
+        "first_seen": "2026-08-04T13:20:00Z",
+        "role": "frontend"
+      },
+      {
+        "name": "order-api",
+        "anomalous": true,
+        "first_seen": "2026-08-04T13:17:00Z",
+        "role": "api"
+      },
+      {
+        "name": "postgres",
+        "anomalous": false,
+        "role": "datastore"
+      }
+    ],
+    "edges": [
+      {
+        "from": "checkout-web",
+        "to": "order-api"
+      },
+      {
+        "from": "order-api",
+        "to": "postgres"
+      }
+    ]
+  },
+  "demand_responses": [
+    {
+      "descriptor": "database connection pool saturation metric",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:db_pool_saturation{service=\"order-api\"}",
+      "confidence": 0.92,
+      "series": "db_pool_saturation"
+    },
+    {
+      "descriptor": "configuration changes for the service in the 30 minutes before onset",
+      "kind": "change",
+      "source": "deploy-history-fixture",
+      "raw_ref": "deploy-history:order-api?lookback=30m",
+      "confidence": 0.92,
+      "changes": true,
+      "service": "order-api"
+    },
+    {
+      "descriptor": "database connection timeout log sample",
+      "kind": "log",
+      "source": "logs-fixture",
+      "raw_ref": "logs:order-api?q=connection+timeout",
+      "confidence": 0.9,
+      "logs": "connection timeout",
+      "service": "order-api"
+    },
+    {
+      "descriptor": "database availability metric",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:db_up{service=\"order-api\"}",
+      "confidence": 0.88,
+      "series": "db_up",
+      "facts": {
+        "counters": "sig-db-outage"
+      }
+    },
+    {
+      "descriptor": "historical peak traffic comparison at equal load",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:http_requests_total{service=\"checkout-web\"}[2d:offset 2d]",
+      "confidence": 0.88,
+      "summary": "checkout-web request rate is flat at 145 rps across the window and matches the preceding days",
+      "facts": {
+        "current_peak": "145 rps",
+        "counters": "sig-traffic-surge"
+      }
+    }
+  ],
+  "recovery_trigger": {
+    "tool": "set_config",
+    "args": {
+      "service": "order-api",
+      "key": "DB_POOL_SIZE",
+      "value": "20"
+    }
+  },
+  "initial_config": {
+    "order-api/DB_POOL_SIZE": "3",
+    "checkout-web/RATE_LIMIT_QPS": "500"
+  },
+  "expected_signature": "sig-db-pool-exhaustion",
+  "expected_remediation": "set_config order-api DB_POOL_SIZE 20"
+}

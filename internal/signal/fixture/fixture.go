@@ -252,16 +252,22 @@ func (d *demandResponder) Respond(_ context.Context, descriptor string, kind dom
 		}
 	case r.Changes:
 		w := d.fc.Window().Extend(30 * time.Minute)
+		// The subject is the alert's service unless the response names another. A
+		// victim's alert is answered by the upstream service's history, not its own.
+		subject := r.Service
+		if subject == "" {
+			subject = d.fc.Alert.Service
+		}
 		var found []signal.Change
 		for _, ch := range d.fc.Changes {
-			if ch.Service == d.fc.Alert.Service && w.Contains(ch.At) {
+			if ch.Service == subject && w.Contains(ch.At) {
 				found = append(found, ch)
 			}
 		}
 		sort.SliceStable(found, func(i, j int) bool { return found[i].At.Before(found[j].At) })
 		if len(found) == 0 {
 			out.Summary = "no configuration or deployment change is recorded for " +
-				d.fc.Alert.Service + " in the 30 minutes before onset"
+				subject + " in the 30 minutes before onset"
 			out.Facts["changes_found"] = "0"
 			return out, true
 		}
@@ -274,6 +280,35 @@ func (d *demandResponder) Respond(_ context.Context, descriptor string, kind dom
 		out.Facts["changed_at"] = ch.At.UTC().Format(time.RFC3339)
 		out.Facts["change_type"] = ch.Type
 		out.Facts["changes_found"] = fmt.Sprint(len(found))
+		out.Facts["subject"] = subject
+
+	case r.Logs != "":
+		subject := r.Service
+		if subject == "" {
+			subject = d.fc.Alert.Service
+		}
+		lines, _ := (&logSource{fc: d.fc}).Search(context.Background(), signal.LogQuery{
+			Service: subject,
+			Terms:   []string{r.Logs},
+			Window:  d.fc.Window(),
+		})
+		if len(lines) == 0 {
+			out.Summary = fmt.Sprintf("no log line matching %q was found for %s", r.Logs, subject)
+			out.Facts["count"] = "0"
+			return out, true
+		}
+		clusters := signal.ClusterLines(lines)
+		out.Facts["count"] = fmt.Sprint(len(lines))
+		out.Facts["subject"] = subject
+		if len(clusters) > 0 {
+			out.Facts["template"] = clusters[0].Template
+			out.Facts["level"] = clusters[0].Level
+			if out.Summary == "" {
+				out.Summary = fmt.Sprintf("%d line(s) on %s match %q, first at %s",
+					clusters[0].Count, subject, clusters[0].Template,
+					clusters[0].FirstSeen.UTC().Format("15:04:05"))
+			}
+		}
 	}
 
 	if out.Confidence == 0 {

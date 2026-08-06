@@ -248,13 +248,33 @@ type sourceVsVictimRule struct{}
 func (sourceVsVictimRule) Name() string { return "source_vs_victim" }
 
 // Apply challenges any explanation that localises the cause inside a service which
-// itself depends on a service that became anomalous earlier.
+// itself depends on a service that became anomalous earlier — and demands the evidence
+// that would let an explanation form upstream instead.
+//
+// Both halves matter. Without the skip, the rule also challenges the explanation that
+// already blames the upstream, using the very evidence that supports it. Without the
+// demands, the rule says "you may be looking at the wrong service" and asks for nothing,
+// which ends the investigation rather than redirecting it: a challenge no evidence can
+// answer is a veto, not a critique (REQ-0101).
 func (sourceVsVictimRule) Apply(rc RuleContext, h domain.Hypothesis, _ int) ([]domain.Critique, []domain.EvidenceDemand) {
 	for _, e := range rc.Snapshot.EvidenceOfKind(domain.KindTopology) {
 		upstream := e.Fact("upstream_anomalous")
 		if upstream == "" {
 			continue
 		}
+		if restsOnUpstreamEvidence(rc, h, upstream) {
+			// This explanation already rests on evidence from the upstream service.
+			// Objecting to it would be objecting to the answer the rule exists to
+			// reach, using the very evidence that supports it.
+			return nil, nil
+		}
+
+		ds := upstreamDemands(rc, upstream)
+		demandIDs := make([]string, 0, len(ds))
+		for _, d := range ds {
+			demandIDs = append(demandIDs, d.Descriptor)
+		}
+
 		return []domain.Critique{{
 			HypothesisID: h.ID,
 			Category:     "source_vs_victim",
@@ -265,9 +285,68 @@ func (sourceVsVictimRule) Apply(rc RuleContext, h domain.Hypothesis, _ int) ([]d
 				rc.Snapshot.Alert.Service),
 			Verdict:    domain.VerdictRevise,
 			CounterIDs: []string{e.ID},
-		}}, nil
+			DemandIDs:  demandIDs,
+		}}, ds
 	}
 	return nil, nil
+}
+
+// restsOnUpstreamEvidence reports whether any evidence supporting this hypothesis
+// concerns the named service.
+//
+// The question is asked of the evidence rather than of the signature, because a
+// signature's remediation names a service by catalog convention, not by inference —
+// every signature in this catalog happens to remediate `order-api`, so reading intent
+// from that field would make every explanation look upstream-aware.
+func restsOnUpstreamEvidence(rc RuleContext, h domain.Hypothesis, service string) bool {
+	for _, id := range h.Supporting {
+		e, ok := rc.Snapshot.Index[id]
+		if !ok {
+			continue
+		}
+		if e.Fact("subject") == service {
+			return true
+		}
+	}
+	return false
+}
+
+// upstreamDemands returns the evidence that would let an explanation form in the
+// upstream service: the requirement descriptors of every signature whose remediation
+// acts there, minus anything already answered.
+func upstreamDemands(rc RuleContext, upstream string) []domain.EvidenceDemand {
+	var out []domain.EvidenceDemand
+	seen := map[string]bool{}
+
+	ids := make([]string, 0, len(rc.Catalog.Signatures))
+	for _, sig := range rc.Catalog.Signatures {
+		ids = append(ids, sig.ID)
+	}
+	sort.Strings(ids)
+
+	for _, id := range ids {
+		sig, ok := rc.Catalog.Signature(id)
+		if !ok {
+			continue
+		}
+		for _, p := range sig.Requires {
+			if p.Demand == "" || seen[p.Demand] {
+				continue
+			}
+			if demandAlreadyAnswered(rc.Snapshot, p.Demand) {
+				continue
+			}
+			seen[p.Demand] = true
+			out = append(out, domain.EvidenceDemand{
+				Descriptor: p.Demand,
+				Kind:       p.Kind,
+				Reason: fmt.Sprintf(
+					"an explanation localised in %s would need this, and nothing has looked there yet",
+					upstream),
+			})
+		}
+	}
+	return out
 }
 
 // ------------------------------------------------- rule: unverifiable remediation

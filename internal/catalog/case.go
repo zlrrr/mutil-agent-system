@@ -59,6 +59,13 @@ type DemandResponse struct {
 	// Changes, when true, makes this response expose the change history over the
 	// extended lookback window.
 	Changes bool `json:"changes,omitempty"`
+	// Logs, when set, makes this response expose a sample of the case's log lines
+	// matching this term.
+	Logs string `json:"logs,omitempty"`
+	// Service names the service this response concerns. It defaults to the alert's
+	// service, which is right until the alerting service turns out to be a victim: then
+	// the evidence that settles the case belongs to something upstream of it.
+	Service string `json:"service,omitempty"`
 }
 
 // RecoveryTrigger names the actuator call that flips the environment to recovered.

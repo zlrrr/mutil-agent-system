@@ -238,7 +238,7 @@ REQ-0096, REQ-0097, REQ-0098
 
 **实现需求。** REQ-0022, REQ-0023, REQ-0024
 
-<!-- sdd:item id=ARC-009 stage=architect status=approved derives_from=REQ-0030,REQ-0031,REQ-0032,REQ-0033,REQ-0034,REQ-0036,REQ-0099 -->
+<!-- sdd:item id=ARC-009 stage=architect status=approved derives_from=REQ-0030,REQ-0031,REQ-0032,REQ-0033,REQ-0034,REQ-0036,REQ-0099,REQ-0101 -->
 ### ARC-009 — 对抗评审是带索证权与否决权的规则集合
 
 **元素。** 相互独立的质疑规则——替代解释、时序先后、根因与受害者、覆盖缺口、处置不可
@@ -254,7 +254,7 @@ REQ-0096, REQ-0097, REQ-0098
 独立规则各自按自己的触发条件生效，因此一个 case 可以同时在时序**和**替代解释两个维度上
 被挑战——而且每条规则的缺失都可以被测试检出。
 
-**实现需求。** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036, REQ-0099
+**实现需求。** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036, REQ-0099, REQ-0101
 
 <!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0040,REQ-0041,REQ-0042,REQ-0043,REQ-0044,REQ-0045,REQ-0046 -->
 ### ARC-010 — 策略引擎是执行前的咽喉点

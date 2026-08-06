@@ -886,6 +886,27 @@ failure must not be able to impersonate that.
 
 **Verified by.** TC-0105, TC-0106
 
+<!-- sdd:item id=REQ-0101 stage=specify status=approved derives_from=G-001,G-002 priority=P0 -->
+### REQ-0101 — An alert on a victim must reach the cause upstream of it
+
+**Requirement.** When the alerting service is downstream of a service that became
+anomalous earlier, the investigation MUST reach the explanation localised in the upstream
+service, and the remediation it proposes MUST target that service rather than the one
+that alerted.
+
+The `source_vs_victim` critique MUST challenge explanations that localise the cause inside
+the victim, and MUST NOT challenge an explanation that already attributes the cause
+upstream. A challenge that no evidence can answer is a veto, not a critique.
+
+**Acceptance.**
+- Given a case whose alert names a service that depends on an earlier-anomalous upstream
+  service, when the full flow runs, then the accepted explanation is the one localised
+  upstream and the proposed action targets the upstream service.
+- Given that same case, when the critic runs, then `source_vs_victim` appears among the
+  critiques raised — the rule must be exercised end to end, not only in isolation.
+
+**Verified by.** TC-0107
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

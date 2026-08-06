@@ -306,8 +306,8 @@ somewhere, which is what makes the adversarial flow's 100% a claim about discrim
 rather than about reflexive objection.
 
 Read the numbers with two caveats, both of which the report prints alongside them.
-First, the sample is four fault cases; a 100% top-1 accuracy on four cases is a
-statement about four cases. Second, the single-agent baseline is given the same tools
+First, the sample is five fault cases; a 100% top-1 accuracy on five cases is a
+statement about five cases. Second, the single-agent baseline is given the same tools
 and the same default queries as the full flow — it models "one context window, one
 look", not a weaker toolset. That is the fairest baseline available here, and it is
 also the one that makes the comparison meaningful.

@@ -785,6 +785,21 @@ release。
 
 **测试函数。** `internal/reasoner/model/model_test.go` 中的 `TestModelOutputIsUntrusted`
 
+<!-- sdd:item id=TC-0107 stage=verify status=approved derives_from=REQ-0101 -->
+#### TC-0107 — 受害者的告警找到上游原因
+
+**层级。** e2e。**验证。** REQ-0101。
+
+**步骤。** 端到端运行样例 `C5`。它的告警指向 `checkout-web`，而后者依赖 `order-api`；
+`order-api` 早三分钟就已异常，真正的故障也在它身上。
+
+**预期。** 被接受的解释是定位在 `order-api` 的那个，拟议动作指向 `order-api` 而不是发出
+告警的服务。`source_vs_victim` 质疑出现在所提出的质疑中，且不会去挑战那个本就把原因归于
+上游的解释。
+
+**测试函数。** `internal/orchestrator/e2e_test.go` 中的
+`TestVictimAlertReachesUpstreamCause`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新
