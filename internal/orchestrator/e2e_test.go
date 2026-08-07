@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/zlrrr/mutil-agent-system/internal/arena"
+	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
 	"github.com/zlrrr/mutil-agent-system/internal/report"
@@ -735,6 +736,106 @@ func TestPostOnsetChangeIsRejected(t *testing.T) {
 		}
 		if got := c.Actions[0].Args["key"]; got != "PAYMENT_URL" {
 			t.Errorf("action changes %q; the pool change was the red herring", got)
+		}
+	})
+}
+
+// sdd:verify TC-0110
+func TestRoundOneErrorIsFullySupported(t *testing.T) {
+	// What makes C1 worth running is *why* its first round is wrong.
+	//
+	// It used to be wrong the cheap way: the leader was an explanation nothing
+	// contradicted, winning because the evidence that would have beaten it had not
+	// been collected yet. A critic that corrects that is only correcting an omission.
+	//
+	// C1 now contains a real two-minute database outage, coincident with the incident
+	// and far too short to explain it. Round one therefore reaches an explanation with
+	// every requirement it declares satisfied by evidence actually in hand — the answer
+	// a careful reasoner would give on that evidence — and the second round has to take
+	// it apart rather than merely fill a gap.
+	cat, err := catalog.Load()
+	if err != nil {
+		t.Fatalf("catalog: %v", err)
+	}
+
+	t.Run("round one leads with a wrong explanation nothing has left unsupported", func(t *testing.T) {
+		// A one-round budget stops the case exactly where round one ended.
+		b := build(t, func(p *arena.Params) {
+			cfg := reasoner.DefaultConfig()
+			cfg.MaxRounds = 1
+			p.Config = cfg
+		})
+		c := runToHalt(t, b, domain.ModeMultiWithCritic)
+		if len(c.Hypotheses) < 2 {
+			t.Fatalf("round one proposed %d hypotheses; there is no ranking to examine",
+				len(c.Hypotheses))
+		}
+
+		const wrong = "sig-db-outage"
+		lead := c.Hypotheses[0]
+		if lead.SignatureID != wrong {
+			t.Fatalf("round one leads with %s, want %s", lead.SignatureID, wrong)
+		}
+
+		sig, ok := cat.Signature(wrong)
+		if !ok {
+			t.Fatalf("signature %s is not in the catalog", wrong)
+		}
+		m := catalog.Match(sig, c.Evidence)
+		if len(m.Unmatched) != 0 {
+			var missing []string
+			for _, p := range m.Unmatched {
+				missing = append(missing, p.Label)
+			}
+			t.Errorf("the round-one leader still wants %v; it is winning on an "+
+				"unexamined gap rather than on support", missing)
+		}
+
+		// And it is not a coin toss the critic could break by rounding.
+		if gap := lead.Breakdown.Total - c.Hypotheses[1].Breakdown.Total; gap < reasoner.DefaultConfig().CloseCallMargin {
+			t.Errorf("the round-one leader is only %.2f ahead; a near-tie is a weaker "+
+				"error than a confident one", gap)
+		}
+	})
+
+	t.Run("the second round refutes it rather than out-scoring it", func(t *testing.T) {
+		b := build(t)
+		c := runToHalt(t, b, domain.ModeMultiWithCritic)
+		if c.Status == domain.StatusAwaitingApproval {
+			c = approve(t, b, c)
+		}
+		lead, ok := c.Leading()
+		if !ok {
+			t.Fatal("the case accepted no explanation")
+		}
+		if lead.SignatureID != "sig-db-pool-exhaustion" {
+			t.Errorf("accepted %s, want sig-db-pool-exhaustion", lead.SignatureID)
+		}
+
+		var outage *domain.Hypothesis
+		for i := range c.Hypotheses {
+			if c.Hypotheses[i].SignatureID == "sig-db-outage" {
+				outage = &c.Hypotheses[i]
+			}
+		}
+		if outage == nil {
+			t.Fatal("the round-one leader disappeared from the ranking instead of being answered")
+		}
+		if len(outage.Counter) == 0 {
+			t.Error("the outage explanation was out-scored but never contradicted; " +
+				"a fully supported wrong answer has to be argued with, not outvoted")
+		}
+		// The counter-evidence must be the duration mismatch, not something incidental.
+		for _, id := range outage.Counter {
+			e, ok := c.EvidenceIndex()[id]
+			if !ok {
+				t.Errorf("counter-evidence %s is not in the evidence set", id)
+				continue
+			}
+			if e.Fact("errors_after_recovery") == "" {
+				t.Errorf("counter-evidence %s does not record how long the errors "+
+					"outlasted the database", id)
+			}
 		}
 	})
 }

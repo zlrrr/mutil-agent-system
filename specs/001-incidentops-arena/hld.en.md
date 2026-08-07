@@ -250,6 +250,13 @@ func DefaultRules(cat *Catalog, cfg Config) []CritiqueRule
 **Collaborators.** Composed by the rule reasoner; each rule is unit-tested against a
 fixture that triggers exactly it.
 
+**Declining to fire is part of the interface.** `Apply` returning nothing is a decision,
+not a no-op, and two of the rules depend on it: a rule must be able to recognise that the
+evidence it would demand is already in hand, or that the rival it would raise has already
+been countered. Without that, an unanswerable demand is re-issued every round and the
+leader can never be accepted — the ensemble deadlocks the case it was meant to sharpen.
+Each rule's silence is therefore tested alongside its objection.
+
 **Refines.** ARC-009
 
 <!-- sdd:item id=HLD-010 stage=hld status=approved derives_from=ARC-004 -->

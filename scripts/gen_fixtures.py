@@ -72,9 +72,11 @@ c1 = {
     "description": (
         "A configuration change reduced the order API's database connection pool from "
         "20 to 2. Under a concurrent traffic increase the pool saturates, requests "
-        "queue, latency rises and the service returns 500s. The traffic increase is "
-        "real but is not the cause: the same load was served without error two days "
-        "earlier."
+        "queue, latency rises and the service returns 500s. Two coincidences make the "
+        "wrong answer look right: the traffic increase is real but the same load was "
+        "served without error two days earlier, and the database really did drop out "
+        "for two minutes at onset — long enough to look like the cause, far too short "
+        "to explain twenty minutes of errors."
     ),
     "alert": {
         "alert_name": "OrderApiHighErrorRate",
@@ -88,23 +90,30 @@ c1 = {
         },
         "case_ref": "C1",
     },
-    # db_pool_saturation and db_up are deliberately absent: the first round cannot
-    # see them, which is what makes the critic's demand consequential.
+    # db_pool_saturation is deliberately absent from the first round: the evidence that
+    # settles the case has to be *asked for*, which is what makes the critic's demand
+    # consequential. db_up is deliberately present, and deliberately collapses: the
+    # first round is meant to reach a wrong answer that is fully supported rather than
+    # a wrong answer that is merely unopposed.
     "default_series": [
-        "http_5xx_rate", "http_request_duration_p99", "http_requests_total",
+        "http_5xx_rate", "http_request_duration_p99", "http_requests_total", "db_up",
     ],
     "series": [
         series("http_5xx_rate", "ratio", 0.002, [(0, 0.18)], C1_START),
         series("http_request_duration_p99", "ms", 180, [(0, 2200)], C1_START),
         series("http_requests_total", "rps", 120, [(-4, 400)], C1_START),
         series("db_pool_saturation", "ratio", 0.20, [(-1, 1.0)], C1_START, capacity=1.0),
-        series("db_up", "count", 1, [], C1_START),
+        # A real two-minute database blip, starting with the incident and ending long
+        # before it does. Everything an outage would produce is here; only the duration
+        # says it is a coincidence.
+        series("db_up", "count", 1, [(0, 0), (2, 1)], C1_START),
     ],
     "post_recovery_series": [
         series("http_5xx_rate", "ratio", 0.002, [(0, 0.18), (20, 0.003)], C1_START),
         series("http_request_duration_p99", "ms", 180, [(0, 2200), (20, 190)], C1_START),
         series("db_pool_saturation", "ratio", 0.20, [(-1, 1.0), (20, 0.22)],
                C1_START, capacity=1.0),
+        series("db_up", "count", 1, [(0, 0), (2, 1)], C1_START),
     ],
     "logs": logs(C1_START, [
         ("db connection timeout after 3000ms (attempt {i})", "error", 184, 12, 4),
@@ -163,6 +172,23 @@ c1 = {
             "kind": "metric", "source": "prometheus-fixture",
             "raw_ref": "promql:db_up{service=\"order-api\"}",
             "confidence": 0.85, "series": "db_up",
+        },
+        {
+            "descriptor": "error rate duration compared with the database recovery time",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:(http_5xx_rate > 0.05) unless on() (db_up == 0)",
+            "confidence": 0.9,
+            "summary": (
+                "the database availability signal returned at 10:09:00 and stayed up, "
+                "while the elevated error rate continued until 10:27:00 — 18 further "
+                "minutes of failures with the database available throughout"
+            ),
+            "facts": {
+                "availability_restored": "10:09:00",
+                "errors_continued_until": "10:27:00",
+                "errors_after_recovery": "18m",
+                "counters": "sig-db-outage",
+            },
         },
         {
             "descriptor": "historical peak traffic comparison at equal load",

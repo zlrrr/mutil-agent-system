@@ -591,7 +591,7 @@ within `1e-9`.
 | Rule | Trigger | Emits |
 |---|---|---|
 | `coverage_gap` | A required pattern of the hypothesis's signature matched no evidence | Critique `revise` plus a demand carrying that pattern's descriptor |
-| `alternative_explanation` | Another signature matches at least one pattern and its discriminator is unsatisfied | Critique `revise` on the leading hypothesis naming the rival, plus a demand for the discriminator |
+| `alternative_explanation` | Another signature matches at least one pattern, carries no unresolved counter-evidence, and has a discriminator that is neither already answered nor already supplied by its own matched requirements | Critique `revise` on the leading hypothesis naming the rival, plus a demand for the discriminator |
 | `temporal_order` | Either the hypothesis's own evidence begins more than `coMovementWindow` after the alert, or its matched change timestamp is not earlier than the anomaly onset | Critique `reject`, and counter-evidence attached to the hypothesis |
 | `source_vs_victim` | Topology evidence names an upstream service whose onset is earlier, **and** the hypothesis rests on no evidence whose `subject` fact is that service | Critique `revise` naming the upstream candidate, plus a demand for every unanswered requirement descriptor in the catalog |
 | `unverifiable_remediation` | The signature declares no remediation, or one with no verify signal | Critique `accept_with_risk` |
@@ -605,6 +605,24 @@ internally coherent while explaining nothing about an incident that began four m
 earlier. The first condition closes it by comparing the explanation's own onset against
 the alert, because an explanation whose symptom postdates the incident is downstream of
 whatever caused it.
+
+**Why `alternative_explanation` has two skips.** The rule exists to stop a leader being
+accepted while an equally consistent rival stands unexamined, so both skips ask the same
+question: is this rival still unexamined?
+
+*Already in hand.* `demandAlreadyAnswered` only recognises evidence that arrived as the
+answer to a demand, so evidence a case collects by default is invisible to it. A rival
+whose discriminating requirement its own match already satisfies would therefore be
+demanded again, spending a whole collection round re-fetching a series the first round
+read. Whether the critic holds the separating evidence must not depend on how it was
+obtained.
+
+*Already countered.* A rival the collected evidence argues against — one carrying
+unresolved counter-evidence — has been examined and has lost ground. Continuing to demand
+what would separate it asks for work the case has done. Worse, when no source can supply
+that evidence the demand is re-issued every round, and the leader can never be accepted
+at all: the case burns its round budget and escalates a question the evidence had already
+settled.
 
 **Why `source_vs_victim` carries both a skip and demands.** Without the skip it also
 challenges the explanation that already blames the upstream, using the very topology
@@ -936,46 +954,63 @@ This is the expected behaviour of case `C1`, and the numbers the tests assert.
 
 **Round 1 — default queries only.** Collected: `http_5xx_rate` (0.002 → 0.18, onset
 10:07), `http_request_duration_p99` (180ms → 2200ms, onset 10:07), `http_requests_total`
-(120 → 260 rps, onset 10:03), the log cluster `db connection timeout after #ms` (184
-lines), topology naming `order-api` as candidate origin, and a runbook match. The change
-collector's default pass covers the incident window only, so the 10:05:30 deployment is
-*not* found.
+(120 → 260 rps, onset 10:03), `db_up` (baseline 1, collapsed to 0 at 10:07, recovering at
+10:09), the log cluster `db connection timeout after #ms` (184 lines), topology naming
+`order-api` as candidate origin, and a runbook match. The change collector's default pass
+covers the incident window only, so the 10:05:30 deployment is *not* found.
 
 | Hypothesis | metric | log | change | topo | hist | verif | total |
 |---|---|---|---|---|---|---|---|
+| `sig-db-outage` | 0.30 | 0.25 | 0.00 | 0.10 | 0.00 | 0.00 | **0.65** |
 | `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.04 | 0.05 | **0.49** |
 | `sig-db-pool-exhaustion` | 0.00 | 0.25 | 0.00 | 0.10 | 0.00 | 0.05 | **0.40** |
-| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.00 | 0.00 | **0.35** |
 
-The leading hypothesis is **wrong**, the top-two gap is 0.09 — below
-`closeCallMargin` — and the leader is below `acceptThreshold`. `close_call`,
-`alternative_explanation`, `coverage_gap` and `unverifiable_remediation` all fire,
-producing demands for the pool saturation metric, the configuration change history over
-`changeLookback`, the database availability metric, and a historical peak traffic
-comparison at equal load.
+The leading hypothesis is **wrong**, and the shape of its wrongness is the point of the
+scenario. It is not leading on a gap: `sig-db-outage` requires a collapsed availability
+signal and database connection errors in the log, and round one has both. Every
+requirement it declares is satisfied by evidence in hand, its metric and log terms are
+1.0, and it clears the runner-up by 0.16 — outside `closeCallMargin`, so this is a
+confident answer rather than a coin toss. It is the answer a careful reasoner gives on
+this evidence, and it is still wrong.
 
-**Round 2 — demand-driven queries.** `db_pool_in_use` returns saturated (capacity 2, peak
-2, onset 10:06); the change query over the extended window returns `DB_POOL_SIZE 20 → 2`
-at 10:05:30; the traffic comparison returns an equal-load period two days earlier with no
-errors, carrying `Facts["counters"] = "sig-traffic-surge"`.
+The leader remains below `acceptThreshold`. `alternative_explanation`, `coverage_gap` and
+`unverifiable_remediation` fire, producing demands for the pool saturation metric, the
+configuration change history over `changeLookback`, the error-rate duration compared with
+the database recovery time, and a historical peak traffic comparison at equal load. The
+database availability metric is *not* demanded: `sig-db-outage`'s own matched requirement
+already supplies it, and demanding evidence the case holds would spend a round returning
+what round one read.
+
+**Round 2 — demand-driven queries.** `db_pool_saturation` returns saturated (capacity
+1.0, peak 1.0, onset 10:06); the change query over the extended window returns
+`DB_POOL_SIZE 20 → 2` at 10:05:30; the traffic comparison returns an equal-load period
+two days earlier with no errors, carrying `Facts["counters"] = "sig-traffic-surge"`; and
+the duration comparison reports availability restored at 10:09:00 against errors
+continuing to 10:27:00, carrying `Facts["counters"] = "sig-db-outage"`.
 
 | Hypothesis | metric | log | change | topo | hist | verif | penalty | total |
 |---|---|---|---|---|---|---|---|---|
 | `sig-db-pool-exhaustion` | 0.30 | 0.25 | 0.20 | 0.10 | 0.04 | 0.05 | 0.00 | **0.94** |
-| `sig-db-outage` | 0.00 | 0.25 | 0.00 | 0.10 | 0.02 | 0.00 | 0.00 | **0.37** |
+| `sig-db-outage` | 0.30 | 0.25 | 0.00 | 0.10 | 0.02 | 0.00 | 0.20 | **0.47** |
 | `sig-traffic-surge` | 0.30 | 0.00 | 0.00 | 0.10 | 0.04 | 0.05 | 0.20 | **0.29** |
 
-The ranking has changed and the top-1 is now correct. Temporal order holds
-(10:05:30 < 10:06), every demand is satisfied, coverage is four kinds, and the total
-clears the threshold — so the verdict is `accept` and the case proceeds to remediation
-with `set_config order-api DB_POOL_SIZE 20`, risk `medium`, rollback to `2`, verifying
-`http_5xx_rate` and `http_request_duration_p99`.
+The ranking has changed and the top-1 is now correct. Note what did *not* happen to
+`sig-db-outage`: its metric and log terms are unchanged, because the outage was real and
+the evidence for it still stands. What removed it from first place is a counter-penalty —
+it is refuted, not out-measured. Temporal order holds (10:05:30 < 10:06), every demand is
+satisfied, coverage is four kinds, and the total clears the threshold — so the verdict is
+`accept` and the case proceeds to remediation with `set_config order-api DB_POOL_SIZE
+20`, risk `medium`, rollback to `2`, verifying `http_5xx_rate` and
+`http_request_duration_p99`.
 
 **What this demonstrates.** The single-agent and no-critic modes stop at round 1 and
-report the traffic surge — the plausible first story. Only the adversarial flow reaches
-the configuration change. This is the comparison the evaluation computes, and it is a
-property of the flow rather than of the data, because all three modes see the same
-fixture.
+report the database outage — the first coherent story, fully evidenced. Only the
+adversarial flow asks how long the outage lasted and reaches the configuration change.
+This is the comparison the evaluation computes, and it is a property of the flow rather
+than of the data, because all three modes see the same fixture. It is also deliberately
+harder than the version it replaces: a round-one error that merely lacked evidence would
+let the critic win by filling a gap, which says less about adversarial review than
+overturning an answer that had everything it asked for.
 
 ## 12. Implementation order
 

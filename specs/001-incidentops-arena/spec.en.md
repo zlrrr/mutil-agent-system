@@ -851,18 +851,19 @@ reference scenario teaches the system to reject. The adversarial process MUST re
 declared root cause in both.
 
 **Why this is a requirement and not a test detail.** The reference scenario C1 is won by
-demoting `sig-traffic-surge` from first place. A system that learned "the leading
-explanation is wrong" or "traffic is never the cause" would score perfectly on C1, C2 and
-C3 while having learned nothing. The critic's value is that it *discriminates*, and a
-discriminator is only demonstrated by a case where it must decline to object.
+demoting two explanations from the ranking, `sig-traffic-surge` among them. A system that
+learned "the leading explanation is wrong" or "traffic is never the cause" would score
+perfectly on C1, C2 and C3 while having learned nothing. The critic's value is that it
+*discriminates*, and a discriminator is only demonstrated by a case where it must decline
+to object.
 
 **Acceptance.**
 - Given a case whose log volume overwhelmingly matches one signature while the
   discriminating metric and change evidence refute it, when the full flow runs, then the
   declared root cause is accepted and the loud signature is not.
 - Given that same case, when the flow runs, then the accepted cause is
-  `sig-traffic-surge` — the explanation C1 demotes — proving the outcome is evidence-led
-  rather than a fixed bias.
+  `sig-traffic-surge` — one of the explanations C1 demotes — proving the outcome is
+  evidence-led rather than a fixed bias.
 
 **Verified by.** TC-0104
 
@@ -934,6 +935,33 @@ refutes it. A catalog in which no case exercises that ordering leaves the check 
   critiques raised.
 
 **Verified by.** TC-0108
+
+<!-- sdd:item id=REQ-0103 stage=specify status=approved derives_from=G-002,G-005 priority=P0 -->
+### REQ-0103 — The reference scenario's first-round error must be fully supported
+
+**Requirement.** The reference scenario MUST reach, at the end of its first collection
+round, a leading explanation that is both wrong and complete: every evidence requirement
+its signature declares MUST be satisfied by evidence already collected, and its margin
+over the runner-up MUST exceed the close-call margin. The adversarial round MUST then
+displace it with evidence recorded against it, not merely out-score it.
+
+**Why this is a requirement and not a test detail.** A round-one error that is wrong
+because evidence is *missing* sets the bar too low: the critic wins by asking for
+something nobody had queried yet, which demonstrates thorough collection rather than
+adversarial review. The claim this system makes is stronger — that a well-evidenced,
+confidently-held, coherent answer can still be wrong, and that structured objection is
+what finds it. Only a scenario whose first answer has everything it asked for can test
+that claim.
+
+**Acceptance.**
+- Given the reference scenario stopped after one collection round, when the leading
+  hypothesis's signature is matched against the collected evidence, then no requirement
+  is unmatched and the leader's margin over the runner-up exceeds the close-call margin.
+- Given the same scenario run to completion, when the case closes, then the accepted
+  cause differs from the first-round leader, and the first-round leader carries
+  counter-evidence rather than having merely fallen in the ranking.
+
+**Verified by.** TC-0110
 
 ## 12. Out of scope
 

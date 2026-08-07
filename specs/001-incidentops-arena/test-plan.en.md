@@ -819,11 +819,10 @@ explanation and support an unprecedented traffic peak.
 `sig-db-pool-exhaustion` nor `sig-db-outage` is accepted despite carrying the highest log
 volume in the case.
 
-This is the case that keeps the evaluation honest. C1 is won by demoting
-`sig-traffic-surge` from first place, so a system that had learned "the leading
-explanation is wrong", or simply "traffic is never the cause", would still score
-perfectly on C1, C2 and C3. Only a case where the critic must decline to object
-distinguishes a discriminator from a bias.
+This is the case that keeps the evaluation honest. C1 ends with `sig-traffic-surge`
+refuted and last, so a system that had learned "the leading explanation is wrong", or
+simply "traffic is never the cause", would still score perfectly on C1, C2 and C3. Only a
+case where the critic must decline to object distinguishes a discriminator from a bias.
 
 **Test function.** `TestMisleadingLogsDoNotWin` in `internal/orchestrator/e2e_test.go`
 
@@ -910,6 +909,32 @@ unsatisfiable and the signature could never be fully matched by anything the col
 produce.
 
 **Test function.** `TestCollapseIsAnomalous` in `internal/signal/anomaly_test.go`
+
+<!-- sdd:item id=TC-0110 stage=verify status=approved derives_from=REQ-0103 -->
+#### TC-0110 — The round-one error is fully supported, not merely unopposed
+
+**Level.** e2e. **Verifies.** REQ-0103.
+
+**Steps.** Run `C1` with a one-round budget, which stops the case exactly where round one
+ended. Then run it to completion.
+
+**Expected.** After round one the leader is `sig-db-outage`; matching that signature
+against the collected evidence leaves *no* unmatched requirement; and the leader's margin
+over the runner-up exceeds `closeCallMargin`. After the full run the accepted cause is
+`sig-db-pool-exhaustion`, and `sig-db-outage` is still in the ranking carrying
+counter-evidence that records how long the errors outlasted the database.
+
+This case exists because of what the previous C1 did *not* test. Its round-one error won
+by default: the evidence that would have beaten it had not been collected, so the critic
+only had to fill a gap. The scenario now contains a real two-minute database outage
+coincident with the incident, so round one reaches an explanation with every requirement
+it declares satisfied — and the second round has to take that apart rather than complete
+it. The two assertions are separable on purpose: a leader that is fully matched but only
+0.02 ahead would be a coin toss, and one that leads comfortably while missing a
+requirement would be the old scenario again.
+
+**Test function.** `TestRoundOneErrorIsFullySupported` in
+`internal/orchestrator/e2e_test.go`
 
 ## 4. Coverage matrix
 

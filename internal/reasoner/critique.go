@@ -181,9 +181,13 @@ func (alternativeExplanationRule) Apply(rc RuleContext, h domain.Hypothesis, ran
 		if id == h.SignatureID {
 			continue
 		}
+		if counteredRival(rc, id) {
+			continue
+		}
 		rival := rc.Matches[id]
 		for _, disc := range rival.Signature.Discriminators {
-			if demandAlreadyAnswered(rc.Snapshot, disc.Descriptor) {
+			if demandAlreadyAnswered(rc.Snapshot, disc.Descriptor) ||
+				discriminatorInHand(rival, disc.Descriptor) {
 				continue
 			}
 			ds = append(ds, domain.EvidenceDemand{
@@ -454,7 +458,8 @@ func (closeCallRule) Apply(rc RuleContext, h domain.Hypothesis, rank int) ([]dom
 	var refs []string
 	if m, ok := rc.Matches[h.SignatureID]; ok {
 		for _, disc := range m.Signature.Discriminators {
-			if demandAlreadyAnswered(rc.Snapshot, disc.Descriptor) {
+			if demandAlreadyAnswered(rc.Snapshot, disc.Descriptor) ||
+				discriminatorInHand(m, disc.Descriptor) {
 				continue
 			}
 			ds = append(ds, domain.EvidenceDemand{
@@ -478,6 +483,43 @@ func (closeCallRule) Apply(rc RuleContext, h domain.Hypothesis, rank int) ([]dom
 }
 
 // ------------------------------------------------------------------------ helpers
+
+// counteredRival reports whether evidence already argues against a rival explanation.
+//
+// The rule exists to stop a leader being accepted while an equally consistent
+// alternative stands unexamined. A rival the collected evidence counts against is not
+// unexamined: it has been argued against and lost ground. Continuing to demand the
+// evidence that would separate it asks for work the case has already done — and when
+// no source can supply that evidence, the demand is re-issued every round and the
+// leader can never be accepted at all.
+func counteredRival(rc RuleContext, sigID string) bool {
+	for _, h := range rc.Ranked {
+		if h.SignatureID == sigID {
+			return h.UnresolvedCounters() > 0
+		}
+	}
+	return false
+}
+
+// discriminatorInHand reports whether a signature's own matched requirements already
+// supply the evidence one of its discriminators names.
+//
+// demandAlreadyAnswered only recognises evidence that arrived *as the answer to a
+// demand*, so evidence a case collects by default is invisible to it and gets demanded
+// anyway — a whole collection round spent re-fetching a series the first round already
+// read. Whether the critic has the separating evidence should not depend on how it was
+// obtained.
+func discriminatorInHand(m catalog.MatchResult, descriptor string) bool {
+	if descriptor == "" {
+		return true
+	}
+	for _, pm := range m.Matched {
+		if pm.Pattern.Demand == descriptor {
+			return true
+		}
+	}
+	return false
+}
 
 // demandAlreadyAnswered reports whether evidence answering a descriptor has already
 // been collected, so the critic does not demand what it already has.

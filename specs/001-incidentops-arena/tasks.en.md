@@ -110,8 +110,9 @@ and round-2 totals of the reference scenario match the DLD arithmetic to two dec
 
 **Files.** `internal/reasoner/critique.go`
 
-**Definition of done.** TC-0030 through TC-0034 pass, one test per rule; the critic emits
-no hypothesis contribution.
+**Definition of done.** TC-0030 through TC-0034 pass, one test per rule; TC-0110 passes,
+so the ensemble displaces a fully supported wrong answer rather than only filling gaps;
+the critic emits no hypothesis contribution.
 
 **Blocked by.** T-007. **Parallelisable.** no.
 

@@ -111,47 +111,54 @@ demo command does this so the walkthrough completes), verify recovery, and print
 report. What happened, in order:
 
 **Round 1 — the plausible wrong answer.** Five collectors run in parallel with their
-default queries. Metrics finds the error rate, latency and request rate all elevated.
-Logs finds 184 database connection timeouts. Topology confirms `order-api` is the
-earliest anomalous service. Knowledge matches two runbooks.
+default queries. Metrics finds the error rate, latency and request rate all elevated,
+and finds the database availability gauge collapsing to zero at 10:07:00. Logs finds 184
+database connection timeouts. Topology confirms `order-api` is the earliest anomalous
+service. Knowledge matches two runbooks.
 
 The analysis role ranks three explanations:
 
 | Rank | Explanation | Score |
 |---|---|---|
-| 1 | A traffic increase exceeded capacity | 0.49 |
-| 2 | The database connection pool was exhausted | 0.40 |
-| 3 | The database became unavailable | 0.35 |
+| 1 | The database became unavailable | 0.65 |
+| 2 | A traffic increase exceeded capacity | 0.49 |
+| 3 | The database connection pool was exhausted | 0.40 |
 
-The leader is **wrong**, and it is wrong for an understandable reason: traffic really
-did rise, and nothing yet contradicts that story.
+The leader is **wrong**, and it is worth being precise about how. It is not winning on a
+gap: every requirement it declares — a collapsed availability signal, database
+connection errors in the log — is satisfied by evidence actually in hand. The database
+really did go down at 10:07. On this evidence it is the answer a careful reader gives.
 
-**The critic intervenes.** Four independent rules fire. The gap between the top two is
-0.09, inside the 0.15 close-call margin, so the ranking is not yet meaningful. The pool
-explanation requires a saturation metric that nobody queried. It also requires a
-configuration change, and the default change query only looks back to the alert.
-Nothing has ruled out the rival explanations.
+**The critic intervenes.** The pool explanation requires a saturation metric that nobody
+queried. It also requires a configuration change, and the default change query only
+looks back to the alert. And nothing collected so far separates the rival explanations
+from the leader.
 
 The critic issues four demands:
 
 - the database connection pool saturation metric
 - configuration changes in the 30 minutes before onset
-- the database availability metric
+- the error rate duration compared with the database recovery time
 - a historical traffic comparison at equal load
 
 **Round 2 — the demands are answered.** The pool metric comes back saturated. The
 extended change query finds `DB_POOL_SIZE` changed from `20` to `2` at 10:05:30, ninety
 seconds before the pool saturated. The historical comparison shows an equal peak served
-two days earlier with a 0.20% error rate — which is counter-evidence against the traffic
-explanation.
+two days earlier with a 0.20% error rate — counter-evidence against the traffic
+explanation. And the duration comparison shows the database was available again from
+10:09:00 while the error rate stayed elevated until 10:27:00: eighteen further minutes
+of failures that a two-minute outage cannot account for.
 
 The ranking reorders:
 
 | Rank | Explanation | Score | Note |
 |---|---|---|---|
 | 1 | The connection pool size was reduced, exhausting the pool | 0.94 | now supported by five evidence kinds |
-| 2 | The database became unavailable | 0.37 | availability metric shows the database is up |
+| 2 | The database became unavailable | 0.47 | the outage ended 18 minutes before the errors did |
 | 3 | A traffic increase exceeded capacity | 0.29 | carries counter-evidence, penalised 0.20 |
+
+Both rivals end the case *refuted* rather than merely out-scored: each carries evidence
+recorded against it, which is a stronger outcome than losing on points.
 
 **The gate.** Remediation proposes `set_config order-api DB_POOL_SIZE 20` at medium
 risk, with a rollback to `2` and verification against the error rate and latency. The

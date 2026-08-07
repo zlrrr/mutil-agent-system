@@ -20,25 +20,34 @@ The reference scenario, run offline in about a second:
 
 ```
 Round 1 — five collectors, default queries
-  1. A traffic increase exceeded capacity ......................... 0.49   ← wrong
-  2. The database connection pool was exhausted ................... 0.40
-  3. The database became unavailable .............................. 0.35
+  1. The database became unavailable .............................. 0.65   ← wrong
+  2. A traffic increase exceeded capacity ......................... 0.49
+  3. The database connection pool was exhausted ................... 0.40
 
-  The critic: the top two are 0.09 apart, inside the 0.15 margin. The pool
-  explanation needs a saturation metric nobody queried and a change nobody
-  looked back far enough to find. Nothing rules out the rivals.
+  The database really did drop out at 10:07, and the log is full of connection
+  timeouts. Every requirement the outage explanation declares is satisfied by
+  evidence in hand — it is the answer a careful reader gives on this evidence.
+
+  The critic: nothing yet separates the rivals. The pool explanation needs a
+  saturation metric nobody queried and a change nobody looked back far enough
+  to find.
   → four demands issued, investigation returns to collection
 
 Round 2 — demands answered
   1. The pool size was reduced 20 → 2, exhausting the pool ......... 0.94   ← correct
-  2. The database became unavailable .............................. 0.37
+  2. The database became unavailable .............................. 0.47   (counter-evidence)
   3. A traffic increase exceeded capacity ......................... 0.29   (counter-evidence)
+
+  The outage lasted two minutes. The errors ran for twenty. Availability was
+  restored at 10:09 and the 5xx rate stayed elevated until 10:27 — so whatever
+  the errors were, the outage is not it.
 
   → set_config order-api DB_POOL_SIZE 20, medium risk, HALTED for approval
   → after approval: 5xx 0.129 → 0.003, latency 1623ms → 190ms, recovered
 ```
 
-The critic did not annotate the outcome. It changed it.
+The critic did not annotate the outcome. It changed it — and what it overturned was
+not an oversight but a complete, well-supported, wrong answer.
 
 ## Quick start
 

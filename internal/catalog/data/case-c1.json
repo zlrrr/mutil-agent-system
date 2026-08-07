@@ -1,7 +1,7 @@
 {
   "id": "C1",
   "title": "Order API 5xx and P99 latency rise",
-  "description": "A configuration change reduced the order API's database connection pool from 20 to 2. Under a concurrent traffic increase the pool saturates, requests queue, latency rises and the service returns 500s. The traffic increase is real but is not the cause: the same load was served without error two days earlier.",
+  "description": "A configuration change reduced the order API's database connection pool from 20 to 2. Under a concurrent traffic increase the pool saturates, requests queue, latency rises and the service returns 500s. Two coincidences make the wrong answer look right: the traffic increase is real but the same load was served without error two days earlier, and the database really did drop out for two minutes at onset — long enough to look like the cause, far too short to explain twenty minutes of errors.",
   "alert": {
     "alert_name": "OrderApiHighErrorRate",
     "service": "order-api",
@@ -20,7 +20,8 @@
   "default_series": [
     "http_5xx_rate",
     "http_request_duration_p99",
-    "http_requests_total"
+    "http_requests_total",
+    "db_up"
   ],
   "series": [
     {
@@ -734,11 +735,11 @@
         },
         {
           "at": "2026-07-26T10:07:00Z",
-          "value": 1
+          "value": 0
         },
         {
           "at": "2026-07-26T10:08:00Z",
-          "value": 1
+          "value": 0
         },
         {
           "at": "2026-07-26T10:09:00Z",
@@ -1354,6 +1355,172 @@
         }
       ],
       "capacity": 1.0
+    },
+    {
+      "name": "db_up",
+      "unit": "count",
+      "points": [
+        {
+          "at": "2026-07-26T09:57:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T09:58:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T09:59:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:00:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:01:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:02:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:03:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:04:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:05:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:06:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:07:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-26T10:08:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-26T10:09:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:10:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:11:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:12:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:13:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:14:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:15:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:16:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:17:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:18:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:19:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:20:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:21:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:22:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:23:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:24:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:25:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:26:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:27:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:28:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:29:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:30:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:31:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:32:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:33:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:34:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:35:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-26T10:36:00Z",
+          "value": 1
+        }
+      ]
     }
   ],
   "logs": [
@@ -2809,6 +2976,20 @@
       "raw_ref": "promql:db_up{service=\"order-api\"}",
       "confidence": 0.85,
       "series": "db_up"
+    },
+    {
+      "descriptor": "error rate duration compared with the database recovery time",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:(http_5xx_rate > 0.05) unless on() (db_up == 0)",
+      "confidence": 0.9,
+      "summary": "the database availability signal returned at 10:09:00 and stayed up, while the elevated error rate continued until 10:27:00 — 18 further minutes of failures with the database available throughout",
+      "facts": {
+        "availability_restored": "10:09:00",
+        "errors_continued_until": "10:27:00",
+        "errors_after_recovery": "18m",
+        "counters": "sig-db-outage"
+      }
     },
     {
       "descriptor": "historical peak traffic comparison at equal load",

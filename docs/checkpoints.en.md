@@ -78,6 +78,14 @@ because a checkpoint that never fails is not a checkpoint.
 | D22 | Remediation acted on the top-ranked hypothesis, so it proposed changing the very setting the critic had just ruled out | The remediation role uses `Snapshot.Leading()`, and the evaluation's top-1 metric likewise reports the accepted explanation rather than one the system explicitly refused to draw |
 | D23 | With two changes in the extended window, the change demand returned only the last — so a deploy landing *after* onset hid the change that preceded it, and the only change capable of causing anything never became evidence | The demand asks for changes before onset, so the response now answers with one: the latest change preceding the alert. The post-onset change still arrives through the default pass, where it belongs |
 
+### Defects the C1 redesign exposed
+
+| # | Problem | Resolution |
+|---|---|---|
+| D26 | `alternative_explanation` demanded the database availability metric that round one had *already collected*. `demandAlreadyAnswered` only recognises evidence that arrived as the answer to a demand, so evidence gathered by a case's default queries was invisible to it. C1 spent a whole third collection round re-fetching a series the first round had read | A discriminator is also skipped when the rival's own matched requirements already supply it. Whether the critic holds the separating evidence must not depend on how it was obtained. C1 returned to two rounds |
+| D27 | The new discriminator was demanded in C4 too, where no source can answer it — and an unanswered demand means the same `revise` critique is raised on the leader every round. C4 never accepted anything: it burned its budget, escalated to human review, and reported the wrong cause. **A rule with a demand nothing can satisfy is a veto with extra steps** — the same shape as D17, arriving through a different door | A rival carrying unresolved counter-evidence is skipped: the evidence has already argued against it, so it is not the unexamined alternative the rule exists to catch. C4 returned to accepting `sig-traffic-surge` |
+| D28 | Found while fixing D27 and **not fixed**: a demand that one collection round failed to answer is counted as a reason to run another round, every round, until the budget is gone. C5 has carried four such demands since it was written. It is why C4 now takes three rounds instead of two, and it is what blocks the third attempt at D13 below | See the known issue. The fix — distinguishing a demand that has not been attempted from one that was attempted and could not be answered — is a change to round accounting, not to the critic, and is kept out of this change deliberately |
+
 ## Known issues
 
 **Scoring charges an explanation for evidence it never claimed (D13).** A signature's
@@ -128,8 +136,36 @@ reasoning, and fixing the weakness dissolves the demonstration.
 That is worth knowing precisely, and it is not something a scoring patch can resolve. The
 real work is to redesign C1 so its round-one error is wrong for a reason that survives a
 well-specified catalog — a plausible explanation that a careful reasoner would still
-reach first and still have to abandon. Until that scenario exists, tightening the
-signature trades an honest defect for a dishonest benchmark.
+reach first and still have to abandon.
+
+**That redesign is now done (REQ-0103, TC-0110), so the third attempt was made — and it
+fails for a third reason.** C1's round-one error is a real two-minute database outage,
+so it no longer depends on `sig-traffic-surge` being weak: with the signature tightened,
+C1's baselines still answer `sig-db-outage` and still fail. The blocker moved.
+
+`sig-traffic-surge` gained the same two requirements as before, raising its ceiling from
+0.55 to 0.80. The measured result across all six cases:
+
+| Case | Mode | Before | After |
+|---|---|---|---|
+| C1 | multi_with_critic | correct, 2 rounds | correct, 3 rounds |
+| C2, C3 | multi_with_critic | correct, 2 rounds | correct, 3 rounds |
+| C4 | multi_with_critic | correct, 3 rounds | **wrong** — `sig-db-pool-exhaustion` |
+| C2, C3 | single, multi_no_critic | wrong | **correct** — the baselines solve them |
+
+Every case ran to the three-round ceiling, and C4 — the overfitting guard — broke. The
+cause is D28: the two new requirements introduce demands (`load shedding log sample`, the
+historical comparison as a *requirement* rather than a discriminator) that most cases
+cannot answer, and an unanswerable demand is retried every round until the budget is
+gone. C2 and C3 becoming solvable by a single pass is the same D13 lesson arriving from
+the other side: their headline results also rested on `sig-traffic-surge` being the cheap
+first answer.
+
+The change was measured against all six cases and reverted, for the third time. **The
+prerequisite is no longer C1 — it is D28.** Round accounting has to distinguish a demand
+that has not been attempted from one that was attempted and cannot be answered before a
+better-specified catalog can be afforded; and C2 and C3 need the same treatment C1 just
+received, so that their round-one errors survive it.
 
 **Consequence today.** C4 ranks the correct cause first and refutes both rivals with
 counter-evidence, which is what TC-0104 asserts and what the overfitting test needs. It
@@ -140,8 +176,11 @@ not currently reach it.
 **Attempts, in order.** Renormalising the weights (wrong: makes a one-requirement
 explanation trivially near-certain, so C1 accepts the wrong answer in round one).
 Tightening the signature (wrong: removes the round-one error C1 exists to demonstrate).
-Both were implemented, measured against all six cases, and reverted on the evidence
-rather than argued about.
+Tightening it again after the C1 redesign removed that objection (wrong: the added
+requirements create demands no case can answer, and D28 turns those into exhausted round
+budgets — C4 breaks and C2 and C3 become solvable without a critic). All three were
+implemented, measured against all six cases, and reverted on the evidence rather than
+argued about.
 
 ## Cascading updates performed
 

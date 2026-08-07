@@ -37,6 +37,11 @@
           "descriptor": "database connection pool saturation metric",
           "kind": "metric",
           "reason": "pool saturation distinguishes an exhausted pool from a database that is simply slow or unreachable"
+        },
+        {
+          "descriptor": "error rate duration compared with the database recovery time",
+          "kind": "metric",
+          "reason": "errors that outlast the database's own unavailability cannot be explained by that unavailability, however convincing the coincidence looked"
         }
       ],
       "remediation": {
