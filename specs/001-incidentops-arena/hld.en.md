@@ -252,10 +252,11 @@ fixture that triggers exactly it.
 
 **Declining to fire is part of the interface.** `Apply` returning nothing is a decision,
 not a no-op, and two of the rules depend on it: a rule must be able to recognise that the
-evidence it would demand is already in hand, or that the rival it would raise has already
-been countered. Without that, an unanswerable demand is re-issued every round and the
-leader can never be accepted — the ensemble deadlocks the case it was meant to sharpen.
-Each rule's silence is therefore tested alongside its objection.
+evidence it would demand is already in hand, that the rival it would raise has already
+been countered, or that a previous round already asked and nobody could answer. Without
+that, an unanswerable demand is re-issued every round and the leader can never be
+accepted — the ensemble deadlocks the case it was meant to sharpen. Each rule's silence
+is therefore tested alongside its objection.
 
 **Refines.** ARC-009
 
@@ -320,7 +321,9 @@ func (e *Engine) Run(ctx context.Context, caseID string) (*Case, error)
 func (e *Engine) Decide(ctx context.Context, caseID, actionID string, d ApprovalDecision) (*Case, error)
 ```
 
-**Data owned.** Case status, round counters and identifier sequences.
+**Data owned.** Case status, round counters and identifier sequences — including the
+round each evidence demand was first raised in, which is what lets the loop tell a demand
+nobody has attempted from one a round attempted and could not answer.
 
 **Failure behaviour.** An illegal transition is refused and recorded; `Run` halts at an
 approval gate and returns, rather than blocking.

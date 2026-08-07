@@ -839,3 +839,101 @@ func TestRoundOneErrorIsFullySupported(t *testing.T) {
 		}
 	})
 }
+
+// sdd:verify TC-0111
+func TestUnanswerableDemandDoesNotVeto(t *testing.T) {
+	// C4 demands the duration comparison that settles C1, and C4 has no source that
+	// can answer it: its database never went down, so there is no recovery time to
+	// compare against. That makes it the natural fixture for the failure mode.
+	//
+	// Before the round accounting distinguished "not yet attempted" from "attempted
+	// and unanswerable", this demand was re-issued every round, the rule that raised
+	// it held the leader in `revise`, and C4 accepted nothing at all: budget gone,
+	// escalated to human review, wrong cause reported. An objection nothing can answer
+	// is a veto however slowly it arrives.
+	const descriptor = "error rate duration compared with the database recovery time"
+
+	b := build(t, func(p *arena.Params) { p.CaseID = "C4" })
+	c := runToHalt(t, b, domain.ModeMultiWithCritic)
+	if c.Status == domain.StatusAwaitingApproval {
+		c = approve(t, b, c)
+	}
+
+	var demand *domain.EvidenceDemand
+	for i := range c.Demands {
+		if c.Demands[i].Descriptor == descriptor {
+			demand = &c.Demands[i]
+		}
+	}
+	if demand == nil {
+		t.Fatalf("C4 never demanded %q; this case can no longer demonstrate anything "+
+			"about unanswerable demands", descriptor)
+	}
+	if demand.Satisfied() {
+		t.Fatalf("%q was answered; the fixture no longer exercises the failure", descriptor)
+	}
+
+	// Asked across both cases that carry unanswerable demands, because the rules that
+	// raise them differ: C4's comes from the alternative-explanation rule, C5's four
+	// from source-versus-victim, and each rule decides for itself whether to re-ask.
+	for _, id := range []string{"C4", "C5"} {
+		t.Run(id+": every demand is raised once, not once per round", func(t *testing.T) {
+			b := build(t, func(p *arena.Params) { p.CaseID = id })
+			run := runToHalt(t, b, domain.ModeMultiWithCritic)
+			if run.Status == domain.StatusAwaitingApproval {
+				run = approve(t, b, run)
+			}
+			raised := map[string]int{}
+			for _, ev := range run.Timeline {
+				if ev.Type != domain.EvEvidenceDemanded {
+					continue
+				}
+				raised[ev.Ref]++
+			}
+			if len(raised) == 0 {
+				t.Fatalf("%s demanded nothing", id)
+			}
+			for _, d := range run.Demands {
+				if n := raised[d.ID]; n != 1 {
+					t.Errorf("%s: %q was demanded %d times; a question a collection "+
+						"round already failed to answer is not worth asking again",
+						id, d.Descriptor, n)
+				}
+			}
+		})
+	}
+
+	t.Run("it does not consume the round budget", func(t *testing.T) {
+		if c.Round >= reasoner.DefaultConfig().MaxRounds {
+			t.Errorf("the case ran %d of %d rounds; one unanswerable demand should not "+
+				"cost the case its remaining budget", c.Round, reasoner.DefaultConfig().MaxRounds)
+		}
+	})
+
+	t.Run("it does not block acceptance", func(t *testing.T) {
+		if c.Status != domain.StatusClosed {
+			t.Errorf("case ended in %s, want closed", c.Status)
+		}
+		lead, ok := c.Leading()
+		if !ok || !lead.Verdict.Permits() {
+			t.Fatalf("no explanation was accepted (leading ok=%v)", ok)
+		}
+	})
+
+	t.Run("it is still reported as unmet, with a reason", func(t *testing.T) {
+		md := report.Markdown(c)
+		if !strings.Contains(md, descriptor) {
+			t.Error("the report does not mention the demand nobody could answer")
+		}
+		var noted bool
+		for _, ev := range c.Timeline {
+			if ev.Type == domain.EvDemandUnmet && strings.Contains(ev.Summary, descriptor) {
+				noted = true
+			}
+		}
+		if !noted {
+			t.Error("no demand_unmet event records it; not answering is a finding, " +
+				"and dropping it silently hides one")
+		}
+	})
+}

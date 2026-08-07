@@ -120,7 +120,8 @@ stage: dld
 **类型。** `Verdict` 及常量 `accept`、`accept_with_risk`、`revise`、`reject`；
 `Critique{ID, HypothesisID, Rule, Category, Challenge string; Verdict Verdict; DemandIDs
 []string}`；`EvidenceDemand{ID, Descriptor, Reason string; Kind EvidenceKind; SatisfiedBy
-string}`。
+string; Round int}`。`Round` 是该索证首次被提出的采集轮次，用来区分"还没人试过去回答的
+索证"与"某轮尝试过、但没有来源能提供的索证"（DLD-1063）。
 
 **行为。** `Verdict.Severity()` 映射为 `accept`=0、`accept_with_risk`=1、`revise`=2、
 `reject`=3。`CombineVerdicts(vs ...Verdict) Verdict` 返回最严重者，空输入默认为 `accept`。
@@ -559,7 +560,13 @@ total 被夹到 [0, 1]
 把解释自身的起点与告警相比来堵住它：一个症状晚于故障本身的解释，只能是导致故障的那个东西
 的下游。
 
-**为什么 `alternative_explanation` 有两个跳过。** 这条规则的存在，是为了阻止"在还有一个
+**为什么规则会停止追问。** 在质疑时刻能从快照里看到的索证，必定是更早的轮次提出的——质疑者
+每轮只运行一次，而它的索证是在之后才被应用——因此已经有一轮采集对着它跑过。如果它至今仍未被
+回答，本案例中就没有来源能提供它。此时 `coverage_gap` 保留它的质疑、只丢掉索证，因为一条
+无人确立的要求，不论有没有人能去查，它都仍然没被确立。而挑战**领先者**的那些规则则两者都丢，
+因为一个证据永远不会到来的挑战，会把案件永久按在 `revise` 上（REQ-0031、REQ-0101）。
+
+**为什么 `alternative_explanation` 还有另外两个跳过。** 这条规则的存在，是为了阻止"在还有一个
 同样自洽的对手未被检验时就接受领先者"。因此两个跳过问的是同一个问题：这个对手真的还未被
 检验吗？
 
@@ -701,7 +708,7 @@ created        -> triaging
 triaging       -> collecting
 collecting     -> hypothesising
 hypothesising  -> criticising
-criticising    -> collecting        (存在未满足索证且 round < maxRounds)
+criticising    -> collecting        (本轮提出的索证仍未满足，且 round < maxRounds)
 criticising    -> human_review      (分差过小且 round == maxRounds)
 criticising    -> remediating       (满足接受条件)
 criticising    -> reporting         (无可接受假设且预算耗尽)
@@ -735,6 +742,8 @@ reporting      -> closed
    `contribution_rejected` 并丢弃该贡献。
 3. 从该角色的序列计数器分配标识符。
 4. 对携带 `Facts["demand"]` 的证据，标记对应索证已满足并发出 `demand_satisfied`。
+4a. 索证保留它首次出现时的身份**与轮次**：重复提出同一描述符会复用既有标识符并保留
+   `Round`，因此重复不会让一条索证看起来像是刚被提出的（DLD-1063）。
 5. 拒绝 `Supporting` 为空或引用未知标识符的假设，发出 `hypothesis_rejected`（REQ-0021）。
 6. 通过存储追加产生的事件，并发布到分发器。
 
@@ -771,7 +780,13 @@ reporting      -> closed
 
 **错误。** Agent 出错发出 `agent_failed`，本轮以其余 Agent 继续；case 不会被中止。
 
-**检查点。** TC-0060、TC-0061、TC-0073。
+**轮次记账。** `afterCritique` 只会为**本轮提出的**索证返回采集阶段。一条更早提出、至今仍
+未被满足的索证，已经有一轮采集对着它跑过并且空手而归；再把它算作理由，只会把整个预算花在
+重复追问一个本案例中没有来源能回答的问题上。所有未满足的索证仍然会被报告，并附带区分
+"轮次预算耗尽"与"本案例中没有来源能回答它"的理由——索证绝不会被静默丢弃（REQ-0031）。
+索证会记录它首次被提出的轮次，因此重复提出不会重置这一记录。
+
+**检查点。** TC-0060、TC-0061、TC-0073、TC-0111。
 
 <!-- sdd:item id=DLD-1064 stage=dld status=approved derives_from=HLD-013 -->
 ### DLD-1064 — 事件分发器

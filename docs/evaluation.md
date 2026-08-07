@@ -6,7 +6,7 @@ All three modes run over identical fixture inputs, so a difference is attributab
 |---|---|---|---|---|---|---|---|
 | single | 6 | 17% | 83% | 5.0 | 1.0 | 0 | 5 |
 | multi_no_critic | 6 | 17% | 83% | 5.0 | 1.0 | 0 | 0 |
-| multi_with_critic | 6 | 100% | 100% | 5.8 | 2.5 | 49 | 5 |
+| multi_with_critic | 6 | 100% | 100% | 5.8 | 2.3 | 46 | 5 |
 
 ### Per case
 
@@ -27,7 +27,7 @@ All three modes run over identical fixture inputs, so a difference is attributab
 | C1 | multi_with_critic | `sig-db-pool-exhaustion` | `sig-db-pool-exhaustion` | yes | 2 | 6 | closed |
 | C2 | multi_with_critic | `sig-misconfigured-dependency` | `sig-misconfigured-dependency` | yes | 2 | 6 | closed |
 | C3 | multi_with_critic | `sig-slow-query` | `sig-slow-query` | yes | 2 | 6 | closed |
-| C4 | multi_with_critic | `sig-traffic-surge` | `sig-traffic-surge` | yes | 3 | 5 | closed |
+| C4 | multi_with_critic | `sig-traffic-surge` | `sig-traffic-surge` | yes | 2 | 5 | closed |
 | C5 | multi_with_critic | `sig-db-pool-exhaustion` | `sig-db-pool-exhaustion` | yes | 3 | 6 | closed |
 | C6 | multi_with_critic | `sig-misconfigured-dependency` | `sig-misconfigured-dependency` | yes | 3 | 6 | closed |
 

@@ -111,6 +111,11 @@ type EvidenceDemand struct {
 	Reason      string       `json:"reason"`
 	Rule        string       `json:"rule"`
 	SatisfiedBy string       `json:"satisfied_by,omitempty"`
+	// Round is the collection round in which the demand was first raised. It is what
+	// separates a demand nobody has tried to answer yet from one a collection round
+	// attempted and no source could supply — two states that must not drive the same
+	// control flow.
+	Round int `json:"round,omitempty"`
 }
 
 // Satisfied reports whether evidence answering this demand has been collected.

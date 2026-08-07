@@ -268,6 +268,10 @@ verification 各类别证据均存在。
 **预期。** 前者返回 `collecting`，且第 2 轮包含携带被索取描述符的证据；后者终止，且报告
 列出未满足的索证。
 
+这个用例覆盖的是 REQ-0031 中"预算耗尽"的那一半。另一半——预算**本来付得起**、却没有来源
+能回答的索证——由 TC-0111 覆盖；两者出于相反的原因抵达同一个"未满足"状态，而其中只有一种
+应该结束调查。
+
 **测试函数。** `internal/orchestrator/e2e_test.go` 中的 `TestCriticForcesAnotherRound`
 
 <!-- sdd:item id=TC-0032 stage=verify status=approved derives_from=REQ-0032 -->
@@ -851,6 +855,28 @@ release。
 
 **测试函数。** `internal/orchestrator/e2e_test.go` 中的
 `TestRoundOneErrorIsFullySupported`
+
+<!-- sdd:item id=TC-0111 stage=verify status=approved derives_from=REQ-0031 -->
+#### TC-0111 — 无人能答的索证只被索取一次，且不构成否决
+
+**层级。** e2e。**验证。** REQ-0031。
+
+**步骤。** 端到端运行 `C4` 与 `C5`。两者都带有本案例中没有来源能回答的索证：`C4` 被索要
+那条了结 `C1` 的"错误时长对比"，可它的数据库从未宕机；`C5` 被索要它并不具备的上游证据、
+慢查询证据与数据库 CPU 证据。
+
+**预期。** 在整个 case 中，每条索证恰好被提出一次，无论它由哪条规则提出。`C4` 不会把剩余
+轮次预算耗在那条无人能答的索证上，并且仍然接受了一个解释。未被回答的索证出现在报告中，且
+各自都有一条 `demand_unmet` 事件。
+
+这个用例之所以存在，是因为该失效从任何单个样例上都看不出来。一条无人能答的索证会每轮被
+重新发出；而针对**领先**假设提出它的那条规则，会把该假设在余下的整个 case 里按在 `revise`
+上——于是 `C4` 什么也没接受：预算耗尽、升级到人工复核、报告了错误的原因。之所以两个样例
+都要断言，是因为提出这些索证的规则不同，而每条规则各自决定要不要重问；只测 `C4` 会通过，
+而彼时 `source_vs_victim` 仍在每轮重复三条索证。
+
+**测试函数。** `internal/orchestrator/e2e_test.go` 中的
+`TestUnanswerableDemandDoesNotVeto`
 
 ## 4. 覆盖矩阵
 

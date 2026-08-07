@@ -148,8 +148,8 @@ approval attached; the executor holds the only actuator reference.
 **Files.** `internal/orchestrator/{machine,apply,guard,engine}.go`
 
 **Definition of done.** TC-0003, TC-0010, TC-0021, TC-0031, TC-0035, TC-0036, TC-0042,
-TC-0045, TC-0046, TC-0051, TC-0052, TC-0060, TC-0061, TC-0062, TC-0070, TC-0071, TC-0073
-pass; first end-to-end run of the reference scenario.
+TC-0045, TC-0046, TC-0051, TC-0052, TC-0060, TC-0061, TC-0062, TC-0070, TC-0071, TC-0073,
+TC-0111 pass; first end-to-end run of the reference scenario.
 
 **Blocked by.** T-009, T-010. **Parallelisable.** no.
 

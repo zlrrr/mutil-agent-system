@@ -163,8 +163,14 @@ func (e *Engine) applyHypothesis(c *domain.Case, contrib domain.Contribution, pe
 
 func (e *Engine) applyDemand(c *domain.Case, contrib domain.Contribution, pending []domain.Event, byDesc map[string]string) []domain.Event {
 	d := *contrib.Demand
+	d.Round = c.Round
 	if id, ok := byDesc[d.Descriptor]; ok {
 		d.ID = id // already demanded in an earlier round; keep its identity
+		// ...and the round it was first raised in, so re-raising cannot reset the
+		// record of when it was attempted.
+		if i, ok := c.DemandByID(id); ok && i.Round > 0 {
+			d.Round = i.Round
+		}
 	} else {
 		d.ID = domain.NewID(domain.PrefixDemand, contrib.Role, c.NextSeq(domain.PrefixDemand, contrib.Role))
 		byDesc[d.Descriptor] = d.ID

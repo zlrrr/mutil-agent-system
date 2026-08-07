@@ -316,14 +316,29 @@ evidence collection, targeting the demanded descriptors, provided the round budg
 not exhausted. When the budget is exhausted the case MUST proceed with the demand
 recorded as unmet rather than silently dropped.
 
+A demand that a collection round has already attempted and left unanswered MUST NOT be
+re-issued, MUST NOT by itself cause a further collection round, and MUST NOT keep a
+hypothesis in a non-accepting verdict. It MUST still be recorded as unmet, distinguishing
+"the budget ran out" from "no source in this case could answer it".
+
+**Why the second paragraph exists.** Without it, one unanswerable demand is retried every
+round until the budget is gone, and any rule that raised it against the *leading*
+hypothesis holds that hypothesis in `revise` for the rest of the case — so the case can
+accept nothing at all and escalates a question no evidence could ever have settled. A
+critique nothing can answer is a veto, not a critique (REQ-0101), and a demand nothing
+can answer is the same veto reached by a slower route.
+
 **Acceptance.**
 - Given a critique demanding a historical traffic comparison at round 1 of 3, when the
   orchestrator advances, then the case returns to collection and the next round's
   evidence includes a record answering that descriptor.
 - Given the same at the final round, when the orchestrator advances, then the case
   proceeds and the unmet demand appears in the report.
+- Given a demand no source can answer, when the flow runs, then it is demanded exactly
+  once, the case does not consume its remaining rounds on it, an explanation is still
+  accepted, and the report records the demand as unmet.
 
-**Verified by.** TC-0031
+**Verified by.** TC-0031, TC-0111
 
 <!-- sdd:item id=REQ-0032 stage=specify status=approved derives_from=G-002 priority=P0 -->
 ### REQ-0032 — The critic proposes alternative explanations

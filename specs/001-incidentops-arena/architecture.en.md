@@ -292,6 +292,11 @@ wrong answer is displaced only by evidence recorded against it. Both paths must 
 and a demand must be able to return evidence that counts *against* a hypothesis rather
 than only for one.
 
+Neither power may be exercised without limit. A rule that keeps demanding what no source
+can supply holds the leading hypothesis in a non-accepting verdict for the rest of the
+case, so the ensemble stops sharpening the answer and starts preventing one (REQ-0031).
+Each rule therefore decides once, on evidence, whether it still has something to ask.
+
 **Realises.** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036, REQ-0099, REQ-0101, REQ-0102, REQ-0103
 
 <!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0040,REQ-0041,REQ-0042,REQ-0043,REQ-0044,REQ-0045,REQ-0046 -->
@@ -322,6 +327,12 @@ accepts and verification never succeeds.
 **Constraints.** Every loop edge in the state machine decrements a budget. Exhaustion
 never silently drops information: unmet demands, truncated evidence and unverified
 recoveries are recorded and surface in the report.
+
+**A budget only bounds a loop that makes progress.** Returning to collection is justified
+by a demand that has not yet been *attempted*; a demand a round already tried and could
+not answer is not progress, and spending the remaining budget re-asking it converts the
+guarantee into a countdown. The budget bounds how many times the case may try something
+new, not how many times it may repeat itself (REQ-0031).
 
 **Realises.** REQ-0031, REQ-0050, REQ-0051, REQ-0060, REQ-0094
 

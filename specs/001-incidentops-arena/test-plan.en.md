@@ -289,6 +289,11 @@ can never be satisfied, with `maxRounds` reached.
 **Expected.** The first returns to `collecting` and round 2 contains evidence carrying
 the demanded descriptor; the second terminates and the report lists the unmet demand.
 
+This case covers the budget-exhaustion half of REQ-0031. The other half — a demand the
+budget *could* have paid for, that no source can answer — is TC-0111, because the two
+reach the same "unmet" state for opposite reasons and only one of them should end the
+investigation.
+
 **Test function.** `TestCriticForcesAnotherRound` in `internal/orchestrator/e2e_test.go`
 
 <!-- sdd:item id=TC-0032 stage=verify status=approved derives_from=REQ-0032 -->
@@ -934,6 +939,32 @@ it. The two assertions are separable on purpose: a leader that is fully matched 
 requirement would be the old scenario again.
 
 **Test function.** `TestRoundOneErrorIsFullySupported` in
+`internal/orchestrator/e2e_test.go`
+
+<!-- sdd:item id=TC-0111 stage=verify status=approved derives_from=REQ-0031 -->
+#### TC-0111 — A demand nothing can answer is asked once and does not veto
+
+**Level.** e2e. **Verifies.** REQ-0031.
+
+**Steps.** Run `C4` and `C5` end to end. Each carries demands no source in the case can
+answer: `C4` is asked for the error-duration comparison that settles `C1`, but its
+database never went down; `C5` is asked for upstream, slow-query and database-CPU
+evidence it does not have.
+
+**Expected.** Every demand is raised exactly once across the whole case, whichever rule
+raised it. `C4` does not spend its remaining round budget on the unanswerable demand, and
+still accepts an explanation. The unanswered demands appear in the report and each has a
+`demand_unmet` event.
+
+This case exists because the failure was invisible from any single case. An unanswerable
+demand was re-issued every round, and the rule that raised it against the *leading*
+hypothesis held that hypothesis in `revise` for the rest of the case — so `C4` accepted
+nothing at all: budget gone, escalated to human review, wrong cause reported. Both cases
+are asserted because different rules raise the demands and each decides for itself
+whether to re-ask; `C4` alone would have passed while `source_vs_victim` still repeated
+three demands per round.
+
+**Test function.** `TestUnanswerableDemandDoesNotVeto` in
 `internal/orchestrator/e2e_test.go`
 
 ## 4. Coverage matrix

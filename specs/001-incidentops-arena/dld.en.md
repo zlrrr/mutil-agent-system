@@ -123,8 +123,10 @@ identifiers not marked resolved.
 
 **Types.** `Verdict` with constants `accept`, `accept_with_risk`, `revise`, `reject`;
 `Critique{ID, HypothesisID, Rule, Category, Challenge string; Verdict Verdict; DemandIDs
-[]string}`; `EvidenceDemand{ID, Descriptor, Reason string; Kind EvidenceKind; SatisfiedBy
-string}`.
+[]string}`; `EvidenceDemand{ID, Descriptor, Reason string; Kind EvidenceKind; SatisfiedBy string;
+Round int}`. `Round` is the collection round the demand was first raised in, which is
+what separates a demand nobody has tried to answer from one a round attempted and no
+source could supply (DLD-1063).
 
 **Behaviour.** `Verdict.Severity()` maps `accept`=0, `accept_with_risk`=1, `revise`=2,
 `reject`=3. `CombineVerdicts(vs ...Verdict) Verdict` returns the most severe, defaulting
@@ -606,7 +608,16 @@ earlier. The first condition closes it by comparing the explanation's own onset 
 the alert, because an explanation whose symptom postdates the incident is downstream of
 whatever caused it.
 
-**Why `alternative_explanation` has two skips.** The rule exists to stop a leader being
+**Why the rules stop asking.** A demand visible in the snapshot at critique time was
+raised in an earlier round — the critic runs once per round and its demands are applied
+afterwards — so a collection round has already been aimed at it. If it is still
+unanswered, no source in this case can supply it. `coverage_gap` keeps its critique in
+that situation and drops only the demand, because a requirement nothing establishes stays
+unestablished whether or not anyone can go and look. The rules that challenge the
+*leader* drop both, because a challenge whose evidence can never arrive holds the case in
+`revise` forever (REQ-0031, REQ-0101).
+
+**Why `alternative_explanation` has two further skips.** The rule exists to stop a leader being
 accepted while an equally consistent rival stands unexamined, so both skips ask the same
 question: is this rival still unexamined?
 
@@ -768,7 +779,8 @@ created        -> triaging
 triaging       -> collecting
 collecting     -> hypothesising
 hypothesising  -> criticising
-criticising    -> collecting        (unsatisfied demands and round < maxRounds)
+criticising    -> collecting        (demands raised this round are unsatisfied
+                                     and round < maxRounds)
 criticising    -> human_review      (close call and round == maxRounds)
 criticising    -> remediating       (acceptance condition met)
 criticising    -> reporting         (no acceptable hypothesis and budget exhausted)
@@ -803,6 +815,9 @@ and recorded as `contribution_rejected` with the attempted pair.
 3. Assign an identifier from the per-role sequence counter.
 4. For evidence carrying `Facts["demand"]`, mark the matching demand satisfied and emit
    `demand_satisfied`.
+4a. A demand keeps the identity *and the round* of its first appearance: re-raising a
+   descriptor reuses the existing identifier and preserves `Round`, so repetition cannot
+   make a demand look newly asked (DLD-1063).
 5. Reject a hypothesis whose `Supporting` is empty or references an unknown identifier,
    emitting `hypothesis_rejected` (REQ-0021).
 6. Append the resulting events through the store and publish them to the broker.
@@ -845,7 +860,15 @@ indexed by agent, so results land in a fixed order regardless of completion.
 **Errors.** An agent error emits `agent_failed` and the round continues with the
 remaining agents; the case is not aborted.
 
-**Checkpoint.** TC-0060, TC-0061, TC-0073.
+**Round accounting.** `afterCritique` returns to collection only for demands *raised in
+the current round*. A demand raised earlier and still unsatisfied has already had a
+collection round aimed at it and came back empty; counting it again spends the whole
+budget re-asking a question no source in this case can answer. Every unsatisfied demand
+is still reported, with a reason distinguishing "round budget exhausted" from "no source
+in this case could answer it" — the demand is never silently dropped (REQ-0031). The
+demand carries the round it was first raised in so re-raising cannot reset that record.
+
+**Checkpoint.** TC-0060, TC-0061, TC-0073, TC-0111.
 
 <!-- sdd:item id=DLD-1064 stage=dld status=approved derives_from=HLD-013 -->
 ### DLD-1064 — Event broker

@@ -18,7 +18,7 @@
 | REQ-0023 | P0 | G-002 | ARC-008 | HLD-008 | DLD-1032 | T-007 | TC-0023 | reasoner/score.go | yes |
 | REQ-0024 | P0 | G-006 | ARC-008 | HLD-008 | DLD-1032 | T-007 | TC-0024<br>TC-0072 | reasoner/score.go | yes |
 | REQ-0030 | P0 | G-002 | ARC-009 | HLD-009 | DLD-1034 | T-008 | TC-0030 | reasoner/critique.go | yes |
-| REQ-0031 | P0 | G-002 | ARC-009<br>ARC-011 | HLD-009<br>HLD-012 | DLD-1034<br>DLD-1060<br>DLD-1061<br>DLD-1062<br>DLD-1063 | T-008<br>T-011 | TC-0031 | orchestrator/apply.go<br>orchestrator/engine.go<br>orchestrator/guard.go<br>orchestrator/machine.go<br>reasoner/critique.go | yes |
+| REQ-0031 | P0 | G-002 | ARC-009<br>ARC-011 | HLD-009<br>HLD-012 | DLD-1034<br>DLD-1060<br>DLD-1061<br>DLD-1062<br>DLD-1063 | T-008<br>T-011 | TC-0031<br>TC-0111 | orchestrator/apply.go<br>orchestrator/engine.go<br>orchestrator/guard.go<br>orchestrator/machine.go<br>reasoner/critique.go | yes |
 | REQ-0032 | P0 | G-002 | ARC-009 | HLD-009 | DLD-1034 | T-008 | TC-0032 | reasoner/critique.go | yes |
 | REQ-0033 | P0 | G-002 | ARC-009 | HLD-009 | DLD-1034 | T-008 | TC-0033 | reasoner/critique.go | yes |
 | REQ-0034 | P1 | G-002 | ARC-009 | HLD-009 | DLD-1034 | T-008 | TC-0034 | reasoner/critique.go | yes |

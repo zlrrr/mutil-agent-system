@@ -358,18 +358,25 @@ func (e *Engine) investigationPlan(c *domain.Case) string {
 // the critic's power becomes control flow rather than commentary.
 func (e *Engine) afterCritique(c *domain.Case) (domain.Status, string, []domain.Event) {
 	var events []domain.Event
-	unsatisfied := c.UnsatisfiedDemands()
+	open := c.OpenDemands()
 
-	if len(unsatisfied) > 0 && e.budgetRemaining(c) {
+	if len(open) > 0 && e.budgetRemaining(c) {
 		return domain.StatusCollecting,
-			fmt.Sprintf("the critic requires %d further piece(s) of evidence", len(unsatisfied)),
+			fmt.Sprintf("the critic requires %d further piece(s) of evidence", len(open)),
 			events
 	}
-	if len(unsatisfied) > 0 {
+	// Everything still unanswered is reported, whether the budget ran out or the
+	// collection round simply found nothing. Both are honest outcomes; silently
+	// dropping either is not (REQ-0031).
+	if unsatisfied := c.UnsatisfiedDemands(); len(unsatisfied) > 0 {
 		for _, d := range unsatisfied {
+			reason := "round budget exhausted"
+			if d.Round < c.Round {
+				reason = "no source in this case could answer it"
+			}
 			events = append(events, e.event(c, domain.RoleOrchestrator, domain.EvDemandUnmet,
 				"unmet demand: "+d.Descriptor, d.ID,
-				domain.Rejection{Target: d.Descriptor, Reason: "round budget exhausted"}))
+				domain.Rejection{Target: d.Descriptor, Reason: reason}))
 		}
 		events = append(events, e.event(c, domain.RoleOrchestrator, domain.EvBudgetExhausted,
 			fmt.Sprintf("%d evidence demand(s) remain unmet after %d rounds",

@@ -178,6 +178,31 @@ func (c *Case) UnsatisfiedDemands() []EvidenceDemand {
 	return out
 }
 
+// OpenDemands returns the unsatisfied demands raised in the current round — the ones
+// another collection round could still answer.
+//
+// A demand raised earlier and still unsatisfied has already had a collection round
+// aimed at it and came back empty. Counting it again as a reason to collect spends the
+// whole round budget re-asking a question no source in this case can answer, which is
+// how a critique rule turns into a veto (REQ-0031).
+func (c *Case) OpenDemands() []EvidenceDemand {
+	var out []EvidenceDemand
+	for _, d := range c.Demands {
+		if !d.Satisfied() && d.Round == c.Round {
+			out = append(out, d)
+		}
+	}
+	return out
+}
+
+// DemandByID returns the demand with an identifier, if the case has one.
+func (c *Case) DemandByID(id string) (EvidenceDemand, bool) {
+	if i, ok := c.demandIndex[id]; ok {
+		return c.Demands[i], true
+	}
+	return EvidenceDemand{}, false
+}
+
 // PendingAction returns the first action awaiting an approval decision.
 func (c *Case) PendingAction() (Action, bool) {
 	for _, a := range c.Actions {

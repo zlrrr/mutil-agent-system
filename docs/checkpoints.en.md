@@ -84,7 +84,8 @@ because a checkpoint that never fails is not a checkpoint.
 |---|---|---|
 | D26 | `alternative_explanation` demanded the database availability metric that round one had *already collected*. `demandAlreadyAnswered` only recognises evidence that arrived as the answer to a demand, so evidence gathered by a case's default queries was invisible to it. C1 spent a whole third collection round re-fetching a series the first round had read | A discriminator is also skipped when the rival's own matched requirements already supply it. Whether the critic holds the separating evidence must not depend on how it was obtained. C1 returned to two rounds |
 | D27 | The new discriminator was demanded in C4 too, where no source can answer it — and an unanswered demand means the same `revise` critique is raised on the leader every round. C4 never accepted anything: it burned its budget, escalated to human review, and reported the wrong cause. **A rule with a demand nothing can satisfy is a veto with extra steps** — the same shape as D17, arriving through a different door | A rival carrying unresolved counter-evidence is skipped: the evidence has already argued against it, so it is not the unexamined alternative the rule exists to catch. C4 returned to accepting `sig-traffic-surge` |
-| D28 | Found while fixing D27 and **not fixed**: a demand that one collection round failed to answer is counted as a reason to run another round, every round, until the budget is gone. C5 has carried four such demands since it was written. It is why C4 now takes three rounds instead of two, and it is what blocks the third attempt at D13 below | See the known issue. The fix — distinguishing a demand that has not been attempted from one that was attempted and could not be answered — is a change to round accounting, not to the critic, and is kept out of this change deliberately |
+| D28 | Found while fixing D27: a demand that one collection round failed to answer is counted as a reason to run another round, every round, until the budget is gone. C5 has carried four such demands since it was written. Recorded unfixed in the previous change, then fixed in the next one | Demands carry the round they were first raised in; `afterCritique` returns to collection only for demands raised in the current round, and every rule stops re-issuing a descriptor a previous round already attempted. Unmet demands are still reported, now distinguishing "budget exhausted" from "no source could answer it". C4 back to two rounds, C5 stops repeating three demands per round, mean rounds 2.50 → 2.33, all six cases still correct |
+| D29 | Found while writing TC-0111 for D28: the first version of the fix touched only three of the four rules that raise demands. `source_vs_victim` kept re-issuing its three upstream descriptors every round, and the C4-only test passed anyway, because C4's repeat came through a rule the D27 fix had already silenced | The test asserts over C4 *and* C5, since different rules raise their demands and each decides separately whether to re-ask. Mutating the fix back out now fails on C5, which is what the C4-only version could not do |
 
 ## Known issues
 
@@ -162,10 +163,11 @@ the other side: their headline results also rested on `sig-traffic-surge` being 
 first answer.
 
 The change was measured against all six cases and reverted, for the third time. **The
-prerequisite is no longer C1 — it is D28.** Round accounting has to distinguish a demand
-that has not been attempted from one that was attempted and cannot be answered before a
-better-specified catalog can be afforded; and C2 and C3 need the same treatment C1 just
-received, so that their round-one errors survive it.
+prerequisite is no longer C1 — it is D28, and the C2/C3 scenarios.** D28 has since been
+fixed, which removes the exhausted-budget half of the failure; what remains is that C2
+and C3 need the same treatment C1 just received, so that their round-one errors survive a
+better-specified catalog rather than resting on the same weakness C1 no longer does. A
+fourth attempt belongs after that work, not before it.
 
 **Consequence today.** C4 ranks the correct cause first and refutes both rivals with
 counter-evidence, which is what TC-0104 asserts and what the overfitting test needs. It

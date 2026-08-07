@@ -135,12 +135,17 @@ func (coverageGapRule) Apply(rc RuleContext, h domain.Hypothesis, _ int) ([]doma
 		if demandAlreadyAnswered(rc.Snapshot, p.Demand) {
 			continue
 		}
-		ds = append(ds, domain.EvidenceDemand{
-			Descriptor: p.Demand,
-			Kind:       p.Kind,
-			Reason: fmt.Sprintf("%q requires that %s, and no evidence shows it",
-				h.Claim, p.Label),
-		})
+		// The demand is issued only once. The critique below is not: a requirement
+		// nothing establishes stays unestablished whether or not anyone can go and
+		// look, and readers of the report are owed that either way.
+		if !demandAlreadyAttempted(rc.Snapshot, p.Demand) {
+			ds = append(ds, domain.EvidenceDemand{
+				Descriptor: p.Demand,
+				Kind:       p.Kind,
+				Reason: fmt.Sprintf("%q requires that %s, and no evidence shows it",
+					h.Claim, p.Label),
+			})
+		}
 		cs = append(cs, domain.Critique{
 			HypothesisID: h.ID,
 			Category:     "coverage_gap",
@@ -187,6 +192,7 @@ func (alternativeExplanationRule) Apply(rc RuleContext, h domain.Hypothesis, ran
 		rival := rc.Matches[id]
 		for _, disc := range rival.Signature.Discriminators {
 			if demandAlreadyAnswered(rc.Snapshot, disc.Descriptor) ||
+				demandAlreadyAttempted(rc.Snapshot, disc.Descriptor) ||
 				discriminatorInHand(rival, disc.Descriptor) {
 				continue
 			}
@@ -394,7 +400,8 @@ func upstreamDemands(rc RuleContext, upstream string) []domain.EvidenceDemand {
 			if p.Demand == "" || seen[p.Demand] {
 				continue
 			}
-			if demandAlreadyAnswered(rc.Snapshot, p.Demand) {
+			if demandAlreadyAnswered(rc.Snapshot, p.Demand) ||
+				demandAlreadyAttempted(rc.Snapshot, p.Demand) {
 				continue
 			}
 			seen[p.Demand] = true
@@ -459,6 +466,7 @@ func (closeCallRule) Apply(rc RuleContext, h domain.Hypothesis, rank int) ([]dom
 	if m, ok := rc.Matches[h.SignatureID]; ok {
 		for _, disc := range m.Signature.Discriminators {
 			if demandAlreadyAnswered(rc.Snapshot, disc.Descriptor) ||
+				demandAlreadyAttempted(rc.Snapshot, disc.Descriptor) ||
 				discriminatorInHand(m, disc.Descriptor) {
 				continue
 			}
@@ -515,6 +523,27 @@ func discriminatorInHand(m catalog.MatchResult, descriptor string) bool {
 	}
 	for _, pm := range m.Matched {
 		if pm.Pattern.Demand == descriptor {
+			return true
+		}
+	}
+	return false
+}
+
+// demandAlreadyAttempted reports whether a previous round already demanded a descriptor.
+//
+// The critic runs once per round and its demands are applied afterwards, so any demand
+// visible in the snapshot was raised earlier and has had a collection round aimed at it.
+// If it is still unanswered, no source in this case can supply it, and re-raising it
+// achieves two bad things: the case spends another round on a question with no answer,
+// and the rules that challenge the *leader* keep it in `revise` forever, so nothing can
+// ever be accepted. A challenge no evidence can answer is a veto, not a critique
+// (REQ-0101) — and that is as true of a repeated demand as of an absent one.
+func demandAlreadyAttempted(s domain.Snapshot, descriptor string) bool {
+	if descriptor == "" {
+		return true
+	}
+	for _, d := range s.Demands {
+		if d.Descriptor == descriptor {
 			return true
 		}
 	}
