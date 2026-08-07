@@ -1,7 +1,7 @@
 {
   "id": "C2",
   "title": "Checkout 502s after a dependency URL change",
-  "description": "A configuration change pointed PAYMENT_URL at a retired host. Every checkout call fails upstream connect. Error rate rises without any traffic change.",
+  "description": "A configuration change pointed PAYMENT_URL at a retired host. Every checkout call fails upstream connect. Error rate rises without any traffic change. The dependency availability gauge is scraped through the configured endpoint, so it reads zero — the evidence for \"the payment service is down\" is complete and wrong, and only health measured independently of this service's configuration tells the two apart.",
   "alert": {
     "alert_name": "OrderApiUpstreamErrors",
     "service": "order-api",
@@ -19,7 +19,8 @@
   },
   "default_series": [
     "http_5xx_rate",
-    "http_requests_total"
+    "http_requests_total",
+    "payment_up"
   ],
   "series": [
     {
@@ -519,6 +520,172 @@
           "value": 220
         }
       ]
+    },
+    {
+      "name": "payment_up",
+      "unit": "count",
+      "points": [
+        {
+          "at": "2026-07-27T14:20:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:21:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:22:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:23:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:24:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:25:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:26:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:27:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:28:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:29:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:30:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:31:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:32:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:33:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:34:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:35:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:36:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:37:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:38:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:39:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:40:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:41:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:42:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:43:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:44:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:45:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:46:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:47:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:48:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:49:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:50:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:51:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:52:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:53:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:54:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:55:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:56:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:57:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:58:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:59:00Z",
+          "value": 0
+        }
+      ]
     }
   ],
   "post_recovery_series": [
@@ -685,6 +852,172 @@
         {
           "at": "2026-07-27T14:59:00Z",
           "value": 0.002
+        }
+      ]
+    },
+    {
+      "name": "payment_up",
+      "unit": "count",
+      "points": [
+        {
+          "at": "2026-07-27T14:20:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:21:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:22:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:23:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:24:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:25:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:26:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:27:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:28:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:29:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:30:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:31:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:32:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:33:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:34:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:35:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:36:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:37:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:38:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:39:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:40:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:41:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:42:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:43:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:44:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:45:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:46:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:47:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:48:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:49:00Z",
+          "value": 0
+        },
+        {
+          "at": "2026-07-27T14:50:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:51:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:52:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:53:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:54:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:55:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:56:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:57:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:58:00Z",
+          "value": 1
+        },
+        {
+          "at": "2026-07-27T14:59:00Z",
+          "value": 1
         }
       ]
     }
@@ -2073,6 +2406,21 @@
       "facts": {
         "current_peak": "90 rps",
         "counters": "sig-traffic-surge"
+      }
+    },
+    {
+      "descriptor": "dependency health measured independently of this service's configuration",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:up{job=\"payment-api\"} and rate(http_requests_total{service=\"payment-api\"}[5m])",
+      "confidence": 0.91,
+      "summary": "payment-api reported available for the whole window and served 1,240 requests from other callers during it; the host order-api is dialling, payments-old.internal:8443, was decommissioned on 2026-07-06",
+      "facts": {
+        "dependency_availability": "1.0 throughout",
+        "requests_served_from_other_callers": "1240",
+        "configured_host": "payments-old.internal:8443",
+        "decommissioned_on": "2026-07-06",
+        "counters": "sig-upstream-outage"
       }
     }
   ],

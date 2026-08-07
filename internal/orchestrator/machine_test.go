@@ -112,9 +112,15 @@ func TestBudgetOfOneTerminatesWithoutRemediating(t *testing.T) {
 
 // sdd:verify TC-0036
 func TestCloseCallEscalates(t *testing.T) {
-	// With a one-round budget the top two remain within the margin and the case must
-	// escalate rather than pick the leader.
+	// C4 with a one-round budget: the top two are 0.07 apart, inside the margin, and
+	// the case must escalate rather than pick the leader.
+	//
+	// The reference scenario used to serve here, and deliberately no longer can. Its
+	// round-one leader now clears the runner-up by more than the margin, because a
+	// first answer that is confidently wrong tests more than one that is a coin toss
+	// (REQ-0103) — which leaves it unable to demonstrate a near-tie at all.
 	b := build(t, func(p *arena.Params) {
+		p.CaseID = "C4"
 		cfg := reasoner.DefaultConfig()
 		cfg.MaxRounds = 1
 		p.Config = cfg

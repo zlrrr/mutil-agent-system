@@ -1,7 +1,7 @@
 {
   "id": "C3",
   "title": "Order search latency rises after a release",
-  "description": "A release introduced a query that does not use the existing index. Latency and database CPU rise together while the error rate stays low.",
+  "description": "A release introduced a query that does not use the existing index. Latency and database CPU rise together while the error rate stays low. A database failover at the same moment left the buffer cache cold, so \"the store is slow\" is fully evidenced and wrong: the cache really did empty, but only one endpoint of twelve got slower, and they all share that store.",
   "alert": {
     "alert_name": "OrderApiHighLatency",
     "service": "order-api",
@@ -20,7 +20,8 @@
   "default_series": [
     "http_request_duration_p99",
     "http_5xx_rate",
-    "http_requests_total"
+    "http_requests_total",
+    "db_buffer_cache_hit_ratio"
   ],
   "series": [
     {
@@ -687,6 +688,172 @@
         }
       ],
       "capacity": 1.0
+    },
+    {
+      "name": "db_buffer_cache_hit_ratio",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-07-28T09:05:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:06:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:07:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:08:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:09:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:10:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:11:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:12:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:13:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:14:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:15:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:16:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:17:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:18:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:19:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:20:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:21:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:22:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:23:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:24:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:25:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:26:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:27:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:28:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:29:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:30:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:31:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:32:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:33:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:34:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:35:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:36:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:37:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:38:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:39:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:40:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:41:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:42:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:43:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:44:00Z",
+          "value": 0.18
+        }
+      ]
     }
   ],
   "post_recovery_series": [
@@ -853,6 +1020,172 @@
         {
           "at": "2026-07-28T09:44:00Z",
           "value": 225
+        }
+      ]
+    },
+    {
+      "name": "db_buffer_cache_hit_ratio",
+      "unit": "ratio",
+      "points": [
+        {
+          "at": "2026-07-28T09:05:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:06:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:07:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:08:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:09:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:10:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:11:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:12:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:13:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:14:00Z",
+          "value": 0.99
+        },
+        {
+          "at": "2026-07-28T09:15:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:16:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:17:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:18:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:19:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:20:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:21:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:22:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:23:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:24:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:25:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:26:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:27:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:28:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:29:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:30:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:31:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:32:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:33:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:34:00Z",
+          "value": 0.18
+        },
+        {
+          "at": "2026-07-28T09:35:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:36:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:37:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:38:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:39:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:40:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:41:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:42:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:43:00Z",
+          "value": 0.97
+        },
+        {
+          "at": "2026-07-28T09:44:00Z",
+          "value": 0.97
         }
       ]
     }
@@ -1498,6 +1831,20 @@
       "facts": {
         "current_peak": "75 rps",
         "counters": "sig-traffic-surge"
+      }
+    },
+    {
+      "descriptor": "latency distribution across the service's endpoints",
+      "kind": "metric",
+      "source": "prometheus-fixture",
+      "raw_ref": "promql:histogram_quantile(0.99, sum by (endpoint, le) (rate(http_request_duration_bucket{service=\"order-api\"}[5m])))",
+      "confidence": 0.9,
+      "summary": "p99 latency is elevated on /orders/search alone (1800ms against a 215ms baseline); the other eleven endpoints are all within 5% of their baselines, and they query the same database",
+      "facts": {
+        "elevated_endpoints": "/orders/search",
+        "endpoints_at_baseline": "11",
+        "shared_datastore": "postgres",
+        "counters": "sig-cold-cache"
       }
     }
   ],

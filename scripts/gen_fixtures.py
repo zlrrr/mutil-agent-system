@@ -230,7 +230,11 @@ c2 = {
     "title": "Checkout 502s after a dependency URL change",
     "description": (
         "A configuration change pointed PAYMENT_URL at a retired host. Every checkout "
-        "call fails upstream connect. Error rate rises without any traffic change."
+        "call fails upstream connect. Error rate rises without any traffic change. The "
+        "dependency availability gauge is scraped through the configured endpoint, so "
+        "it reads zero — the evidence for \"the payment service is down\" is complete "
+        "and wrong, and only health measured independently of this service's "
+        "configuration tells the two apart."
     ),
     "alert": {
         "alert_name": "OrderApiUpstreamErrors",
@@ -242,14 +246,21 @@ c2 = {
         "annotations": {"summary": "502 rate above 20%; upstream connect failures"},
         "case_ref": "C2",
     },
-    "default_series": ["http_5xx_rate", "http_requests_total"],
+    # payment_up is in the first round on purpose. It is scraped *through the endpoint
+    # this service is configured with*, so a misconfiguration and a genuine outage look
+    # identical on it — a health check that follows your configuration cannot tell you
+    # that your configuration is wrong. Round one therefore reaches a fully supported
+    # wrong answer, exactly as C1 does, by a different mechanism.
+    "default_series": ["http_5xx_rate", "http_requests_total", "payment_up"],
     "series": [
         series("http_5xx_rate", "ratio", 0.001, [(0, 0.34)], C2_START),
         series("http_requests_total", "rps", 90, [], C2_START),
         series("upstream_connect_errors", "count", 0, [(0, 220)], C2_START),
+        series("payment_up", "count", 1, [(0, 0)], C2_START),
     ],
     "post_recovery_series": [
         series("http_5xx_rate", "ratio", 0.001, [(0, 0.34), (20, 0.002)], C2_START),
+        series("payment_up", "count", 1, [(0, 0), (20, 1)], C2_START),
     ],
     "logs": logs(C2_START, [
         ("upstream connect error: dial tcp payments-old.internal:8443 "
@@ -296,6 +307,26 @@ c2 = {
                         "90 rps, so load is not distinguishing here"),
             "facts": {"current_peak": "90 rps", "counters": "sig-traffic-surge"},
         },
+        # What separates a dead dependency from a caller dialling the wrong one: ask
+        # the dependency, not the caller's view of it.
+        {
+            "descriptor": "dependency health measured independently of this service's configuration",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": "promql:up{job=\"payment-api\"} and rate(http_requests_total{service=\"payment-api\"}[5m])",
+            "confidence": 0.91,
+            "summary": (
+                "payment-api reported available for the whole window and served 1,240 "
+                "requests from other callers during it; the host order-api is dialling, "
+                "payments-old.internal:8443, was decommissioned on 2026-07-06"
+            ),
+            "facts": {
+                "dependency_availability": "1.0 throughout",
+                "requests_served_from_other_callers": "1240",
+                "configured_host": "payments-old.internal:8443",
+                "decommissioned_on": "2026-07-06",
+                "counters": "sig-upstream-outage",
+            },
+        },
     ],
     "recovery_trigger": {
         "tool": "set_config",
@@ -316,7 +347,10 @@ c3 = {
     "title": "Order search latency rises after a release",
     "description": (
         "A release introduced a query that does not use the existing index. Latency "
-        "and database CPU rise together while the error rate stays low."
+        "and database CPU rise together while the error rate stays low. A database "
+        "failover at the same moment left the buffer cache cold, so \"the store is "
+        "slow\" is fully evidenced and wrong: the cache really did empty, but only one "
+        "endpoint of twelve got slower, and they all share that store."
     ),
     "alert": {
         "alert_name": "OrderApiHighLatency",
@@ -328,16 +362,25 @@ c3 = {
         "annotations": {"summary": "p99 latency above 1.5s; slow query log growing"},
         "case_ref": "C3",
     },
+    # A failover really did happen at onset, and the buffer cache really is cold. Round
+    # one therefore reaches "the store is slow" with every requirement satisfied — the
+    # third variety of complete-but-wrong answer in the catalog, after C1's outage that
+    # ended too early and C2's health check measured through the broken thing. What
+    # refutes this one is blast radius: a cold store slows every query path, and this
+    # slowness is confined to a single endpoint.
     "default_series": ["http_request_duration_p99", "http_5xx_rate",
-                       "http_requests_total"],
+                       "http_requests_total", "db_buffer_cache_hit_ratio"],
     "series": [
         series("http_request_duration_p99", "ms", 210, [(0, 1800)], C3_START),
         series("http_5xx_rate", "ratio", 0.001, [], C3_START),
         series("http_requests_total", "rps", 75, [], C3_START),
         series("db_cpu_utilisation", "ratio", 0.18, [(0, 0.91)], C3_START, capacity=1.0),
+        series("db_buffer_cache_hit_ratio", "ratio", 0.99, [(0, 0.18)], C3_START),
     ],
     "post_recovery_series": [
         series("http_request_duration_p99", "ms", 210, [(0, 1800), (20, 225)], C3_START),
+        series("db_buffer_cache_hit_ratio", "ratio", 0.99, [(0, 0.18), (20, 0.97)],
+               C3_START),
     ],
     "logs": logs(C3_START, [
         ("slow query 2140ms: SELECT * FROM orders WHERE lower(email) = $1 "
@@ -382,6 +425,26 @@ c3 = {
             "summary": ("order-api request rate is flat at 75 rps across the window "
                         "and matches the preceding days"),
             "facts": {"current_peak": "75 rps", "counters": "sig-traffic-surge"},
+        },
+        # Blast radius is what separates a slow store from a slow query: the store is
+        # shared by every endpoint, and only one of them got slower.
+        {
+            "descriptor": "latency distribution across the service's endpoints",
+            "kind": "metric", "source": "prometheus-fixture",
+            "raw_ref": ("promql:histogram_quantile(0.99, sum by (endpoint, le) "
+                        "(rate(http_request_duration_bucket{service=\"order-api\"}[5m])))"),
+            "confidence": 0.9,
+            "summary": (
+                "p99 latency is elevated on /orders/search alone (1800ms against a "
+                "215ms baseline); the other eleven endpoints are all within 5% of "
+                "their baselines, and they query the same database"
+            ),
+            "facts": {
+                "elevated_endpoints": "/orders/search",
+                "endpoints_at_baseline": "11",
+                "shared_datastore": "postgres",
+                "counters": "sig-cold-cache",
+            },
         },
     ],
     "recovery_trigger": {

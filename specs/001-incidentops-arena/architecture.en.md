@@ -297,6 +297,10 @@ can supply holds the leading hypothesis in a non-accepting verdict for the rest 
 case, so the ensemble stops sharpening the answer and starts preventing one (REQ-0031).
 Each rule therefore decides once, on evidence, whether it still has something to ask.
 
+And the ensemble is only demonstrated by cases that refute a first answer in *different*
+ways (REQ-0103). If every wrong leader in the catalog fell to the same check, the
+evaluation would be measuring one rule wearing six names.
+
 **Realises.** REQ-0030, REQ-0031, REQ-0032, REQ-0033, REQ-0034, REQ-0036, REQ-0099, REQ-0101, REQ-0102, REQ-0103
 
 <!-- sdd:item id=ARC-010 stage=architect status=approved derives_from=REQ-0040,REQ-0041,REQ-0042,REQ-0043,REQ-0044,REQ-0045,REQ-0046 -->

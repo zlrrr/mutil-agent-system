@@ -87,6 +87,15 @@ because a checkpoint that never fails is not a checkpoint.
 | D28 | Found while fixing D27: a demand that one collection round failed to answer is counted as a reason to run another round, every round, until the budget is gone. C5 has carried four such demands since it was written. Recorded unfixed in the previous change, then fixed in the next one | Demands carry the round they were first raised in; `afterCritique` returns to collection only for demands raised in the current round, and every rule stops re-issuing a descriptor a previous round already attempted. Unmet demands are still reported, now distinguishing "budget exhausted" from "no source could answer it". C4 back to two rounds, C5 stops repeating three demands per round, mean rounds 2.50 → 2.33, all six cases still correct |
 | D29 | Found while writing TC-0111 for D28: the first version of the fix touched only three of the four rules that raise demands. `source_vs_victim` kept re-issuing its three upstream descriptors every round, and the C4-only test passed anyway, because C4's repeat came through a rule the D27 fix had already silenced | The test asserts over C4 *and* C5, since different rules raise their demands and each decides separately whether to re-ask. Mutating the fix back out now fails on C5, which is what the C4-only version could not do |
 
+### Defects the C2 and C3 redesigns exposed
+
+| # | Problem | Resolution |
+|---|---|---|
+| D30 | `sig-traffic-surge` matched a request-rate series that had *not risen*: the pattern matches the metric's name, while its label asserts "request rate rose sharply". In C2 and C3 traffic is flat, and the signature still won round one — by 0.01 and 0.03 over the correct answer. Their headline results were coin tosses that happened to land wrong | Not fixed by tightening the signature, which is D13 and still open. Fixed where it mattered: C2 and C3 now reach a first answer that is well-supported and wrong for a real reason, so the ranking no longer turns on a signature matching a metric that did not move |
+| D31 | `source_vs_victim` demands every unanswered requirement descriptor in the *whole catalog*, so its demand list grows with the catalog while `maxDemandsPerRound` stays at 4. Adding two signatures displaced the evidence C5 needed into later rounds, and the victim case stopped reaching its cause — a case broke because of signatures it has nothing to do with | Demands are ordered by how much of each signature the case already supports: leads first, shots in the dark last. The rule's reach still scales with the catalog, which is worth watching, but the cap now spends itself on the most-supported explanations rather than on alphabetical order |
+| D32 | `Leading()` skipped `revise` as well as `reject`, so the reported answer depended on the severity of an *unfinished* objection rather than on the evidence. C5 reported a 0.09 explanation as its root cause while a 0.84 one sat at the top of the ranking, because the weaker one had attracted a milder critique | Only `reject` is skipped — that was D21's actual finding. Whether an explanation may be *acted on* is a separate question, and `CanRemediate` already asks it separately |
+| D33 | `alternative_explanation` raised a demand-backed challenge in the *final* round, where no collection round remains to answer it. The leader stayed in `revise` for ever and the case ended unable to act on its own best explanation — a veto delivered by timing rather than by content, the fourth variant of D17 | The rule is silent once the budget is spent. What went unexamined is recorded as an unmet demand, and a genuine near-tie is still escalated by `close_call`, which exists for exactly that |
+
 ## Known issues
 
 **Scoring charges an explanation for evidence it never claimed (D13).** A signature's
@@ -162,12 +171,26 @@ gone. C2 and C3 becoming solvable by a single pass is the same D13 lesson arrivi
 the other side: their headline results also rested on `sig-traffic-surge` being the cheap
 first answer.
 
-The change was measured against all six cases and reverted, for the third time. **The
-prerequisite is no longer C1 — it is D28, and the C2/C3 scenarios.** D28 has since been
-fixed, which removes the exhausted-budget half of the failure; what remains is that C2
-and C3 need the same treatment C1 just received, so that their round-one errors survive a
-better-specified catalog rather than resting on the same weakness C1 no longer does. A
-fourth attempt belongs after that work, not before it.
+The change was measured against all six cases and reverted, for the third time.
+
+**Both prerequisites were then completed — D28 fixed, C2 and C3 redesigned — and the
+fourth attempt was made.** It comes closest, and it still fails.
+
+On the headline metric it works: all six cases correct with the critic, and the baselines
+drop from 1/6 to 0/6, because C4's baseline had been getting the right answer for the
+wrong reason. Underneath, three things broke. The two added requirements put two more
+coverage-gap demands into every round, and at four demands per round the discriminating
+evidence is displaced: C1, C2 and C3 stopped *refuting* their round-one leaders and merely
+out-scored them — the exact property REQ-0103 exists to hold. Raising the cap to six
+restores the refutations and breaks other things instead: C1 acquires a permanently unmet
+demand for a load-shedding log it does not contain, three unit tests that encode
+catalog-specific rankings fail, and **C4 still cannot act on its own accepted
+explanation.**
+
+That last point is decisive. C4 being unable to act is the consequence D13 describes; a
+fix that costs a configuration change, three rewritten tests and a permanent unmet demand
+in the reference scenario, and *still* does not deliver the thing it was for, is not a
+fix. Reverted, for the fourth time.
 
 **Consequence today.** C4 ranks the correct cause first and refutes both rivals with
 counter-evidence, which is what TC-0104 asserts and what the overfitting test needs. It
@@ -180,9 +203,19 @@ explanation trivially near-certain, so C1 accepts the wrong answer in round one)
 Tightening the signature (wrong: removes the round-one error C1 exists to demonstrate).
 Tightening it again after the C1 redesign removed that objection (wrong: the added
 requirements create demands no case can answer, and D28 turns those into exhausted round
-budgets — C4 breaks and C2 and C3 become solvable without a critic). All three were
-implemented, measured against all six cases, and reverted on the evidence rather than
-argued about.
+budgets — C4 breaks and C2 and C3 become solvable without a critic). Tightening it a third
+time with both prerequisites met (wrong: the added demands starve the discriminating
+evidence at four per round, and raising the cap trades that for a permanent unmet demand,
+three rewritten tests, and a C4 that still cannot act). All four were implemented, measured
+against all six cases, and reverted on the evidence rather than argued about.
+
+**What four attempts have established.** The defect is in the arithmetic, not the catalog:
+a signature is charged for evidence kinds it never claimed. Every attempt so far has tried
+to work around that by making signatures claim more, and each has failed somewhere
+different — which is itself the finding. The next attempt should change how the score
+treats a term the signature does not require, and must be measured against the property
+REQ-0103 states rather than against top-1 accuracy, because top-1 stayed at 100% through an
+attempt that had quietly dismantled the refutations.
 
 ## Cascading updates performed
 

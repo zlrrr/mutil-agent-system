@@ -36,7 +36,8 @@ stage: plan
 
 **文件。** `internal/domain/{contribution,event,case}.go`
 
-**完成定义。** 角色能力表完整；`Replay` 从空状态折叠；TC-0050 与 TC-0003 的领域部分通过。
+**完成定义。** 角色能力表完整；`Replay` 从空状态折叠；TC-0050 与 TC-0003 的领域部分通过；
+`Leading()` 只跳过被拒绝的解释，这一点由 TC-0110 端到端验证。
 
 **阻塞于。** T-001。**可并行。** 否。
 

@@ -920,23 +920,33 @@ produce.
 
 **Level.** e2e. **Verifies.** REQ-0103.
 
-**Steps.** Run `C1` with a one-round budget, which stops the case exactly where round one
-ended. Then run it to completion.
+**Steps.** Run `C1`, `C2` and `C3` with a one-round budget, which stops each case exactly
+where round one ended. Then run each to completion.
 
-**Expected.** After round one the leader is `sig-db-outage`; matching that signature
-against the collected evidence leaves *no* unmatched requirement; and the leader's margin
-over the runner-up exceeds `closeCallMargin`. After the full run the accepted cause is
-`sig-db-pool-exhaustion`, and `sig-db-outage` is still in the ranking carrying
-counter-evidence that records how long the errors outlasted the database.
+**Expected.** After round one each leader is the wrong explanation below; matching its
+signature against the collected evidence leaves *no* unmatched requirement; and its margin
+over the runner-up exceeds `closeCallMargin`. After the full run the accepted cause is the
+right one, and the round-one leader is still in the ranking carrying counter-evidence that
+records the named fact.
 
-This case exists because of what the previous C1 did *not* test. Its round-one error won
-by default: the evidence that would have beaten it had not been collected, so the critic
-only had to fill a gap. The scenario now contains a real two-minute database outage
-coincident with the incident, so round one reaches an explanation with every requirement
-it declares satisfied — and the second round has to take that apart rather than complete
-it. The two assertions are separable on purpose: a leader that is fully matched but only
-0.02 ahead would be a coin toss, and one that leads comfortably while missing a
-requirement would be the old scenario again.
+| Case | Round-one leader (wrong) | Accepted (right) | What refutes it |
+|---|---|---|---|
+| C1 | `sig-db-outage` | `sig-db-pool-exhaustion` | the outage ended eighteen minutes before the errors did |
+| C2 | `sig-upstream-outage` | `sig-misconfigured-dependency` | the health check was scraped through the endpoint that was wrong |
+| C3 | `sig-cold-cache` | `sig-slow-query` | only one endpoint of twelve slowed, and all twelve share the store |
+
+This case exists because of what these scenarios did *not* test. C1's round-one error won
+by default — the evidence that would have beaten it had not been collected, so the critic
+only had to fill a gap. C2 and C3 were worse: their round-one leader was the traffic
+explanation matching a request rate that had not moved, and the correct answer sat 0.01
+and 0.03 behind it. Correcting a coin toss demonstrates nothing.
+
+The three refutations are deliberately different in kind — a story that ended too early,
+one measured through the broken thing, one too narrow to be what it claimed — because a
+catalog where every wrong answer falls to the same check demonstrates that check rather
+than adversarial review. The two assertions per case are separable on purpose: a leader
+that is fully matched but 0.02 ahead is a coin toss, and one that leads comfortably while
+missing a requirement is the old scenario again.
 
 **Test function.** `TestRoundOneErrorIsFullySupported` in
 `internal/orchestrator/e2e_test.go`

@@ -38,7 +38,8 @@ distinguishable.
 **Files.** `internal/domain/{contribution,event,case}.go`
 
 **Definition of done.** Role capability table complete; `Replay` folds from empty;
-TC-0050 and the domain half of TC-0003 pass.
+TC-0050 and the domain half of TC-0003 pass; `Leading()` skips only rejected
+explanations, which TC-0110 exercises end to end.
 
 **Blocked by.** T-001. **Parallelisable.** no.
 

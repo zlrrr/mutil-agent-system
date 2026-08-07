@@ -210,6 +210,14 @@ records its rejection would make the system contradict itself. The ranking is le
 untouched: it still shows the rejected explanation first, with its verdict and
 counter-evidence beside it.
 
+Only `reject` is skipped. `revise` says the critic wants more work, not that the
+explanation is inadmissible, and skipping it too made the reported answer depend on the
+severity of an unfinished objection rather than on the evidence: a case whose best
+explanation scored 0.84 under a `revise` reported a 0.09 explanation instead, because that
+one had attracted a milder critique. Whether an explanation may be *acted on* is a
+different question, asked separately by `CanRemediate` (DLD-1062), which does require a
+permitting verdict.
+
 **Invariants.** `Replay(events)` equals the live projection for every case
 (REQ-0003).
 
@@ -616,6 +624,20 @@ that situation and drops only the demand, because a requirement nothing establis
 unestablished whether or not anyone can go and look. The rules that challenge the
 *leader* drop both, because a challenge whose evidence can never arrive holds the case in
 `revise` forever (REQ-0031, REQ-0101).
+
+**Why `alternative_explanation` stops at the budget edge.** With no round left, a demand
+can never be answered, so the challenge that carries it can never clear — the case ends
+unable to act on its own best explanation because of a question it was not given the
+chance to ask. The rule stays silent instead; what went unexamined is recorded as an unmet
+demand, and a genuine near-tie is still escalated by the rule that exists for that.
+
+**Why `source_vs_victim` orders its demands by existing support.** It asks for the whole
+catalog's unanswered requirement descriptors, so its demand list grows every time a
+signature is added, and `maxDemandsPerRound` then decides which the investigation actually
+pursues. Ordering by signature identifier let that decision fall out of alphabetical
+accident: adding two signatures displaced the evidence a victim case needed, and it never
+reached its cause. Signatures the evidence already partly supports come first — those are
+leads; the rest are shots in the dark.
 
 **Why `alternative_explanation` has two further skips.** The rule exists to stop a leader being
 accepted while an equally consistent rival stands unexamined, so both skips ask the same

@@ -4,23 +4,23 @@ All three modes run over identical fixture inputs, so a difference is attributab
 
 | Mode | Samples | Top-1 accuracy | Top-3 coverage | Mean evidence kinds | Mean rounds | Critic corrections | Actions held for approval |
 |---|---|---|---|---|---|---|---|
-| single | 6 | 17% | 83% | 5.0 | 1.0 | 0 | 5 |
+| single | 6 | 17% | 83% | 5.0 | 1.0 | 0 | 3 |
 | multi_no_critic | 6 | 17% | 83% | 5.0 | 1.0 | 0 | 0 |
-| multi_with_critic | 6 | 100% | 100% | 5.8 | 2.3 | 46 | 5 |
+| multi_with_critic | 6 | 100% | 100% | 5.8 | 2.3 | 54 | 5 |
 
 ### Per case
 
 | Case | Mode | Expected | Top-1 | Correct | Rounds | Kinds | Status |
 |---|---|---|---|---|---|---|---|
 | C1 | single | `sig-db-pool-exhaustion` | `sig-db-outage` | no | 1 | 5 | closed |
-| C2 | single | `sig-misconfigured-dependency` | `sig-traffic-surge` | no | 1 | 5 | closed |
-| C3 | single | `sig-slow-query` | `sig-traffic-surge` | no | 1 | 5 | closed |
+| C2 | single | `sig-misconfigured-dependency` | `sig-upstream-outage` | no | 1 | 5 | closed |
+| C3 | single | `sig-slow-query` | `sig-cold-cache` | no | 1 | 5 | closed |
 | C4 | single | `sig-traffic-surge` | `sig-traffic-surge` | yes | 1 | 5 | closed |
 | C5 | single | `sig-db-pool-exhaustion` | `sig-traffic-surge` | no | 1 | 5 | closed |
 | C6 | single | `sig-misconfigured-dependency` | `sig-traffic-surge` | no | 1 | 5 | closed |
 | C1 | multi_no_critic | `sig-db-pool-exhaustion` | `sig-db-outage` | no | 1 | 5 | closed |
-| C2 | multi_no_critic | `sig-misconfigured-dependency` | `sig-traffic-surge` | no | 1 | 5 | closed |
-| C3 | multi_no_critic | `sig-slow-query` | `sig-traffic-surge` | no | 1 | 5 | closed |
+| C2 | multi_no_critic | `sig-misconfigured-dependency` | `sig-upstream-outage` | no | 1 | 5 | closed |
+| C3 | multi_no_critic | `sig-slow-query` | `sig-cold-cache` | no | 1 | 5 | closed |
 | C4 | multi_no_critic | `sig-traffic-surge` | `sig-traffic-surge` | yes | 1 | 5 | closed |
 | C5 | multi_no_critic | `sig-db-pool-exhaustion` | `sig-traffic-surge` | no | 1 | 5 | closed |
 | C6 | multi_no_critic | `sig-misconfigured-dependency` | `sig-traffic-surge` | no | 1 | 5 | closed |

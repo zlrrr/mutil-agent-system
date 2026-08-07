@@ -186,6 +186,11 @@
           "descriptor": "upstream dependency error metric",
           "kind": "metric",
           "reason": "upstream connect errors separate a dependency misconfiguration from a fault inside this service"
+        },
+        {
+          "descriptor": "dependency health measured independently of this service's configuration",
+          "kind": "metric",
+          "reason": "a dependency that is serving other callers is not down, so a caller that cannot reach it is dialling the wrong place"
         }
       ],
       "remediation": {
@@ -205,6 +210,42 @@
           "http_5xx_rate"
         ]
       },
+      "runbook_ids": [
+        "rb-dependency"
+      ]
+    },
+    {
+      "id": "sig-upstream-outage",
+      "claim": "The upstream dependency became unavailable",
+      "mechanism": "If the dependency a service calls is down or unreachable, every call to it fails to connect and the caller returns upstream errors while its own request rate is unchanged. This explanation predicts that the dependency's availability signal has dropped.",
+      "requires": [
+        {
+          "kind": "metric",
+          "match": [
+            "payment_up"
+          ],
+          "facts": {
+            "collapsed": "true"
+          },
+          "label": "the dependency availability signal collapsed",
+          "demand": "dependency availability metric"
+        },
+        {
+          "kind": "log",
+          "match": [
+            "connection refused"
+          ],
+          "label": "connections to the dependency were refused",
+          "demand": "upstream dependency error log sample"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "dependency availability metric",
+          "kind": "metric",
+          "reason": "an available dependency rules out an outage and leaves the refused connections to be explained another way"
+        }
+      ],
       "runbook_ids": [
         "rb-dependency"
       ]
@@ -245,6 +286,11 @@
           "descriptor": "database cpu utilisation metric",
           "kind": "metric",
           "reason": "database CPU rising with latency separates an inefficient query from a network or capacity problem"
+        },
+        {
+          "descriptor": "latency distribution across the service's endpoints",
+          "kind": "metric",
+          "reason": "a slow store slows every query path, so latency confined to one endpoint points at that endpoint's query rather than at the store"
         }
       ],
       "remediation": {
@@ -271,6 +317,42 @@
       },
       "runbook_ids": [
         "rb-slow-query"
+      ]
+    },
+    {
+      "id": "sig-cold-cache",
+      "claim": "A database failover left the new primary serving from a cold cache",
+      "mechanism": "After a failover the promoted node's buffer cache is empty, so queries read pages from disk until it warms. Every query path slows together and the slow query log fills, while the error rate stays low because requests still succeed \u2014 just slowly. The slow query log is therefore evidence for this explanation and for an inefficient query alike; what separates them is how much of the service got slower.",
+      "requires": [
+        {
+          "kind": "metric",
+          "match": [
+            "db_buffer_cache_hit_ratio"
+          ],
+          "facts": {
+            "collapsed": "true"
+          },
+          "label": "the buffer cache hit ratio collapsed",
+          "demand": "database buffer cache hit ratio metric"
+        },
+        {
+          "kind": "log",
+          "match": [
+            "slow query"
+          ],
+          "label": "queries ran slowly",
+          "demand": "slow query log sample"
+        }
+      ],
+      "discriminators": [
+        {
+          "descriptor": "database buffer cache hit ratio metric",
+          "kind": "metric",
+          "reason": "a healthy cache hit ratio rules out a cold cache and leaves the latency to be explained another way"
+        }
+      ],
+      "runbook_ids": [
+        "rb-db-pool"
       ]
     }
   ]

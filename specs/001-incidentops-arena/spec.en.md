@@ -954,11 +954,15 @@ refutes it. A catalog in which no case exercises that ordering leaves the check 
 <!-- sdd:item id=REQ-0103 stage=specify status=approved derives_from=G-002,G-005 priority=P0 -->
 ### REQ-0103 — The reference scenario's first-round error must be fully supported
 
-**Requirement.** The reference scenario MUST reach, at the end of its first collection
-round, a leading explanation that is both wrong and complete: every evidence requirement
-its signature declares MUST be satisfied by evidence already collected, and its margin
-over the runner-up MUST exceed the close-call margin. The adversarial round MUST then
-displace it with evidence recorded against it, not merely out-score it.
+**Requirement.** Every case whose correct answer the critic is credited with reaching
+MUST reach, at the end of its first collection round, a leading explanation that is both
+wrong and complete: every evidence requirement its signature declares MUST be satisfied by
+evidence already collected, and its margin over the runner-up MUST exceed the close-call
+margin. The adversarial rounds MUST then displace it with evidence recorded against it,
+not merely out-score it.
+
+The refuting observation MUST differ between cases. A catalog in which every wrong first
+answer falls to the same kind of check demonstrates one check, not adversarial review.
 
 **Why this is a requirement and not a test detail.** A round-one error that is wrong
 because evidence is *missing* sets the bar too low: the critic wins by asking for
@@ -967,6 +971,11 @@ adversarial review. The claim this system makes is stronger — that a well-evid
 confidently-held, coherent answer can still be wrong, and that structured objection is
 what finds it. Only a scenario whose first answer has everything it asked for can test
 that claim.
+
+The margin condition is not decoration. Two of these cases previously led round one by
+0.01 and 0.03 — a coin toss that happened to land wrong, from which correcting the ranking
+proves nothing about the critic. An error worth overturning is one a careful reasoner
+would hold confidently.
 
 **Acceptance.**
 - Given the reference scenario stopped after one collection round, when the leading

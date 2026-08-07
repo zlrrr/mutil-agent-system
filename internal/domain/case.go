@@ -142,8 +142,16 @@ func (c *Case) Leading() (Hypothesis, bool) {
 	// The ranking is left alone: it still shows the rejected explanation first, with
 	// the verdict and the counter-evidence beside it. "This fit best and here is why we
 	// rejected it" is worth more to a reader than quietly hiding it.
+	//
+	// Only `reject` is skipped. `revise` says the critic wants more work, not that the
+	// explanation is impossible, and skipping it too made the answer depend on the
+	// severity of an unfinished objection rather than on the evidence: a case whose best
+	// explanation scored 0.84 under a `revise` reported a 0.09 explanation instead,
+	// because that one had attracted a milder critique. Whether an explanation may be
+	// *acted on* is a separate question, asked separately by CanRemediate, which does
+	// require a permitting verdict.
 	for _, h := range c.Hypotheses {
-		if h.Verdict == "" || h.Verdict.Permits() {
+		if h.Verdict != VerdictReject {
 			return h, true
 		}
 	}
@@ -553,7 +561,7 @@ func (s Snapshot) Leading() (Hypothesis, bool) {
 		return Hypothesis{}, false
 	}
 	for _, h := range s.Hypotheses {
-		if h.Verdict == "" || h.Verdict.Permits() {
+		if h.Verdict != VerdictReject {
 			return h, true
 		}
 	}

@@ -173,6 +173,15 @@ func (alternativeExplanationRule) Apply(rc RuleContext, h domain.Hypothesis, ran
 	if rank != 0 {
 		return nil, nil
 	}
+	// With the budget spent there is no round left to answer a demand, so raising one
+	// would leave the leader in `revise` with no way out — the case would end unable to
+	// act on its own best explanation because of a question it was never given the
+	// chance to ask. The unmet-demand record carries what went unexamined; a permanent
+	// veto does not (REQ-0031, REQ-0101). Close calls are still escalated, by the rule
+	// that exists for them.
+	if !budgetRemaining(rc) {
+		return nil, nil
+	}
 	var cs []domain.Critique
 	var ds []domain.EvidenceDemand
 
@@ -385,11 +394,25 @@ func upstreamDemands(rc RuleContext, upstream string) []domain.EvidenceDemand {
 	var out []domain.EvidenceDemand
 	seen := map[string]bool{}
 
+	// Order by how much of each signature the case already supports, descending. The
+	// rule asks for the whole catalog's requirements, so its demand list grows every
+	// time a signature is added — and the per-round cap then decides which of them the
+	// investigation actually pursues. Ordering by signature identifier let that
+	// decision fall out of alphabetical accident: adding two signatures displaced the
+	// evidence a victim case needed and it never reached its cause. A signature the
+	// evidence already partly supports is a lead; one with nothing behind it is a shot
+	// in the dark, and leads go first.
 	ids := make([]string, 0, len(rc.Catalog.Signatures))
 	for _, sig := range rc.Catalog.Signatures {
 		ids = append(ids, sig.ID)
 	}
-	sort.Strings(ids)
+	sort.SliceStable(ids, func(i, j int) bool {
+		a, b := len(rc.Matches[ids[i]].Matched), len(rc.Matches[ids[j]].Matched)
+		if a != b {
+			return a > b
+		}
+		return ids[i] < ids[j]
+	})
 
 	for _, id := range ids {
 		sig, ok := rc.Catalog.Signature(id)
@@ -491,6 +514,15 @@ func (closeCallRule) Apply(rc RuleContext, h domain.Hypothesis, rank int) ([]dom
 }
 
 // ------------------------------------------------------------------------ helpers
+
+// budgetRemaining reports whether the case can still run another collection round, and
+// therefore whether a demand raised now could ever be answered.
+func budgetRemaining(rc RuleContext) bool {
+	if rc.Snapshot.MaxRounds <= 0 {
+		return true // unconfigured: assume the caller will decide
+	}
+	return rc.Snapshot.Round < rc.Snapshot.MaxRounds
+}
 
 // counteredRival reports whether evidence already argues against a rival explanation.
 //
