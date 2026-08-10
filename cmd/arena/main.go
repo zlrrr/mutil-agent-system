@@ -5,9 +5,11 @@
 //	arena serve  [--addr :8080] [--store memory|file] [--data ./data]
 //	             [--signal-profile fixture|live] [--prometheus-url URL]
 //	             [--container-host HOST] [--series-map FILE]
-//	             [--reasoner rule|model] [--model-endpoint URL] [--model-name NAME]
+//	             [--reasoner rule|model] [--planner rule|model]
+//	             [--model-endpoint URL] [--model-name NAME]
 //	arena demo   [--case C1] [--mode multi_with_critic] [--approve] [--out report.md]
-//	             [--reasoner rule|model] [--model-endpoint URL] [--model-name NAME]
+//	             [--reasoner rule|model] [--planner rule|model]
+//	             [--model-endpoint URL] [--model-name NAME]
 //	arena cases
 //	arena version
 package main
@@ -25,6 +27,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/arena"
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
@@ -126,10 +129,14 @@ func serve(args []string) error {
 	if err != nil {
 		return err
 	}
+	pln, err := buildPlanner(*rsnCfg)
+	if err != nil {
+		return err
+	}
 	registry, err := arena.NewRegistryWith(arena.RegistryOptions{
 		Store: st, Bus: eventbus.New(),
 		Config: reasoner.DefaultConfig(), Policy: policy.DefaultConfig(),
-		Catalog: cat, Signals: signals, Reasoner: rsn,
+		Catalog: cat, Signals: signals, Reasoner: rsn, Planner: pln,
 	})
 	if err != nil {
 		return err
@@ -152,8 +159,8 @@ func serve(args []string) error {
 		_ = srv.Shutdown(shutdown)
 	}()
 
-	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, signals=%s, reasoner=%s, cases=%v)\n",
-		Version, *addr, *kind, signals.Profile, rsnCfg.Name(), cat.CaseIDs())
+	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, signals=%s, reasoner=%s, planner=%s, cases=%v)\n",
+		Version, *addr, *kind, signals.Profile, rsnCfg.Name(), rsnCfg.PlannerName(), cat.CaseIDs())
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -183,8 +190,12 @@ func demo(args []string) error {
 	}
 
 	ctx := context.Background()
+	pln, err := buildPlanner(*rsnCfg)
+	if err != nil {
+		return err
+	}
 	build, err := arena.NewFixtureBuild(arena.Params{
-		CaseID: *caseID, Catalog: cat, Reasoner: rsn,
+		CaseID: *caseID, Catalog: cat, Reasoner: rsn, Planner: pln,
 	})
 	if err != nil {
 		return err
@@ -320,6 +331,16 @@ func buildReasoner(c strategy.Config, cat *catalog.Catalog) (reasoner.Reasoner, 
 		return nil, badConfig("-reasoner", "%w", err)
 	}
 	return r, nil
+}
+
+// buildPlanner resolves the planner adapter, turning a configuration error into the
+// exit-2 shape every entry point uses (HLD-018).
+func buildPlanner(c strategy.Config) (plan.Planner, error) {
+	p, err := c.BuildPlanner(reasoner.DefaultConfig().ChangeLookback)
+	if err != nil {
+		return nil, badConfig("-planner", "%w", err)
+	}
+	return p, nil
 }
 
 func buildStore(kind, dir string) (store.Store, error) {

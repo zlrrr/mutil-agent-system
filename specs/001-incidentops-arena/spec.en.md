@@ -988,11 +988,15 @@ would hold confidently.
 **Verified by.** TC-0110
 
 <!-- sdd:item id=REQ-0104 stage=specify status=approved derives_from=G-005,G-006 priority=P0 -->
-### REQ-0104 — The reasoning strategy is selectable wherever a result is produced
+### REQ-0104 — Every strategy is selectable wherever a result is produced
 
 **Requirement.** Every entry point that produces a comparable result — the service, the
-single-case runner and the evaluation runner — MUST accept the same reasoner selection,
-and MUST record which adapter produced each result.
+single-case runner and the evaluation runner — MUST accept the same selection for *every*
+strategy port the system has, and MUST record which adapter produced each result.
+
+The ports are independently selectable. Reasoning and planning are separate judgements,
+and a single switch that moved both would make their contributions inseparable in the one
+place the system exists to measure them.
 
 **Why this is a requirement.** ADR-002 claims that substituting a model changes no
 contract, no state transition and no stored schema. That claim is only worth what it can
@@ -1010,11 +1014,13 @@ outside, and the choice of default rests on an argument rather than on a measure
 **Verified by.** TC-0112
 
 <!-- sdd:item id=REQ-0105 stage=specify status=approved derives_from=G-005 priority=P0 -->
-### REQ-0105 — The reasoner adapters answer to one contract
+### REQ-0105 — Every strategy port's adapters answer to one contract
 
-**Requirement.** Both reasoner adapters MUST satisfy a single contract test asserting
-the properties the orchestrator relies on, independent of which strategy produced the
-output: every hypothesis cites evidence present in the snapshot, names a signature
+**Requirement.** For every strategy port, all of its adapters MUST satisfy a single
+contract test asserting the properties the orchestrator relies on, independent of which
+strategy produced the output.
+
+For the reasoner port: every hypothesis cites evidence present in the snapshot, names a signature
 present in the catalog and carries a mechanism; every critique names an examined
 hypothesis and a verdict from the closed set; every demand carries a descriptor and a
 kind. A provider failure MUST surface as an error and MUST NOT be reported as an empty
@@ -1026,24 +1032,30 @@ adapters merely compile against is not a contract — it is a shape. What the or
 actually depends on is behavioural, and until both adapters are held to it, "swapping the
 adapter changes nothing" is an assertion about code that nobody has checked.
 
-**Acceptance.**
-- Given each adapter in turn, when the contract suite runs against it, then every
-  property holds for both.
-- Given an adapter whose provider is unreachable, when hypothesis formation runs, then it
-  returns an error rather than an empty list.
+For the planner port: every planned series is one the sources offer or is reported as
+dropped; a plan that would collect nothing is replaced by the deterministic plan; and a
+provider failure surfaces as an error rather than as an empty plan.
 
-**Verified by.** TC-0113
+**Acceptance.**
+- Given each adapter of each port in turn, when that port's contract suite runs against
+  it, then every property holds for all of them.
+- Given an adapter whose provider is unreachable, when it is asked for a hypothesis or a
+  plan, then it returns an error rather than an empty result.
+
+**Verified by.** TC-0113, TC-0117
 
 <!-- sdd:item id=REQ-0106 stage=specify status=approved derives_from=G-005 priority=P1 -->
 ### REQ-0106 — The evaluation attributes every number to a reasoner
 
-**Requirement.** The evaluation report MUST carry the reasoner adapter alongside the
+**Requirement.** The evaluation report MUST carry every strategy adapter alongside the
 mode for every outcome and every summary row, so that a difference between two runs is
 attributable to the strategy rather than assumed.
 
 **Acceptance.**
-- Given an evaluation run, when the report is produced, then each summary row names both
-  the mode and the reasoner, and the sample size accompanies them.
+- Given an evaluation run, when the report is produced, then each summary row names the
+  mode, the reasoner and the planner, and the sample size accompanies them.
+- Given a run that varies one strategy while holding the other fixed, when the summaries
+  are grouped, then each combination is its own row rather than averaged with another.
 
 **Verified by.** TC-0114
 

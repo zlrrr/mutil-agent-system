@@ -207,7 +207,8 @@ TC-0046、TC-0051、TC-0052、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、
 **文件。** `internal/agent/plan/plan.go`、`internal/agent/collectors.go`、
 `internal/orchestrator/engine.go`、`internal/domain/case.go`
 
-**完成定义。** TC-0115 与 TC-0116 通过；确定性规划器复现端口引入之前的行为，因此现有测试套件
+**完成定义。** TC-0115、TC-0116、TC-0117 通过；两个规划器适配器对同一份契约负责，且该契约是
+与端口**同时**写出来的而不是事后补的；确定性规划器复现端口引入之前的行为，因此现有测试套件
 原样通过；实际执行的方案可从事件日志还原；remediation 与 verification 不接受任何策略参数。
 
 **阻塞于。** T-015。**可并行。** 否。

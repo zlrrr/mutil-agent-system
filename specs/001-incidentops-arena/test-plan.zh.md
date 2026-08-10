@@ -974,6 +974,23 @@ ADR-002 把这套测试列为"双适配器"决策的后果，却从未写出来�
 
 **测试函数。** `internal/agent/plan/plan_test.go` 中的 `TestJudgementBoundary`
 
+<!-- sdd:item id=TC-0117 stage=verify status=approved derives_from=REQ-0105 -->
+#### TC-0117 — 两个规划器适配器满足同一份契约
+
+**层级。** integration。**验证。** REQ-0105。
+
+**步骤。** 用同一套测试分别对确定性规划器与由桩服务商支撑的模型规划器运行：断言 triage 的窗口
+就是告警的窗口、角色就是采集器集合；断言方案中的每条序列都能在与数据源所提供内容的 `Resolve`
+中存活；断言一份只点名了未知序列的方案会回退。随后把模型规划器指向一个关闭的端口。
+
+**预期。** 全部性质对两者都成立。不可达的规划器返回错误，调用方回退到确定性方案并记录这次回退
+——一份空方案与一次失败的方案不得看起来一样。
+
+ADR-008 早就把这件事列为"新增端口的代价"：**每一个都需要 REQ-0105 给推理器的那种契约待遇，
+否则就是重演 D35**。这就是那种待遇——而且是与端口**同时**写出来的，不是事后补的。
+
+**测试函数。** `internal/agent/plan/contract_test.go` 中的 `TestPlannerContract`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

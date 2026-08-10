@@ -25,6 +25,7 @@ func TestReasonerSelectableEverywhere(t *testing.T) {
 		kindFlag     = "reasoner"
 		endpointFlag = "model-endpoint"
 		nameFlag     = "model-name"
+		plannerFlag  = "planner"
 	)
 
 	// Asserted by driving the real commands, not by re-registering the flags here: a
@@ -62,7 +63,7 @@ func TestReasonerSelectableEverywhere(t *testing.T) {
 		fs := flag.NewFlagSet("x", flag.ContinueOnError)
 		fs.SetOutput(new(strings.Builder))
 		strategy.Register(fs)
-		for _, want := range []string{kindFlag, endpointFlag, nameFlag} {
+		for _, want := range []string{kindFlag, endpointFlag, nameFlag, plannerFlag} {
 			if fs.Lookup(want) == nil {
 				t.Errorf("the shared registration omits --%s", want)
 			}
@@ -89,6 +90,29 @@ func TestReasonerSelectableEverywhere(t *testing.T) {
 		if r != nil {
 			t.Error("the rule selection built an adapter; nil means the arena's own " +
 				"default, so the two cannot drift apart")
+		}
+	})
+
+	t.Run("arena demo rejects an unknown planner", func(t *testing.T) {
+		err := demo([]string{"--case", "C1", "--quiet", "--planner", "vibes"})
+		requireConfigError(t, err, plannerFlag)
+	})
+
+	t.Run("the strategies are selectable independently", func(t *testing.T) {
+		fs := flag.NewFlagSet("x", flag.ContinueOnError)
+		c := strategy.Register(fs)
+		if err := fs.Parse([]string{"--reasoner", "model", "--model-endpoint", "http://p",
+			"--model-name", "m"}); err != nil {
+			t.Fatal(err)
+		}
+		// Moving the reasoner must not move the planner: one switch for both would make
+		// their contributions inseparable in the evaluation (REQ-0104).
+		if c.Name() != strategy.Model {
+			t.Errorf("reasoner = %q, want %q", c.Name(), strategy.Model)
+		}
+		if c.PlannerName() != strategy.Rule {
+			t.Errorf("planner = %q, want %q: selecting a reasoner moved the planner too",
+				c.PlannerName(), strategy.Rule)
 		}
 	})
 

@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/eval"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
@@ -70,6 +71,17 @@ func main() {
 		sel := sel
 		opts = append(opts, eval.Options{
 			Reasoner: sel.Name(),
+			Planner:  sel.PlannerName(),
+			NewPlanner: func() plan.Planner {
+				p, err := sel.BuildPlanner(reasoner.DefaultConfig().ChangeLookback)
+				if err != nil {
+					fatal(err)
+				}
+				if p == nil {
+					return plan.NewRulePlanner(reasoner.DefaultConfig().ChangeLookback)
+				}
+				return p
+			},
 			NewReasoner: func(c *catalog.Catalog) reasoner.Reasoner {
 				r, err := sel.Build(c, reasoner.DefaultConfig())
 				if err != nil {

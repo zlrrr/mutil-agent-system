@@ -15,6 +15,7 @@ import (
 )
 
 // sdd:impl DLD-1040
+// sdd:impl DLD-1037
 
 // Collectors returns the five evidence-gathering agents, in the fixed order their
 // contributions are applied.

@@ -217,8 +217,9 @@ fails if either stops satisfying it.
 **Files.** `internal/agent/plan/plan.go`, `internal/agent/collectors.go`,
 `internal/orchestrator/engine.go`, `internal/domain/case.go`
 
-**Definition of done.** TC-0115 and TC-0116 pass; the deterministic planner reproduces the
-pre-port behaviour so the existing suite passes unchanged; the executed plan is recoverable
+**Definition of done.** TC-0115, TC-0116 and TC-0117 pass; both planner adapters answer to
+one contract, written with the port rather than after it; the deterministic planner
+reproduces the pre-port behaviour so the existing suite passes unchanged; the executed plan is recoverable
 from the event log; remediation and verification accept no strategy.
 
 **Blocked by.** T-015. **Parallelisable.** no.

@@ -223,6 +223,10 @@ compile against is a shape; what the orchestrator depends on is behaviour.
 Which adapter produced a result travels with the result (REQ-0106). A comparison whose
 rows do not say what produced them is not a comparison.
 
+This element is the first of the family ARC-019 generalises: every judgement gets a
+strategy port on these terms, and every such port owes the same contract test. What is
+specific here is the reasoner; what is general is the shape.
+
 **Realises.** REQ-0011, REQ-0020, REQ-0090, REQ-0100, REQ-0104, REQ-0105, REQ-0106
 
 <!-- sdd:item id=ARC-019 stage=architect status=approved derives_from=REQ-0107,REQ-0108 -->

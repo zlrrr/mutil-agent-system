@@ -111,6 +111,13 @@ because a checkpoint that never fails is not a checkpoint.
 | D37 | **Collection decided nothing.** Every collector asked its source for everything on offer and analysed all of it, so "what did round one look at" was a property of the fixture's `default_series` rather than of any agent. That is the choice which determines the first-round error, and therefore what the critic has to overturn (REQ-0103) — the most consequential decision in the flow was the one decision no role was accountable for, and no amount of adding prompts elsewhere would have closed it | A planner port with a deterministic default that reproduces "ask for everything" exactly, so the port arrived as a refactor with the whole existing suite as its regression check. The executed plan is recorded on the case, so "why did round one not look at X" is answerable from the log rather than by re-running |
 | D38 | Found by TC-0115 on its first run: the assertion "every analysed series was one the plan asked for" failed on `db_pool_saturation`, which arrives through the critic's demand rather than the plan. The test was right to fail — the boundary had not been stated anywhere | Demand-driven collection is deliberately outside the plan, and now says so in DLD-1037: a demand names the evidence it wants, which is the point of the critic holding that power, and routing it through the planner would let a strategy veto the critic |
 
+### M7b — the model planner
+
+| # | Problem | Resolution |
+|---|---|---|
+| D39 | The planner port arrived in M7a with no contract suite, which is exactly the debt ADR-002 left and D35 recorded: an interface two adapters compile against constrains signatures, not behaviour. ADR-008 had already named the risk — "each needs the contract treatment REQ-0105 gave the reasoner, or it repeats D35" | TC-0117 was written *with* the second adapter rather than after it, and REQ-0105 was broadened from "the reasoner adapters" to "every strategy port's adapters", so the obligation attaches to the next port automatically instead of depending on someone remembering |
+| D40 | `sddctl validate` found DLD-1037 with no `sdd:impl` anchor: the collectors had been changed to execute the plan, but nothing in the source claimed the design item. A design item nothing implements and an implementation no design item claims are the same defect seen from two ends | Anchor added. Worth noting the tool caught it and not a person — the whole point of the anchors is that "I refactored the code and forgot the spec" is a mechanical failure rather than a judgement one |
+
 ## Known issues
 
 **Scoring charges an explanation for evidence it never claimed (D13).** A signature's

@@ -316,6 +316,18 @@ returns every available series and the default log terms. Introducing the port i
 therefore a refactor whose observable behaviour is unchanged, which is what lets the
 existing suite serve as its regression check.
 
+**Model-backed adapter.**
+
+```go
+package planmodel
+func New(endpoint, model string, opts Options) *Planner // implements plan.Planner
+```
+
+It is given the alert, the available series names and the round number, and asked which to
+query and why. It is never given free rein over the window: triage's window comes from the
+alert and the declared lookback, because a strategy that could widen it could also make
+every case unbounded.
+
 **Failure behaviour.** A planner error, or a plan naming nothing, falls back to the
 deterministic plan and records that it did. A strategy that cannot answer must not be able
 to blind the investigation, and silently collecting nothing would look identical to

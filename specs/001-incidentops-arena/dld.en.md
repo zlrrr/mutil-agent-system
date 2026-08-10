@@ -712,6 +712,35 @@ choice must justify itself.
 
 **Checkpoint.** TC-0115.
 
+<!-- sdd:item id=DLD-1038 stage=dld status=approved derives_from=HLD-021 -->
+### DLD-1038 — Model planner adapter
+
+**File.** `internal/agent/plan/planmodel/planmodel.go`
+
+**Types.** `Planner{endpoint, model string; client *http.Client}`, `Options{Timeout
+time.Duration; Client *http.Client; APIKey string}`, reusing the chat-completions shape of
+DLD-1035.
+
+**Behaviour.**
+
+1. `Name()` returns `"model"`.
+2. `Triage` returns the deterministic plan. The window comes from the alert and the
+   declared lookback and the roles are the collector set — neither is a judgement a
+   strategy may widen, because a strategy that could widen the window could make every
+   case unbounded and one that could drop a role could blind a whole evidence kind
+   without saying so.
+3. `PlanCollection` sends the alert, the round number and the available series names, and
+   asks for a subset with a reason. The response is untrusted: unknown names are dropped
+   by `plan.Resolve`, and an empty or unparseable response is a `ProviderError` so the
+   caller falls back rather than collecting nothing.
+
+**Why the model plans collection but not triage.** Collection is where judgement pays: a
+narrower first round is a different investigation, and whether that is better is the
+question the evaluation exists to answer. The window and the role set are bounds, not
+judgements, and bounds that a strategy can move are not bounds.
+
+**Checkpoint.** TC-0117.
+
 <!-- sdd:item id=DLD-1037 stage=dld status=approved derives_from=HLD-021 -->
 ### DLD-1037 — Planned collection
 

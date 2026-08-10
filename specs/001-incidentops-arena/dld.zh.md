@@ -645,6 +645,30 @@ total 被夹到 [0, 1]
 
 **检查点。** TC-0115。
 
+<!-- sdd:item id=DLD-1038 stage=dld status=approved derives_from=HLD-021 -->
+### DLD-1038 — 模型规划器适配器
+
+**文件。** `internal/agent/plan/planmodel/planmodel.go`
+
+**类型。** `Planner{endpoint, model string; client *http.Client}`、`Options{Timeout
+time.Duration; Client *http.Client; APIKey string}`，复用 DLD-1035 的 chat-completions 形状。
+
+**行为。**
+
+1. `Name()` 返回 `"model"`。
+2. `Triage` 返回确定性方案。窗口来自告警与声明的回看区间，角色则是采集器集合——两者都不是
+   策略可以放宽的判断：一个能放宽窗口的策略，也就能让每个 case 变得无界；一个能删掉角色的
+   策略，则能在不作声的情况下让一整类证据失明。
+3. `PlanCollection` 发送告警、轮次编号与可用序列名，索要一个**子集**及其理由。响应是不可信的：
+   未知名称由 `plan.Resolve` 丢弃；空响应或无法解析的响应会成为 `ProviderError`，于是调用方
+   回退，而不是什么也不采集。
+
+**为什么模型规划采集却不规划分诊。** 采集是判断真正有回报的地方：更窄的第一轮就是另一场调查，
+而那究竟是不是更好，正是评测存在的意义。窗口与角色集合是**边界**而不是判断；而一个策略能挪动
+的边界，就不是边界。
+
+**检查点。** TC-0117。
+
 <!-- sdd:item id=DLD-1037 stage=dld status=approved derives_from=HLD-021 -->
 ### DLD-1037 — 按方案采集
 

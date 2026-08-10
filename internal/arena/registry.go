@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/eventbus"
@@ -29,6 +30,7 @@ type Registry struct {
 	cat      *catalog.Catalog
 	signals  profile.Config
 	reasoner reasoner.Reasoner
+	planner  plan.Planner
 	engines  map[string]*orchestrator.Engine // keyed by case identifier
 	builds   map[string]*Build
 }
@@ -44,6 +46,7 @@ type RegistryOptions struct {
 	Catalog  *catalog.Catalog
 	Signals  profile.Config
 	Reasoner reasoner.Reasoner
+	Planner  plan.Planner
 }
 
 // NewRegistry builds a registry over a shared store and broker, serving every port from
@@ -85,6 +88,7 @@ func NewRegistryWith(o RegistryOptions) (*Registry, error) {
 	return &Registry{
 		store: st, bus: bus, cfg: cfg, pol: pol, cat: cat, signals: signals,
 		reasoner: o.Reasoner,
+		planner:  o.Planner,
 		engines:  map[string]*orchestrator.Engine{},
 		builds:   map[string]*Build{},
 	}, nil
@@ -119,7 +123,7 @@ func (r *Registry) Create(ctx context.Context, alert domain.Alert, mode domain.M
 	build, err := NewBuild(Params{
 		CaseID: ref, Mode: mode, Store: r.store, Bus: r.bus,
 		Config: r.cfg, Policy: r.pol, Catalog: r.cat, Signals: r.signals,
-		Reasoner: r.reasoner,
+		Reasoner: r.reasoner, Planner: r.planner,
 	})
 	if err != nil {
 		return nil, err

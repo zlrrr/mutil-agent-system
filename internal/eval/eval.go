@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/arena"
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
@@ -23,6 +24,12 @@ import (
 type Options struct {
 	Reasoner    string
 	NewReasoner func(*catalog.Catalog) reasoner.Reasoner
+	// Planner selects what the investigation looks at. It is separate from the reasoner
+	// because they are separate judgements, and one switch moving both would make their
+	// contributions inseparable here — which is the one place they are measured
+	// (REQ-0104).
+	Planner    string
+	NewPlanner func() plan.Planner
 }
 
 func (o Options) build(cat *catalog.Catalog) (reasoner.Reasoner, string) {
@@ -37,6 +44,18 @@ func (o Options) build(cat *catalog.Catalog) (reasoner.Reasoner, string) {
 	return r, name
 }
 
+func (o Options) buildPlanner() (plan.Planner, string) {
+	if o.NewPlanner == nil {
+		return nil, "rule"
+	}
+	p := o.NewPlanner()
+	name := o.Planner
+	if name == "" {
+		name = p.Name()
+	}
+	return p, name
+}
+
 // sdd:impl DLD-1074
 
 // Modes are the three comparable flows, in report order.
@@ -49,6 +68,7 @@ type Outcome struct {
 	CaseID            string      `json:"case_id"`
 	Mode              domain.Mode `json:"mode"`
 	Reasoner          string      `json:"reasoner"`
+	Planner           string      `json:"planner"`
 	Expected          string      `json:"expected_signature"`
 	Top1              string      `json:"top1_signature"`
 	Top1Correct       bool        `json:"top1_correct"`
@@ -65,6 +85,7 @@ type Outcome struct {
 type ModeSummary struct {
 	Mode              domain.Mode `json:"mode"`
 	Reasoner          string      `json:"reasoner"`
+	Planner           string      `json:"planner"`
 	Samples           int         `json:"samples"`
 	Top1Accuracy      float64     `json:"top1_accuracy"`
 	Top3Coverage      float64     `json:"top3_coverage"`
@@ -92,9 +113,15 @@ func RunCase(ctx context.Context, cat *catalog.Catalog, caseID string, mode doma
 		return Outcome{}, fmt.Errorf("unknown case %q", caseID)
 	}
 	rsn, name := opts.build(cat)
-	out := Outcome{CaseID: caseID, Mode: mode, Reasoner: name, Expected: fc.ExpectedSignature}
+	pln, plannerName := opts.buildPlanner()
+	out := Outcome{
+		CaseID: caseID, Mode: mode, Reasoner: name, Planner: plannerName,
+		Expected: fc.ExpectedSignature,
+	}
 
-	b, err := arena.NewFixtureBuild(arena.Params{CaseID: caseID, Catalog: cat, Reasoner: rsn})
+	b, err := arena.NewFixtureBuild(arena.Params{
+		CaseID: caseID, Catalog: cat, Reasoner: rsn, Planner: pln,
+	})
 	if err != nil {
 		out.Failure = err.Error()
 		return out, nil
@@ -194,32 +221,36 @@ func Summarise(outcomes []Outcome) []ModeSummary {
 	type key struct {
 		mode     domain.Mode
 		reasoner string
+		planner  string
 	}
+	type strategyPair struct{ reasoner, planner string }
 	groups := map[key][]Outcome{}
-	var order []string
-	seen := map[string]bool{}
+	var order []strategyPair
+	seen := map[strategyPair]bool{}
 	for _, o := range outcomes {
-		groups[key{o.Mode, o.Reasoner}] = append(groups[key{o.Mode, o.Reasoner}], o)
-		if !seen[o.Reasoner] {
-			seen[o.Reasoner] = true
-			order = append(order, o.Reasoner)
+		k := key{o.Mode, o.Reasoner, o.Planner}
+		groups[k] = append(groups[k], o)
+		p := strategyPair{o.Reasoner, o.Planner}
+		if !seen[p] {
+			seen[p] = true
+			order = append(order, p)
 		}
 	}
 	var out []ModeSummary
-	for _, rsn := range order {
+	for _, p := range order {
 		for _, mode := range Modes {
-			os := groups[key{mode, rsn}]
+			os := groups[key{mode, p.reasoner, p.planner}]
 			if len(os) == 0 {
 				continue
 			}
-			out = append(out, summariseGroup(mode, rsn, os))
+			out = append(out, summariseGroup(mode, p.reasoner, p.planner, os))
 		}
 	}
 	return out
 }
 
-func summariseGroup(mode domain.Mode, rsn string, os []Outcome) ModeSummary {
-	s := ModeSummary{Mode: mode, Reasoner: rsn, Samples: len(os)}
+func summariseGroup(mode domain.Mode, rsn, pln string, os []Outcome) ModeSummary {
+	s := ModeSummary{Mode: mode, Reasoner: rsn, Planner: pln, Samples: len(os)}
 	var top1, top3, kinds, rounds int
 	for _, o := range os {
 		if o.Failure != "" {
@@ -250,19 +281,19 @@ func (r Report) Markdown() string {
 	b.WriteString("## Single agent versus multi agent\n\n")
 	b.WriteString("All three modes run over identical fixture inputs, so a difference " +
 		"is attributable to the flow rather than to the data.\n\n")
-	b.WriteString("| Reasoner | Mode | Samples | Top-1 accuracy | Top-3 coverage | Mean evidence kinds | Mean rounds | Critic corrections | Actions held for approval |\n")
-	b.WriteString("|---|---|---|---|---|---|---|---|---|\n")
+	b.WriteString("| Reasoner | Planner | Mode | Samples | Top-1 accuracy | Top-3 coverage | Mean evidence kinds | Mean rounds | Critic corrections | Actions held for approval |\n")
+	b.WriteString("|---|---|---|---|---|---|---|---|---|---|\n")
 	for _, s := range r.Summaries {
-		fmt.Fprintf(&b, "| `%s` | %s | %d | %.0f%% | %.0f%% | %.1f | %.1f | %d | %d |\n",
-			s.Reasoner, s.Mode, s.Samples, s.Top1Accuracy*100, s.Top3Coverage*100,
+		fmt.Fprintf(&b, "| `%s` | `%s` | %s | %d | %.0f%% | %.0f%% | %.1f | %.1f | %d | %d |\n",
+			s.Reasoner, s.Planner, s.Mode, s.Samples, s.Top1Accuracy*100, s.Top3Coverage*100,
 			s.MeanEvidenceKinds, s.MeanRounds, s.CriticCorrections, s.BlockedActions)
 	}
 	b.WriteString("\n### Per case\n\n")
-	b.WriteString("| Case | Reasoner | Mode | Expected | Top-1 | Correct | Rounds | Kinds | Status |\n")
-	b.WriteString("|---|---|---|---|---|---|---|---|---|\n")
+	b.WriteString("| Case | Reasoner | Planner | Mode | Expected | Top-1 | Correct | Rounds | Kinds | Status |\n")
+	b.WriteString("|---|---|---|---|---|---|---|---|---|---|\n")
 	for _, o := range r.Outcomes {
-		fmt.Fprintf(&b, "| %s | `%s` | %s | `%s` | `%s` | %s | %d | %d | %s |\n",
-			o.CaseID, o.Reasoner, o.Mode, o.Expected, orDash(o.Top1), tick(o.Top1Correct),
+		fmt.Fprintf(&b, "| %s | `%s` | `%s` | %s | `%s` | `%s` | %s | %d | %d | %s |\n",
+			o.CaseID, o.Reasoner, o.Planner, o.Mode, o.Expected, orDash(o.Top1), tick(o.Top1Correct),
 			o.Rounds, o.EvidenceKinds, o.Status)
 	}
 	b.WriteString("\nThe single-agent mode is given the same tools and the same default " +

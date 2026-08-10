@@ -5,6 +5,9 @@ import (
 	"strings"
 	"testing"
 
+	"time"
+
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/eval"
@@ -232,10 +235,37 @@ func TestEvaluationAttributesReasoner(t *testing.T) {
 		}
 	})
 
+	t.Run("a strategy varied while the other is fixed gets its own row", func(t *testing.T) {
+		// Two planners over one reasoner: grouping that ignored the planner would
+		// average two different investigations into one number (REQ-0106).
+		varied, err := eval.RunAllWith(ctx, cat, []string{"C1"}, []eval.Options{
+			{Planner: "rule"},
+			{
+				Planner:    "second-planner",
+				NewPlanner: func() plan.Planner { return plan.NewRulePlanner(30 * time.Minute) },
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(varied.Summaries) != 2*len(eval.Modes) {
+			t.Fatalf("got %d summary rows for two planners over %d modes, want %d",
+				len(varied.Summaries), len(eval.Modes), 2*len(eval.Modes))
+		}
+		for _, s := range varied.Summaries {
+			if s.Planner == "" {
+				t.Errorf("summary for %s records no planner", s.Mode)
+			}
+		}
+	})
+
 	t.Run("the rendered report names both", func(t *testing.T) {
 		md := rep.Markdown()
 		if !strings.Contains(md, "Reasoner") {
 			t.Error("the report has no reasoner column")
+		}
+		if !strings.Contains(md, "Planner") {
+			t.Error("the report has no planner column")
 		}
 		for _, want := range []string{"`rule`", "`second`"} {
 			if !strings.Contains(md, want) {

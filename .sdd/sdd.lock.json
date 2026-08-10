@@ -1,6 +1,6 @@
 {
   "sddVersion": "1.0.0",
-  "sealedAt": "2026-08-10T04:01:49Z",
+  "sealedAt": "2026-08-10T10:05:32Z",
   "items": {
     "ADR-001": {
       "hash": "042ab491cf6bfc8c6fd827484c62231a5461575aa66e323f819683eb46a8ea7d",
@@ -75,7 +75,7 @@
       "file": "specs/001-incidentops-arena/architecture.en.md"
     },
     "ARC-005": {
-      "hash": "d8523e78fe69e792ce84798a20f3bab5f558c74bbc3777e48d530655471b33e1",
+      "hash": "4cf154410dbeb2d063ab2425aec77588e53952b8e65814783c393e1dc17e945c",
       "stage": "architect",
       "status": "approved",
       "file": "specs/001-incidentops-arena/architecture.en.md"
@@ -440,6 +440,12 @@
       "status": "approved",
       "file": "specs/001-incidentops-arena/dld.en.md"
     },
+    "DLD-1038": {
+      "hash": "3f9b207083899ae3d0795c4f1d8f545a72ad58849a7f1563ae3c39561710f9c3",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/dld.en.md"
+    },
     "DLD-1040": {
       "hash": "30d765bfdf4af5b91d0acb5ff694296f1ef59bf90d9e97035e1cbf58493e6b24",
       "stage": "dld",
@@ -729,7 +735,7 @@
       "file": "specs/001-incidentops-arena/hld.en.md"
     },
     "HLD-021": {
-      "hash": "988c95f153bfbf1b6aa7d8e9ee8d34db82c8a16212dd52b845839815007ba239",
+      "hash": "bbfc92006cd03e39239e36bd2b59c1fb309e0d138c762149b3d937a3b44fab82",
       "stage": "hld",
       "status": "approved",
       "file": "specs/001-incidentops-arena/hld.en.md"
@@ -1137,19 +1143,19 @@
       "file": "specs/001-incidentops-arena/spec.en.md"
     },
     "REQ-0104": {
-      "hash": "6fe0ecb651e84c1ec90c3b49c33a643f018696facb1044d3a54d356f75d372bf",
+      "hash": "198e6f08994e6eef89a3b1cbfcd2629cd03b8963f51c3af4e4f0e55c819d73ed",
       "stage": "specify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/spec.en.md"
     },
     "REQ-0105": {
-      "hash": "989a5b34a2f42e896d19ed7f3b5429c2452d82a57f5983a5ded1cdf81325a761",
+      "hash": "6d5dfbb9b1952035effb146a01865dc6602a97fa58d87b152bc400b31bae393b",
       "stage": "specify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/spec.en.md"
     },
     "REQ-0106": {
-      "hash": "e17675ccb6b7278ade85c20b476089ee48419a4213b59e34f10ed5975755d9b9",
+      "hash": "77eb1f37d233361c63cd168d307867148bd75f5a7b21eaa4e72eb59d56feb5a3",
       "stage": "specify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/spec.en.md"
@@ -1335,7 +1341,7 @@
       "file": "specs/001-incidentops-arena/tasks.en.md"
     },
     "T-016": {
-      "hash": "2577d020e8b7a4158c09bbe8a7d063d54e436fd695ecce4ee5e8e30c1548c385",
+      "hash": "7db2ca0512f23d8c7f194ed6c04b9bb17a1845655b3f94bc95a4fadf5107526e",
       "stage": "plan",
       "status": "approved",
       "file": "specs/001-incidentops-arena/tasks.en.md"
@@ -1750,6 +1756,12 @@
     },
     "TC-0116": {
       "hash": "84a01da7d3ddf81c933ce8910e25e3f7ea1f35440fcad3053f65c3389f314879",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/test-plan.en.md"
+    },
+    "TC-0117": {
+      "hash": "af463b60308cd1fe18b58a4cb969759cd18d983b5fb739a22289e1198f65bec9",
       "stage": "verify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/test-plan.en.md"
