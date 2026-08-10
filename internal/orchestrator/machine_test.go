@@ -174,9 +174,12 @@ func TestRemediationGuard(t *testing.T) {
 			want: "verdict",
 		},
 		{
-			name: "score below the acceptance threshold",
+			name: "the evidence does not fit what the explanation claimed",
 			mutate: func(c *domain.Case) {
-				c.Hypotheses[0].Breakdown.Total = 0.5
+				// Fit, not Total. Total ranks and charges a signature for evidence kinds
+				// it never claimed; lowering it here would only trip the close-call rule
+				// on the way past, which is a different refusal for a different reason.
+				c.Hypotheses[0].Breakdown.Fit = 0.5
 			},
 			want: "threshold",
 		},

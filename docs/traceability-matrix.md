@@ -14,7 +14,7 @@
 | REQ-0016 | P1 | G-001 | ARC-006 | HLD-005<br>HLD-006<br>HLD-019 | DLD-1020<br>DLD-1021<br>DLD-1022<br>DLD-1023<br>DLD-1024<br>DLD-1025<br>DLD-1026<br>DLD-1027<br>DLD-1030<br>DLD-1031 | T-004<br>T-005<br>T-006 | TC-0016 | catalog/case.go<br>catalog/catalog.go<br>catalog/signature.go<br>signal/anomaly.go<br>signal/bounds.go<br>signal/cluster.go<br>signal/containerlog/containerlog.go<br>signal/fixture/actuator.go<br>signal/fixture/fixture.go<br>signal/ports.go<br>signal/profile/profile.go<br>signal/prometheus/prometheus.go | yes |
 | REQ-0020 | P0 | G-001 | ARC-005 | HLD-007<br>HLD-017<br>HLD-020 | DLD-1033<br>DLD-1035<br>DLD-1074 | T-007<br>T-013<br>T-015 | TC-0020 | eval/eval.go<br>reasoner/model/model.go<br>reasoner/reasoner.go<br>reasoner/rule.go | yes |
 | REQ-0021 | P0 | G-001 | ARC-007 | HLD-012 | DLD-1060<br>DLD-1061<br>DLD-1062<br>DLD-1063 | T-011 | TC-0021 | orchestrator/apply.go<br>orchestrator/engine.go<br>orchestrator/guard.go<br>orchestrator/machine.go | yes |
-| REQ-0022 | P0 | G-001 | ARC-008 | HLD-008 | DLD-1032 | T-007 | TC-0022 | reasoner/score.go | yes |
+| REQ-0022 | P0 | G-001 | ARC-008 | HLD-008 | DLD-1032 | T-007 | TC-0022<br>TC-0118 | reasoner/score.go | yes |
 | REQ-0023 | P0 | G-002 | ARC-008 | HLD-008 | DLD-1032 | T-007 | TC-0023 | reasoner/score.go | yes |
 | REQ-0024 | P0 | G-006 | ARC-008 | HLD-008 | DLD-1032 | T-007 | TC-0024<br>TC-0072 | reasoner/score.go | yes |
 | REQ-0030 | P0 | G-002 | ARC-009 | HLD-009 | DLD-1034 | T-008 | TC-0030 | reasoner/critique.go | yes |
@@ -61,8 +61,8 @@
 | REQ-0104 | P0 | G-005<br>G-006 | ARC-005 | HLD-007<br>HLD-017<br>HLD-020 | DLD-1033<br>DLD-1035<br>DLD-1074 | T-007<br>T-013<br>T-015 | TC-0112 | eval/eval.go<br>reasoner/model/model.go<br>reasoner/reasoner.go<br>reasoner/rule.go | yes |
 | REQ-0105 | P0 | G-005 | ARC-005 | HLD-007<br>HLD-017<br>HLD-020 | DLD-1033<br>DLD-1035<br>DLD-1074 | T-007<br>T-013<br>T-015 | TC-0113<br>TC-0117 | eval/eval.go<br>reasoner/model/model.go<br>reasoner/reasoner.go<br>reasoner/rule.go | yes |
 | REQ-0106 | P1 | G-005 | ARC-005 | HLD-007<br>HLD-017<br>HLD-020 | DLD-1033<br>DLD-1035<br>DLD-1074 | T-007<br>T-013<br>T-015 | TC-0114 | eval/eval.go<br>reasoner/model/model.go<br>reasoner/reasoner.go<br>reasoner/rule.go | yes |
-| REQ-0107 | P0 | G-001<br>G-005 | ARC-019 | HLD-021 | DLD-1036<br>DLD-1037<br>DLD-1038 | T-016 | TC-0115 | agent/plan/plan.go<br>agent/plan/planmodel/planmodel.go | yes |
-| REQ-0108 | P0 | G-002<br>G-004 | ARC-019 | HLD-021 | DLD-1036<br>DLD-1037<br>DLD-1038 | T-016 | TC-0116 | agent/plan/plan.go<br>agent/plan/planmodel/planmodel.go | yes |
+| REQ-0107 | P0 | G-001<br>G-005 | ARC-019 | HLD-021 | DLD-1036<br>DLD-1037<br>DLD-1038 | T-016 | TC-0115 | agent/collectors.go<br>agent/plan/plan.go<br>agent/plan/planmodel/planmodel.go | yes |
+| REQ-0108 | P0 | G-002<br>G-004 | ARC-019 | HLD-021 | DLD-1036<br>DLD-1037<br>DLD-1038 | T-016 | TC-0116 | agent/collectors.go<br>agent/plan/plan.go<br>agent/plan/planmodel/planmodel.go | yes |
 | REQ-9001 | P0 | G-901 | ARC-901 | HLD-901<br>HLD-903<br>HLD-904<br>HLD-905 | DLD-0101<br>DLD-0103<br>DLD-0104<br>DLD-0105 | — | TC-9001<br>TC-9014 | sdd/check.go<br>sdd/config.go<br>sdd/model.go<br>sdd/parse.go | yes |
 | REQ-9002 | P0 | G-901 | ARC-901 | HLD-901<br>HLD-903<br>HLD-904<br>HLD-905 | DLD-0101<br>DLD-0103<br>DLD-0104<br>DLD-0105 | — | TC-9002 | sdd/check.go<br>sdd/config.go<br>sdd/model.go<br>sdd/parse.go | yes |
 | REQ-9003 | P1 | G-901 | ARC-901 | HLD-901<br>HLD-903<br>HLD-904<br>HLD-905 | DLD-0101<br>DLD-0103<br>DLD-0104<br>DLD-0105 | — | TC-9003 | sdd/check.go<br>sdd/config.go<br>sdd/model.go<br>sdd/parse.go | yes |

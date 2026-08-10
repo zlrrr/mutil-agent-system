@@ -2,6 +2,7 @@ package orchestrator_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"reflect"
@@ -560,6 +561,21 @@ func TestMisleadingLogsDoNotWin(t *testing.T) {
 				t.Errorf("%s scores %.2f, not below the leader's %.2f",
 					h.SignatureID, h.Breakdown.Total, c.Hypotheses[0].Breakdown.Total)
 			}
+		}
+	})
+
+	// D13's consequence, now closed. The case declares an expected remediation because
+	// that is the correct action; until fit and total were separated, the traffic
+	// explanation could be ranked first and never acted on, because the arithmetic
+	// charged it for evidence kinds it never claimed.
+	t.Run("the declared remediation is reached, not merely ranked", func(t *testing.T) {
+		if len(c.Actions) == 0 {
+			t.Fatal("C4 ranked its cause first and proposed nothing to do about it")
+		}
+		a := c.Actions[0]
+		got := fmt.Sprintf("%s %s %s %s", a.Tool, a.Args["service"], a.Args["key"], a.Args["value"])
+		if want := "set_config order-api RATE_LIMIT_QPS 200"; got != want {
+			t.Errorf("proposed %q, want the case's declared remediation %q", got, want)
 		}
 	})
 

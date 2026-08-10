@@ -34,6 +34,12 @@ type ScoreBreakdown struct {
 	Penalty    float64     `json:"penalty"`
 	Unresolved int         `json:"unresolved_counters"`
 	Total      float64     `json:"total"`
+	// Applicable is the share of the weight this signature actually claimed: the terms
+	// it declares a requirement for, plus the terms that apply to every signature.
+	Applicable float64 `json:"applicable"`
+	// Fit is Total renormalised over Applicable — how completely an explanation's own
+	// requirements are met, independent of how many it has.
+	Fit float64 `json:"fit"`
 }
 
 // Sum returns the arithmetic the breakdown claims: contributions less penalty. Callers

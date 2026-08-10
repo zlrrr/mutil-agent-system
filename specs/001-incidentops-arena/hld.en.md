@@ -241,10 +241,23 @@ matched" is a conclusion and a failure must not be able to impersonate one.
 
 ```go
 type ScoreTerm struct { Name string; Weight, Value, Contribution float64 }
-type ScoreBreakdown struct { Terms []ScoreTerm; Penalty, Total float64 }
+type ScoreBreakdown struct {
+    Terms      []ScoreTerm
+    Penalty    float64
+    Total      float64 // flat weighted sum — what ranking uses
+    Applicable float64 // the weight this signature actually put at stake
+    Fit        float64 // Total renormalised over Applicable — what acceptance uses
+}
 func Score(h Hypothesis, ev []Evidence, w Weights) ScoreBreakdown
 func Rank(hs []Hypothesis) []Hypothesis
 ```
+
+**Two numbers, because there are two questions.** "How much did this explanation claim,
+and prove" ranks; "how completely are its own requirements met" gates. Summed flat, a
+signature declaring one evidence kind is charged zeros for kinds it never mentioned and
+can be ranked first while remaining permanently unactionable (D13). Renormalised alone,
+matching the sole requirement of a one-requirement signature would read as near-certainty.
+Keeping both, and using each for its own question, is the whole of the fix.
 
 **Failure behaviour.** None; a pure function over values. Weight validity is asserted
 at load time.

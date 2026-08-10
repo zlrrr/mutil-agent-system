@@ -229,10 +229,21 @@ func Contract(t *testing.T, name string, make func(*Catalog) Reasoner)
 
 ```go
 type ScoreTerm struct { Name string; Weight, Value, Contribution float64 }
-type ScoreBreakdown struct { Terms []ScoreTerm; Penalty, Total float64 }
+type ScoreBreakdown struct {
+    Terms      []ScoreTerm
+    Penalty    float64
+    Total      float64 // 平铺加权和——排序用它
+    Applicable float64 // 该签名实际押上的权重
+    Fit        float64 // Total 在 Applicable 上归一化——接受用它
+}
 func Score(h Hypothesis, ev []Evidence, w Weights) ScoreBreakdown
 func Rank(hs []Hypothesis) []Hypothesis
 ```
+
+**两个数，因为有两个问题。** "这个解释声明了多少、又证明了多少"用于**排序**；"它自己的要求
+被满足得有多完整"用于**设门**。若平铺相加，一条只声明一类证据的签名会因它从未提及的类别被
+记零，于是可以排第一却永久不可执行（D13）。而只做归一化，则"匹配上只有一条要求的签名的那条
+要求"读起来就成了近乎确定。把两个都留着、各自回答各自的问题，就是这次修复的全部。
 
 **失败行为。** 无；对值的纯函数。权重合法性在加载时断言。
 

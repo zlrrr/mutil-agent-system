@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 )
 
@@ -239,4 +240,103 @@ func TestHypothesisIdentityStable(t *testing.T) {
 	if tr := findHypothesis(t, second, "sig-traffic-surge"); tr.UnresolvedCounters() == 0 {
 		t.Error("the traffic explanation should carry counter-evidence after round 2")
 	}
+}
+
+// sdd:verify TC-0118
+func TestScoreDoesNotChargeUnclaimedTerms(t *testing.T) {
+	cat, err := catalog.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := DefaultWeights()
+
+	// sig-traffic-surge declares one evidence kind; sig-db-pool-exhaustion declares three.
+	// Both are scored with every term they claim fully satisfied, so the only thing that
+	// separates them is how much they claimed.
+	narrow, ok := cat.Signature("sig-traffic-surge")
+	if !ok {
+		t.Fatal("the catalog lost sig-traffic-surge")
+	}
+	broad, ok := cat.Signature("sig-db-pool-exhaustion")
+	if !ok {
+		t.Fatal("the catalog lost sig-db-pool-exhaustion")
+	}
+
+	full := func(sig catalog.Signature) domain.ScoreBreakdown {
+		in := Inputs{
+			Topology: 1, Historical: 1, Verifiable: 1,
+			Applicable: declaredKinds(sig),
+		}
+		if in.Applicable.Metric {
+			in.Metric = 1
+		}
+		if in.Applicable.Log {
+			in.Log = 1
+		}
+		if in.Applicable.Change {
+			in.Change = 1
+		}
+		return Score(in, w, DefaultConfig().CounterPenalty)
+	}
+
+	n, b := full(narrow), full(broad)
+
+	t.Run("the applicable share excludes kinds the signature never declared", func(t *testing.T) {
+		// One metric requirement, no log or change: those two weights are not at stake.
+		want := w.Metric + w.Topology + w.Historical + w.Verifiable
+		if n.Applicable != round4(want) {
+			t.Errorf("applicable = %.2f, want %.2f", n.Applicable, want)
+		}
+		if b.Applicable != 1.0 {
+			t.Errorf("a signature declaring all three kinds has applicable %.2f, want 1.00",
+				b.Applicable)
+		}
+	})
+
+	t.Run("a fully satisfied signature fits completely, whatever it claimed", func(t *testing.T) {
+		if n.Fit != 1.0 {
+			t.Errorf("the one-requirement signature fits %.4f with every declared term "+
+				"satisfied; it is being charged for evidence it never claimed", n.Fit)
+		}
+		if b.Fit != 1.0 {
+			t.Errorf("the three-requirement signature fits %.4f", b.Fit)
+		}
+	})
+
+	t.Run("the total still records how much was claimed", func(t *testing.T) {
+		if n.Total >= b.Total {
+			t.Errorf("the one-requirement signature totals %.2f against the "+
+				"three-requirement signature's %.2f; ranking must still prefer the "+
+				"explanation that committed more and proved it", n.Total, b.Total)
+		}
+		if n.Total > 0.6 {
+			t.Errorf("total = %.2f; it is meant to stay near the applicable share", n.Total)
+		}
+	})
+
+	t.Run("fit is never below total", func(t *testing.T) {
+		for _, got := range []domain.ScoreBreakdown{n, b} {
+			if got.Fit < got.Total {
+				t.Errorf("fit %.4f is below total %.4f", got.Fit, got.Total)
+			}
+		}
+		if b.Fit != b.Total {
+			t.Errorf("a signature claiming every kind has fit %.4f and total %.4f; "+
+				"with nothing excluded the two must agree", b.Fit, b.Total)
+		}
+	})
+
+	t.Run("applicable is read from the declaration, not from the match", func(t *testing.T) {
+		// A signature whose requirements all failed still claimed them. Reading
+		// applicability from the match would make it *more* applicable the more of its
+		// own claims it failed, which is the arithmetic rewarding failure.
+		none := Score(Inputs{Applicable: declaredKinds(broad)}, w, DefaultConfig().CounterPenalty)
+		if none.Applicable != b.Applicable {
+			t.Errorf("a signature that matched nothing has applicable %.2f, but declared "+
+				"the same requirements as one with %.2f", none.Applicable, b.Applicable)
+		}
+		if none.Fit != 0 {
+			t.Errorf("a signature matching nothing fits %.4f, want 0", none.Fit)
+		}
+	})
 }

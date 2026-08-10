@@ -53,6 +53,10 @@ stage: dld
 
 权重之和为 1.00，由 TC-0022 断言。
 
+一条签名的**适用份额**，是它押上的那些权重之和：三个通用项——拓扑、历史相似度、处置可验证性
+——再加上它每声明一类证据要求所对应的权重。`fit = total / applicable`，而 `acceptThreshold`
+是与 `fit` 比较的。排序仍然使用 `total`（DLD-1032）。
+
 ## 3. 领域
 
 <!-- sdd:item id=DLD-1001 stage=dld status=approved derives_from=HLD-001 -->
@@ -518,14 +522,23 @@ term(historical_similarity)       = 最佳 runbook 匹配得分，位于 [0,1]
 term(remediation_verifiability)   = 签名声明了带至少一个验证信号的处置时为 1.0，否则 0.0
 total = Σ weight_i · value_i − counterEvidencePenalty · 未消解反证数
 total 被夹到 [0, 1]
+
+applicable = weight(topology) + weight(historical) + weight(verifiable)
+           + 该签名每声明一类证据要求 k，加上 weight(k)
+fit        = clamp(Σ weight_i · value_i / applicable − counterEvidencePenalty · 未消解数)
 ```
 
-`Rank` 按总分降序、再按支持类别数降序、再按标识符升序排列。
+`applicable` 读自签名**所声明的要求**，绝不读自"实际匹配到了什么"。若读自匹配结果，一条未匹配
+的要求就会看起来像一条从未声明过的要求；于是一条签名自己的主张失败得越多，它就越"适用"——那是
+算术在奖励失败。
+
+`Rank` 按总分降序、再按支持类别数降序、再按标识符升序排列。**排序用 total，接受用 fit**
+（DLD-1062、REQ-0022）。
 
 **不变量。** 夹取之前，`Σ breakdown.Terms[i].Contribution − Penalty == Total`，误差在
-`1e-9` 之内。
+`1e-9` 之内。对每条签名 `fit >= total`；当且仅当该签名对三类条件项都声明了要求时取等号。
 
-**检查点。** TC-0022、TC-0023、TC-0024。
+**检查点。** TC-0022、TC-0023、TC-0024、TC-0118。
 
 <!-- sdd:item id=DLD-1033 stage=dld status=approved derives_from=HLD-007 -->
 ### DLD-1033 — 规则推理器：假设形成
@@ -843,7 +856,9 @@ reporting      -> closed
 **行为。** `CanRemediate(c) (bool, string)` 要求同时满足：
 
 1. 存在领先假设，且其裁决为 `accept` 或 `accept_with_risk`。
-2. `Breakdown.Total >= acceptThreshold`。
+2. `Breakdown.Fit >= acceptThreshold`——即该解释**自己声明的要求**被满足得有多完整。不是
+   `Total`：后者会为签名从未声明过的证据类别记零，从而把"只声明一类证据"的解释压在任何有用
+   阈值之下（D13）。"它是否声明得够多"这个另外的问题，由第 3、4 条承担。
 3. `len(SupportingKinds) >= minEvidenceKinds`。
 4. 当 case 中存在任何变更证据时，领先假设的支持集合必须包含变更证据。
 5. 前两名差值不小于 `closeCallMargin`，或轮次预算已耗尽且该 case 已经过 `human_review`。

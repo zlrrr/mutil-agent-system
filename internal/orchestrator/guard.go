@@ -25,11 +25,18 @@ func (e *Engine) CanRemediate(c *domain.Case) (bool, string) {
 		return false, fmt.Sprintf("the leading hypothesis carries verdict %q", lead.Verdict)
 	}
 
-	// 2. The score must clear the acceptance threshold.
-	if lead.Breakdown.Total < e.cfg.AcceptThreshold {
+	// 2. The evidence must fit what the explanation claimed.
+	//
+	// Fit rather than Total, because Total is a ranking quantity: it charges a signature
+	// for evidence kinds it never claimed, so an explanation requiring one kind is capped
+	// near 0.55 and can never be acted on however completely its own requirements are
+	// met (D13). "Did it claim enough" is a separate question, asked separately by the
+	// evidence-kind and change-evidence conditions below.
+	if lead.Breakdown.Fit < e.cfg.AcceptThreshold {
 		return false, fmt.Sprintf(
-			"the leading hypothesis scores %.2f, below the acceptance threshold of %.2f",
-			lead.Breakdown.Total, e.cfg.AcceptThreshold)
+			"the leading hypothesis fits its own requirements at %.2f, below the "+
+				"acceptance threshold of %.2f",
+			lead.Breakdown.Fit, e.cfg.AcceptThreshold)
 	}
 
 	// 3. Evidence must span enough kinds.

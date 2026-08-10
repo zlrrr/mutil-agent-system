@@ -257,12 +257,28 @@ similarity, remediation verifiability — each with a declared weight, minus a p
 for unresolved counter-evidence. The breakdown MUST be stored and returned with the
 hypothesis, and the terms MUST sum to the reported score.
 
+The breakdown MUST also report how much of the weight the signature actually claimed, and
+the score renormalised over it. Ranking uses the total; the acceptance threshold uses the
+renormalised figure.
+
+**Why two numbers.** "How well does the evidence fit what this explanation claimed" and
+"how much did it claim" are different questions, and one number cannot answer both. Summed
+flat, a signature declaring one evidence kind is charged zeros for the kinds it never
+mentioned: its ceiling is 0.55, so however completely its own requirements are met it can
+be ranked first and never acted on. Renormalising alone is equally wrong — matching the
+single requirement of a one-requirement signature would then read as near-certainty. The
+resolution is to keep both and use each for the question it answers, with the
+evidence-kind and change-evidence conditions of REQ-0035 carrying "did it claim enough".
+
 **Acceptance.**
 - Given a scored hypothesis, when its breakdown is summed, then the total equals the
   reported score within floating-point tolerance.
 - Given the declared weights, when they are summed, then they total 1.0.
+- Given a signature that declares no requirement of some kind, when it is scored, then
+  that kind's weight is absent from its applicable share, and its fit is unaffected by a
+  term it never claimed.
 
-**Verified by.** TC-0022
+**Verified by.** TC-0022, TC-0118
 
 <!-- sdd:item id=REQ-0023 stage=specify status=approved derives_from=G-002 priority=P0 -->
 ### REQ-0023 — Counter-evidence lowers a score and is recorded
@@ -386,9 +402,15 @@ that localises the cause in the affected service.
 ### REQ-0035 — Progression requires an explicit acceptance condition
 
 **Requirement.** A case MUST NOT enter remediation unless the leading hypothesis has a
-critic verdict of `accept` or `accept_with_risk`, its score meets the configured
-threshold, and it is supported by at least two evidence kinds — including change
-evidence when any change occurred inside the extended window.
+critic verdict of `accept` or `accept_with_risk`, its evidence *fits its own declared
+requirements* to the configured threshold (REQ-0022), and it is supported by at least two
+evidence kinds — including change evidence when any change occurred inside the extended
+window.
+
+The threshold applies to fit rather than to the ranking total, and the evidence-kind and
+change-evidence conditions are what carry "did this explanation claim enough". Applying
+the threshold to the total would make the two questions one, and an explanation declaring
+a single evidence kind could then never be acted on however complete its support.
 
 **Acceptance.**
 - Given a leading hypothesis with verdict `revise`, when the orchestrator advances,

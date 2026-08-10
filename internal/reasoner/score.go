@@ -58,10 +58,25 @@ type Inputs struct {
 	Historical float64
 	Verifiable float64
 	Unresolved int
+	// Applicable records which conditional terms this signature declared a requirement
+	// for. Topology, historical similarity and remediation verifiability apply to every
+	// signature and are not listed.
+	Applicable AppliesTo
+}
+
+// AppliesTo names the terms a signature put at stake.
+type AppliesTo struct {
+	Metric bool
+	Log    bool
+	Change bool
 }
 
 // Score computes the breakdown from term values. It is a pure function: given the same
 // inputs it always produces the same number, and the number always decomposes.
+//
+// It reports two numbers because the question "how well does the evidence fit" and the
+// question "how much did this explanation claim" are different, and one number cannot
+// answer both. Total answers the second and ranks; Fit answers the first and gates.
 func Score(in Inputs, w Weights, penalty float64) domain.ScoreBreakdown {
 	terms := []domain.ScoreTerm{
 		{Name: TermMetric, Weight: w.Metric, Value: in.Metric},
@@ -77,11 +92,33 @@ func Score(in Inputs, w Weights, penalty float64) domain.ScoreBreakdown {
 		total += terms[i].Contribution
 	}
 	p := round4(penalty * float64(in.Unresolved))
+
+	// Applicable is the weight this signature actually put at stake. A signature that
+	// declares no change requirement is not *failing* the change term — it never made a
+	// claim there, and charging it as a zero is charging it for evidence it never
+	// claimed (D13).
+	applicable := w.Topology + w.Historical + w.Verifiable
+	if in.Applicable.Metric {
+		applicable += w.Metric
+	}
+	if in.Applicable.Log {
+		applicable += w.Log
+	}
+	if in.Applicable.Change {
+		applicable += w.Change
+	}
+
+	fit := 0.0
+	if applicable > 0 {
+		fit = clamp(total/applicable - p)
+	}
 	b := domain.ScoreBreakdown{
 		Terms:      terms,
 		Penalty:    p,
 		Unresolved: in.Unresolved,
 		Total:      round4(clamp(total - p)),
+		Applicable: round4(applicable),
+		Fit:        round4(fit),
 	}
 	return b
 }
@@ -114,8 +151,9 @@ func Rank(hs []domain.Hypothesis, index map[string]domain.Evidence) []domain.Hyp
 // termInputs derives the six term values for one signature match against a snapshot.
 func termInputs(m catalog.MatchResult, s domain.Snapshot, sup *catalog.MatchResult) Inputs {
 	in := Inputs{
-		Metric: m.Fraction(domain.KindMetric),
-		Log:    m.Fraction(domain.KindLog),
+		Metric:     m.Fraction(domain.KindMetric),
+		Log:        m.Fraction(domain.KindLog),
+		Applicable: declaredKinds(m.Signature),
 	}
 
 	// change_correlation: 1.0 when a matched change precedes the onset of the symptom
@@ -148,6 +186,27 @@ func termInputs(m catalog.MatchResult, s domain.Snapshot, sup *catalog.MatchResu
 		in.Verifiable = 1.0
 	}
 	return in
+}
+
+// declaredKinds reports which conditional terms a signature put at stake, read from the
+// requirements it declares rather than from what happened to match.
+//
+// Read from the match instead, an unmatched requirement would look like an undeclared
+// one, and a signature would become more "applicable" the more of its own claims it
+// failed — which is the arithmetic rewarding failure.
+func declaredKinds(sig catalog.Signature) AppliesTo {
+	var out AppliesTo
+	for _, p := range sig.Requires {
+		switch p.Kind {
+		case domain.KindMetric:
+			out.Metric = true
+		case domain.KindLog:
+			out.Log = true
+		case domain.KindChange:
+			out.Change = true
+		}
+	}
+	return out
 }
 
 // HypothesisOnset returns the earliest onset among the metric evidence this signature

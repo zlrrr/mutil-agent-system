@@ -54,6 +54,11 @@ Every item below becomes one or more `// sdd:impl <ID>` anchors in source.
 
 Weights sum to 1.00, asserted by TC-0022.
 
+A signature's *applicable* share is the sum of the weights it put at stake: the three
+universal terms — topology, historical similarity, remediation verifiability — plus the
+weight of each evidence kind it declares a requirement for. `fit = total / applicable`,
+and `acceptThreshold` is compared against `fit`. Ranking still uses `total` (DLD-1032).
+
 ## 3. Domain
 
 <!-- sdd:item id=DLD-1001 stage=dld status=approved derives_from=HLD-001 -->
@@ -563,15 +568,25 @@ term(remediation_verifiability)   = 1.0 when the signature declares a remediatio
                                     at least one verify signal, else 0.0
 total = Σ weight_i · value_i − counterEvidencePenalty · unresolvedCounters
 total is clamped to [0, 1]
+
+applicable = weight(topology) + weight(historical) + weight(verifiable)
+           + weight(k) for each evidence kind k the signature declares a requirement for
+fit        = clamp(Σ weight_i · value_i / applicable − counterEvidencePenalty · unresolved)
 ```
 
+`applicable` is read from the signature's declared requirements, never from what matched.
+Read from the match, an unmatched requirement would look like an undeclared one, and a
+signature would grow more "applicable" the more of its own claims it failed — the
+arithmetic rewarding failure.
+
 `Rank` orders by total descending, then by supporting-kind count descending, then by
-identifier ascending.
+identifier ascending. Ranking uses total; acceptance uses fit (DLD-1062, REQ-0022).
 
 **Invariants.** `Σ breakdown.Terms[i].Contribution − Penalty == Total` before clamping,
-within `1e-9`.
+within `1e-9`. `fit >= total` for every signature, with equality exactly when the
+signature declares a requirement of all three conditional kinds.
 
-**Checkpoint.** TC-0022, TC-0023, TC-0024.
+**Checkpoint.** TC-0022, TC-0023, TC-0024, TC-0118.
 
 <!-- sdd:item id=DLD-1033 stage=dld status=approved derives_from=HLD-007 -->
 ### DLD-1033 — Rule reasoner: hypothesis formation
@@ -935,7 +950,10 @@ identifiers or their order.
 **Behaviour.** `CanRemediate(c) (bool, string)` requires all of:
 
 1. A leading hypothesis exists and its verdict is `accept` or `accept_with_risk`.
-2. `Breakdown.Total >= acceptThreshold`.
+2. `Breakdown.Fit >= acceptThreshold` — how completely the explanation's own requirements
+   are met. Not `Total`, which charges a signature for evidence kinds it never claimed and
+   so caps a one-kind explanation below any useful threshold (D13). Conditions 3 and 4
+   carry the separate question of whether it claimed enough.
 3. `len(SupportingKinds) >= minEvidenceKinds`.
 4. When any change evidence exists in the case, the leading hypothesis's supporting set
    includes change evidence.

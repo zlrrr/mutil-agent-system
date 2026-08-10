@@ -118,126 +118,56 @@ because a checkpoint that never fails is not a checkpoint.
 | D39 | The planner port arrived in M7a with no contract suite, which is exactly the debt ADR-002 left and D35 recorded: an interface two adapters compile against constrains signatures, not behaviour. ADR-008 had already named the risk — "each needs the contract treatment REQ-0105 gave the reasoner, or it repeats D35" | TC-0117 was written *with* the second adapter rather than after it, and REQ-0105 was broadened from "the reasoner adapters" to "every strategy port's adapters", so the obligation attaches to the next port automatically instead of depending on someone remembering |
 | D40 | `sddctl validate` found DLD-1037 with no `sdd:impl` anchor: the collectors had been changed to execute the plan, but nothing in the source claimed the design item. A design item nothing implements and an implementation no design item claims are the same defect seen from two ends | Anchor added. Worth noting the tool caught it and not a person — the whole point of the anchors is that "I refactored the code and forgot the spec" is a mechanical failure rather than a judgement one |
 
-## Known issues
+## Resolved: scoring charged an explanation for evidence it never claimed (D13)
 
-**Scoring charges an explanation for evidence it never claimed (D13).** A signature's
-score sums six weighted terms, but three of them — metric, log and change alignment —
-only apply to a signature that requires that kind of evidence. `sig-traffic-surge`
-requires one metric. With that metric perfectly matched it reaches 0.47, and its
-theoretical maximum is 0.55, so it can never cross the 0.75 acceptance threshold. It can
-be *ranked* first, and in C4 it is; it can never be *acted on*.
+**The defect.** A signature's score summed six weighted terms, but three of them — metric,
+log and change alignment — only apply to a signature that requires that kind.
+`sig-traffic-surge` requires one metric. With that metric perfectly matched it reached
+0.47 against a theoretical maximum of 0.55, so it could never cross the 0.75 acceptance
+threshold. It could be *ranked* first, and in C4 it was; it could never be *acted on*. C4
+declared an `expected_remediation` the system could not reach.
 
-The obvious fix is to renormalise over the terms that apply. It was implemented and
-measured, and it is wrong:
-
-| Case | Leader before | Leader after | Effect |
-|---|---|---|---|
-| C1 round 1 | `sig-traffic-surge` 0.49 | `sig-traffic-surge` 0.89 | above threshold, gap 0.45 — the critic never fires |
-| C1 final | `sig-db-pool-exhaustion` 0.94 | 0.94 | correct, but reached without the adversarial round |
-
-Renormalising makes a one-requirement explanation trivially near-certain: matching its
-single requirement is, by construction, matching everything it asked for. The reference
-scenario then accepts the wrong answer in round one with high confidence, which destroys
-the demonstration the entire project rests on. Four tests caught this — the close-call
-rule, the round-count assertions in both mode comparisons, and the escalation test — and
-the change was reverted rather than the tests adjusted to accommodate it.
-
-The real defect looked like it was in the catalog rather than the arithmetic: "traffic
-rose" is not evidence that traffic *caused* the outage, so the explanation should require
-the historical comparison showing the load exceeded what was previously served — the very
-evidence C1 uses to refute it and C4 uses to confirm it.
-
-**That was implemented and measured too, and it is also wrong — for a more interesting
-reason.** `sig-traffic-surge` gained two further requirements: the load must exceed any
-previously served level (a fact condition on the comparison evidence), and the service
-must report shedding. This raised its ceiling from 0.55 to 0.80, so acceptance became
-reachable rather than impossible, and C4 rose from 0.47 to 0.72 with an `accept` verdict.
-C2, C3, C5 and C6 were unaffected.
-
-Then two tests failed, and what they said matters more than the change:
-
-> the single-agent mode reached the correct root cause; the comparison would demonstrate nothing
-> multi_no_critic reached the correct root cause; the comparison would be vacuous
-
-A better-specified signature is not attractive enough to win round one of C1 — so the
-critic has nothing left to correct, and the baselines solve the reference scenario
-unaided. **C1's headline result depends on `sig-traffic-surge` being under-specified.**
-The demonstration rests on a modelling weakness, not on a property of single-pass
-reasoning, and fixing the weakness dissolves the demonstration.
-
-That is worth knowing precisely, and it is not something a scoring patch can resolve. The
-real work is to redesign C1 so its round-one error is wrong for a reason that survives a
-well-specified catalog — a plausible explanation that a careful reasoner would still
-reach first and still have to abandon.
-
-**That redesign is now done (REQ-0103, TC-0110), so the third attempt was made — and it
-fails for a third reason.** C1's round-one error is a real two-minute database outage,
-so it no longer depends on `sig-traffic-surge` being weak: with the signature tightened,
-C1's baselines still answer `sig-db-outage` and still fail. The blocker moved.
-
-`sig-traffic-surge` gained the same two requirements as before, raising its ceiling from
-0.55 to 0.80. The measured result across all six cases:
-
-| Case | Mode | Before | After |
-|---|---|---|---|
-| C1 | multi_with_critic | correct, 2 rounds | correct, 3 rounds |
-| C2, C3 | multi_with_critic | correct, 2 rounds | correct, 3 rounds |
-| C4 | multi_with_critic | correct, 3 rounds | **wrong** — `sig-db-pool-exhaustion` |
-| C2, C3 | single, multi_no_critic | wrong | **correct** — the baselines solve them |
-
-Every case ran to the three-round ceiling, and C4 — the overfitting guard — broke. The
-cause is D28: the two new requirements introduce demands (`load shedding log sample`, the
-historical comparison as a *requirement* rather than a discriminator) that most cases
-cannot answer, and an unanswerable demand is retried every round until the budget is
-gone. C2 and C3 becoming solvable by a single pass is the same D13 lesson arriving from
-the other side: their headline results also rested on `sig-traffic-surge` being the cheap
-first answer.
-
-The change was measured against all six cases and reverted, for the third time.
-
-**Both prerequisites were then completed — D28 fixed, C2 and C3 redesigned — and the
-fourth attempt was made.** It comes closest, and it still fails.
-
-On the headline metric it works: all six cases correct with the critic, and the baselines
-drop from 1/6 to 0/6, because C4's baseline had been getting the right answer for the
-wrong reason. Underneath, three things broke. The two added requirements put two more
-coverage-gap demands into every round, and at four demands per round the discriminating
-evidence is displaced: C1, C2 and C3 stopped *refuting* their round-one leaders and merely
-out-scored them — the exact property REQ-0103 exists to hold. Raising the cap to six
-restores the refutations and breaks other things instead: C1 acquires a permanently unmet
-demand for a load-shedding log it does not contain, three unit tests that encode
-catalog-specific rankings fail, and **C4 still cannot act on its own accepted
-explanation.**
-
-That last point is decisive. C4 being unable to act is the consequence D13 describes; a
-fix that costs a configuration change, three rewritten tests and a permanent unmet demand
-in the reference scenario, and *still* does not deliver the thing it was for, is not a
-fix. Reverted, for the fourth time.
-
-**Consequence today.** C4 ranks the correct cause first and refutes both rivals with
-counter-evidence, which is what TC-0104 asserts and what the overfitting test needs. It
-stops below the acceptance threshold rather than proposing its declared remediation. The
-case declares `expected_remediation` because that is the correct action; the system does
-not currently reach it.
-
-**Attempts, in order.** Renormalising the weights (wrong: makes a one-requirement
-explanation trivially near-certain, so C1 accepts the wrong answer in round one).
-Tightening the signature (wrong: removes the round-one error C1 exists to demonstrate).
-Tightening it again after the C1 redesign removed that objection (wrong: the added
-requirements create demands no case can answer, and D28 turns those into exhausted round
-budgets — C4 breaks and C2 and C3 become solvable without a critic). Tightening it a third
-time with both prerequisites met (wrong: the added demands starve the discriminating
+**Four attempts failed, in order.** Renormalising the weights (wrong: makes a
+one-requirement explanation trivially near-certain, so C1 accepts the wrong answer in
+round one). Tightening the signature (wrong: removes the round-one error C1 exists to
+demonstrate). Tightening it again after the C1 redesign removed that objection (wrong: the
+added requirements create demands no case can answer, and D28 turns those into exhausted
+round budgets — C4 breaks and C2 and C3 become solvable without a critic). Tightening it a
+third time with both prerequisites met (wrong: the added demands starve the discriminating
 evidence at four per round, and raising the cap trades that for a permanent unmet demand,
 three rewritten tests, and a C4 that still cannot act). All four were implemented, measured
 against all six cases, and reverted on the evidence rather than argued about.
 
-**What four attempts have established.** The defect is in the arithmetic, not the catalog:
-a signature is charged for evidence kinds it never claimed. Every attempt so far has tried
-to work around that by making signatures claim more, and each has failed somewhere
-different — which is itself the finding. The next attempt should change how the score
-treats a term the signature does not require, and must be measured against the property
-REQ-0103 states rather than against top-1 accuracy, because top-1 stayed at 100% through an
-attempt that had quietly dismantled the refutations.
+**What they established, and the fix.** Three of the four tried to make signatures claim
+more; the one that touched the arithmetic renormalised, which erased the difference
+between fitting well and claiming much. Both halves are needed, and one number cannot
+carry them:
+
+- `total` — the flat weighted sum. It answers *how much did this explanation claim, and
+  prove*. Ranking uses it, so an explanation that commits to three evidence kinds and
+  supports all three still outranks one that commits to a single kind.
+- `fit` — `total` renormalised over the weight the signature actually put at stake. It
+  answers *how completely are this explanation's own requirements met*. The acceptance
+  threshold uses it.
+
+`applicable` is read from the signature's declared requirements, never from what matched:
+read from the match, an unmatched requirement would look like an undeclared one, and a
+signature would grow more applicable the more of its own claims it failed.
+
+"Did it claim enough" did not need a new mechanism — REQ-0035 already carried it, in the
+minimum evidence kinds and the change-evidence condition. The defect was asking one number
+to answer two questions, and the fix was to stop.
+
+**Measured.** All six cases correct with the critic and wrong without it; REQ-0103 holds
+for C1, C2 and C3 — round one still leads with a fully supported wrong answer, still
+refuted by counter-evidence rather than out-scored; C4 now proposes *and executes*
+`set_config order-api RATE_LIMIT_QPS 200`, the remediation it has declared since it was
+written. One test changed: the guard test mutated `Total` to drive a below-threshold
+refusal and now mutates `Fit`, because lowering `Total` only trips the close-call rule on
+the way past — a different refusal for a different reason.
+
+The bar was REQ-0103, not top-1 accuracy. Top-1 stayed at 100% through the fourth attempt,
+which had quietly dismantled every refutation.
 
 ## Cascading updates performed
 

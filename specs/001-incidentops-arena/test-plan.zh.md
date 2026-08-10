@@ -991,6 +991,31 @@ ADR-008 早就把这件事列为"新增端口的代价"：**每一个都需要 R
 
 **测试函数。** `internal/agent/plan/contract_test.go` 中的 `TestPlannerContract`
 
+<!-- sdd:item id=TC-0118 stage=verify status=approved derives_from=REQ-0022 -->
+#### TC-0118 — 签名不为它从未声明过的证据付出代价
+
+**层级。** integration。**验证。** REQ-0022。
+
+**步骤。** 分别为"只有一条要求且该要求被完整匹配"的签名与"有三条要求且同样完整匹配"的签名评分，
+比较各自的 `applicable` 与 `fit`。再为一条**什么都没匹配上**的签名评分。
+
+**预期。** 只有一条要求的签名，其 `applicable` 不包含它从未声明过的那些类别的权重，其 `fit`
+在惩罚之前达到 1.0，而 `total` 仍停在 0.55 附近。有三条要求的签名 `applicable` 为 1.0，
+且 `fit` 等于 `total`。什么都没匹配上的签名，其 `applicable` 与"全部匹配上"的那条相同，
+而 `fit` 为 0。
+
+至于它带来的后果——`C4` 真正抵达它所声明的处置，而不只是把原因排在第一——则由 TC-0104 在
+`C4` 本就运行的地方断言。
+
+`applicable` 必须读自**所声明的要求**，绝不读自匹配结果：若读自匹配结果，一条未匹配的要求就会
+看起来像一条从未声明过的要求；于是一条签名自己的主张失败得越多，它就越"适用"。
+
+这个用例了结了 D13——此前四次尝试都用别的办法失败了：三次是让签名去声明更多，一次是用归一化
+抹掉了"吻合度"与"承诺量"之间的区别。度量标准是 REQ-0103 而不是 top-1 准确率，因为在一次已经
+拆掉了全部反证的尝试里，top-1 始终停在 100%。
+
+**测试函数。** `internal/reasoner/score_test.go` 中的 `TestScoreDoesNotChargeUnclaimedTerms`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

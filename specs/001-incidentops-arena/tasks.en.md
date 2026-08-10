@@ -101,7 +101,8 @@ metric source to post-recovery series after the recovery trigger.
 
 **Definition of done.** TC-0020, TC-0022, TC-0023, TC-0024, TC-0072 pass; the round-1
 and round-2 totals of the reference scenario match the DLD arithmetic to two decimals; the
-adapter satisfies the shared contract suite (TC-0113) rather than only the interface.
+adapter satisfies the shared contract suite (TC-0113) rather than only the interface;
+TC-0118 passes, so a signature is not charged for evidence kinds it never declared.
 
 **Blocked by.** T-006. **Parallelisable.** no.
 

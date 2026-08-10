@@ -303,6 +303,15 @@ The breakdown is stored with the hypothesis and rendered in the console and the 
 Ranking is a total order with declared tiebreakers, so equal inputs rank equally on
 every run and in every process.
 
+**Ranking and gating are different questions and get different numbers.** A flat weighted
+sum answers "how much did this explanation claim, and prove", which is the right ordering.
+It is the wrong gate: it charges a signature for evidence kinds it never claimed, so an
+explanation declaring one kind is capped below any useful threshold and can be ranked
+first while remaining permanently unactionable. The breakdown therefore also carries the
+weight actually put at stake and the score renormalised over it; the acceptance threshold
+reads the latter, and "did it claim enough" is carried separately by the evidence-kind and
+change-evidence conditions of ARC-007's guard.
+
 **Realises.** REQ-0022, REQ-0023, REQ-0024
 
 <!-- sdd:item id=ARC-009 stage=architect status=approved derives_from=REQ-0030,REQ-0031,REQ-0032,REQ-0033,REQ-0034,REQ-0036,REQ-0099,REQ-0101,REQ-0102,REQ-0103 -->
