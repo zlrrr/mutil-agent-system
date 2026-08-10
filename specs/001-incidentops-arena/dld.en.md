@@ -685,6 +685,53 @@ requirement and its acceptance criterion.
 
 ## 7. Agents
 
+<!-- sdd:item id=DLD-1036 stage=dld status=approved derives_from=HLD-021 -->
+### DLD-1036 — Rule planner
+
+**File.** `internal/agent/plan/plan.go`
+
+**Types.** `Plan{Window domain.TimeWindow; Roles []domain.Role; Reason string}`,
+`Queries{Series, LogTerms []string; Reason string}`, `Available{Series []string}`,
+`RulePlanner{cfg reasoner.Config}`.
+
+**Behaviour.**
+
+1. `Name()` returns `"rule"`.
+2. `Triage` returns `Window = alert window extended by changeLookback`, `Roles =
+   {metrics, logs, change, topology, knowledge}` in that fixed order, and a reason naming
+   the lookback that produced the window.
+3. `PlanCollection` returns every series in `Available` sorted, and `defaultLogTerms`.
+   Sorting matters: the plan is recorded on the case, and an unordered plan would make two
+   identical investigations produce different records (REQ-0090).
+
+**Why the deterministic adapter returns everything.** It reproduces the behaviour the
+collectors had before the port existed, so introducing the port changes no observable
+output and the existing suite is its regression check. "Ask for everything" is a poor
+*strategy* and a correct *baseline*: it is the plan against which a model's narrower
+choice must justify itself.
+
+**Checkpoint.** TC-0115.
+
+<!-- sdd:item id=DLD-1037 stage=dld status=approved derives_from=HLD-021 -->
+### DLD-1037 — Planned collection
+
+**File.** `internal/agent/collectors.go`
+
+**Behaviour.** Collectors take the plan rather than deciding for themselves. The metrics
+collector intersects `Queries.Series` with what `SeriesNames` reports, dropping any name
+the source does not offer and recording the drop; the log collector searches
+`Queries.LogTerms`. An empty plan, from any cause, falls back to the deterministic
+planner's answer and records that it did (REQ-0107).
+
+Demand-driven collection is deliberately outside the plan. A demand names the evidence
+it wants, which is the whole point of the critic holding that power (REQ-0031); routing it
+through the planner would let a strategy veto the critic.
+
+**Invariants.** The plan a case executed is recoverable from its event log, so "why did
+round one not look at X" is answerable after the fact rather than by re-running.
+
+**Checkpoint.** TC-0115.
+
 <!-- sdd:item id=DLD-1040 stage=dld status=approved derives_from=HLD-010 -->
 ### DLD-1040 — Agent interface and collector agents
 

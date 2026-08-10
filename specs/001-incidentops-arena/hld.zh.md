@@ -263,6 +263,46 @@ func DefaultRules(cat *Catalog, cfg Config) []CritiqueRule
 
 **细化自。** ARC-009
 
+<!-- sdd:item id=HLD-021 stage=hld status=approved derives_from=ARC-019 -->
+### HLD-021 — 规划器端口与确定性适配器
+
+**目的。** 让"我们要调查什么、要去看什么"成为系统**做出并记录**的决定，而不是"数据源恰好
+暴露了什么"的附带性质。
+
+**公开接口面。**
+
+```go
+type Plan struct {
+    Window domain.TimeWindow
+    Roles  []domain.Role
+    Reason string
+}
+type Queries struct {
+    Series   []string
+    LogTerms []string
+    Reason   string
+}
+type Available struct {
+    Series []string // 指标源为该服务提供的序列
+}
+type Planner interface {
+    Name() string
+    Triage(ctx context.Context, s domain.Snapshot) (Plan, error)
+    PlanCollection(ctx context.Context, s domain.Snapshot, a Available) (Queries, error)
+}
+func NewRulePlanner(cfg Config) Planner
+```
+
+**确定性适配器原样复现今天的行为。** `Triage` 返回按 `changeLookback` 扩展后的告警窗口与五个
+采集角色；`PlanCollection` 返回全部可用序列与默认日志词。因此引入这个端口是一次**可观察行为
+不变**的重构——这正是让现有测试套件充当其回归检查的前提。
+
+**失败行为。** 规划器报错，或产出一份什么也没点名的方案，都会回退到确定性方案，并记录下这次
+回退。一个无法作答的策略不得让调查失明；而"静默地什么也不采集"看起来会与"本来就没有可采集
+的东西"一模一样。
+
+**细化自。** ARC-019
+
 <!-- sdd:item id=HLD-010 stage=hld status=approved derives_from=ARC-004 -->
 ### HLD-010 — Agent 角色
 

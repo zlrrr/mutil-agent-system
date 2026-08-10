@@ -16,6 +16,7 @@ type EventType string
 const (
 	EvCaseCreated          EventType = "case_created"
 	EvStateChanged         EventType = "state_changed"
+	EvPlanRecorded         EventType = "plan_recorded"
 	EvRoundStarted         EventType = "round_started"
 	EvAgentStarted         EventType = "agent_started"
 	EvAgentCompleted       EventType = "agent_completed"

@@ -64,6 +64,10 @@ type Case struct {
 	// comparison between two cases means nothing without it (REQ-0106).
 	Reasoner  string    `json:"reasoner,omitempty"`
 	Status    Status    `json:"status"`
+	// Plan and Queries record what the investigation decided to look at, so "why did
+	// round one not see X" is answerable from the log (REQ-0107).
+	Plan    InvestigationPlan `json:"plan,omitempty"`
+	Queries QueryPlan         `json:"queries,omitempty"`
 	Round     int       `json:"round"`
 	CreatedAt time.Time `json:"created_at"`
 	ClosedAt  time.Time `json:"closed_at,omitempty"`
@@ -128,6 +132,32 @@ func (c *Case) EvidenceIndex() map[string]Evidence {
 	}
 	return out
 }
+
+// InvestigationPlan is what triage decided: the window to investigate and the roles to
+// fan out to. It is recorded because "why did we look there" must be answerable from the
+// log rather than by re-running (REQ-0107).
+type InvestigationPlan struct {
+	Window TimeWindow `json:"window"`
+	Roles  []Role     `json:"roles"`
+	Reason string     `json:"reason,omitempty"`
+	By     string     `json:"by,omitempty"` // the strategy that produced it
+}
+
+// QueryPlan is what collection planning decided: which series and which log terms.
+type QueryPlan struct {
+	Series   []string `json:"series"`
+	LogTerms []string `json:"log_terms"`
+	Reason   string   `json:"reason,omitempty"`
+	By       string   `json:"by,omitempty"`
+	// Dropped names a strategy asked for that no source offers. Recorded rather than
+	// discarded: a plan silently trimmed looks identical to a plan that never asked.
+	Dropped []string `json:"dropped,omitempty"`
+}
+
+// Empty reports a plan that would collect nothing. Such a plan is never executed: its
+// results are indistinguishable from "there was nothing to collect", and those two must
+// not look alike.
+func (q QueryPlan) Empty() bool { return len(q.Series) == 0 && len(q.LogTerms) == 0 }
 
 // Leading returns the top-ranked hypothesis, if any.
 func (c *Case) Leading() (Hypothesis, bool) {
@@ -306,6 +336,21 @@ func (c *Case) Apply(e Event) error {
 		c.Reasoner = p.Reasoner
 		c.CreatedAt = e.At
 		c.Status = StatusCreated
+
+	case EvPlanRecorded:
+		var p struct {
+			Plan    InvestigationPlan `json:"plan"`
+			Queries QueryPlan         `json:"queries"`
+		}
+		if err := decode(e.Payload, &p); err != nil {
+			return err
+		}
+		if len(p.Plan.Roles) > 0 {
+			c.Plan = p.Plan
+		}
+		if !p.Queries.Empty() {
+			c.Queries = p.Queries
+		}
 
 	case EvStateChanged:
 		var p StateChange
@@ -520,6 +565,8 @@ type Snapshot struct {
 	Round      int
 	MaxRounds  int
 	Status     Status
+	Plan       InvestigationPlan
+	Queries    QueryPlan
 	Evidence   []Evidence
 	Index      map[string]Evidence
 	Hypotheses []Hypothesis
@@ -544,6 +591,7 @@ func (c *Case) Snapshot(maxRounds int) Snapshot {
 		Round: c.Round, MaxRounds: maxRounds, Status: c.Status,
 		Evidence: cp(c.Evidence), Index: c.EvidenceIndex(),
 		Hypotheses: hs, Critiques: cs, Demands: ds, Actions: as,
+		Plan:       c.Plan, Queries: c.Queries,
 	}
 }
 

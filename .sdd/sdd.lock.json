@@ -1,6 +1,6 @@
 {
   "sddVersion": "1.0.0",
-  "sealedAt": "2026-08-10T03:43:45Z",
+  "sealedAt": "2026-08-10T04:01:49Z",
   "items": {
     "ADR-001": {
       "hash": "042ab491cf6bfc8c6fd827484c62231a5461575aa66e323f819683eb46a8ea7d",
@@ -43,6 +43,12 @@
       "stage": "decide",
       "status": "approved",
       "file": "docs/adr/007-model-selects-from-catalog.en.md"
+    },
+    "ADR-008": {
+      "hash": "7b2fb10718f7e4130638468b09aa19bb14385baf20cc23fbb68dc07b3155d50d",
+      "stage": "decide",
+      "status": "approved",
+      "file": "docs/adr/008-role-strategy-ports.en.md"
     },
     "ARC-001": {
       "hash": "088b5f7e0dabcf5b7125a76350f42604250021e50395945d2fd13ababb5ba58f",
@@ -124,6 +130,12 @@
     },
     "ARC-014": {
       "hash": "f44c2f1a9a318af1c00c97987d30d99c8222ae3a8ed44987a6c3d33f7ad89ef5",
+      "stage": "architect",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/architecture.en.md"
+    },
+    "ARC-019": {
+      "hash": "ffd1ee14e24975dd8517ed5ac756afa9bf8c245130a7af129bde6f09ce3212f4",
       "stage": "architect",
       "status": "approved",
       "file": "specs/001-incidentops-arena/architecture.en.md"
@@ -416,6 +428,18 @@
       "status": "approved",
       "file": "specs/001-incidentops-arena/dld.en.md"
     },
+    "DLD-1036": {
+      "hash": "4feb0e2198b69697e62114b420b11eae2e79b9c8d7fb292b7e5d0925824439e5",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/dld.en.md"
+    },
+    "DLD-1037": {
+      "hash": "9fccbbfb40a49fb658b89b34d872e99ff27467c9dd1824ca0fbf597150bb3f21",
+      "stage": "dld",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/dld.en.md"
+    },
     "DLD-1040": {
       "hash": "30d765bfdf4af5b91d0acb5ff694296f1ef59bf90d9e97035e1cbf58493e6b24",
       "stage": "dld",
@@ -700,6 +724,12 @@
     },
     "HLD-020": {
       "hash": "a6aa2c8d0de932033fda8ebbde1ff8ebbac623b272fa17525f3ccd0c2b37eb29",
+      "stage": "hld",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/hld.en.md"
+    },
+    "HLD-021": {
+      "hash": "988c95f153bfbf1b6aa7d8e9ee8d34db82c8a16212dd52b845839815007ba239",
       "stage": "hld",
       "status": "approved",
       "file": "specs/001-incidentops-arena/hld.en.md"
@@ -1124,6 +1154,18 @@
       "status": "approved",
       "file": "specs/001-incidentops-arena/spec.en.md"
     },
+    "REQ-0107": {
+      "hash": "09b569f7ab3a7ceca1f758015b07aff5bf1f355dd74f0aeeea29cfaf76bdbddc",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/spec.en.md"
+    },
+    "REQ-0108": {
+      "hash": "21ce3bdf9d806ff2154b48c24ac4840324aa6b8ef2efe008908c56fa490984c2",
+      "stage": "specify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/spec.en.md"
+    },
     "REQ-9001": {
       "hash": "92d9321512b565a074fc4c04c6cf743249978eb98232417b18708136e7d44662",
       "stage": "specify",
@@ -1288,6 +1330,12 @@
     },
     "T-015": {
       "hash": "c0658e5af0f8dfa3ee5a406d43073fe0865ede9ebf7e6321ea0e66db7c29e7b2",
+      "stage": "plan",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/tasks.en.md"
+    },
+    "T-016": {
+      "hash": "2577d020e8b7a4158c09bbe8a7d063d54e436fd695ecce4ee5e8e30c1548c385",
       "stage": "plan",
       "status": "approved",
       "file": "specs/001-incidentops-arena/tasks.en.md"
@@ -1690,6 +1738,18 @@
     },
     "TC-0114": {
       "hash": "13ce768669f905abd8b7e7d1c7177629d56001c53f3ec520cc4898fbf8924956",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/test-plan.en.md"
+    },
+    "TC-0115": {
+      "hash": "39fc0dc28eab75bb3c560a13b917d309865b4015d2990467155048d1f2181cf8",
+      "stage": "verify",
+      "status": "approved",
+      "file": "specs/001-incidentops-arena/test-plan.en.md"
+    },
+    "TC-0116": {
+      "hash": "84a01da7d3ddf81c933ce8910e25e3f7ea1f35440fcad3053f65c3389f314879",
       "stage": "verify",
       "status": "approved",
       "file": "specs/001-incidentops-arena/test-plan.en.md"

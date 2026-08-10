@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/zlrrr/mutil-agent-system/internal/agent"
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/eventbus"
@@ -46,6 +47,9 @@ type Params struct {
 	// Reasoner overrides how explanations are selected. Nil means the deterministic
 	// rule engine, which is the default by design rather than by omission (ADR-002).
 	Reasoner reasoner.Reasoner
+	// Planner overrides what the investigation looks at. Nil means the deterministic
+	// planner, which reproduces "ask each source for everything" (ADR-008).
+	Planner plan.Planner
 }
 
 // NewFixtureBuild assembles an engine over the deterministic fixture adapters for one
@@ -123,6 +127,8 @@ func NewBuild(p Params) (*Build, error) {
 		Config:   cfg,
 		Clock:    clock,
 		Reasoner: rsn.Name(),
+		Planner:  p.Planner,
+		Signals:  set,
 	})
 
 	return &Build{

@@ -8,10 +8,12 @@ import (
 	"time"
 
 	"github.com/zlrrr/mutil-agent-system/internal/agent"
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/eventbus"
 	"github.com/zlrrr/mutil-agent-system/internal/policy"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
+	"github.com/zlrrr/mutil-agent-system/internal/signal"
 	"github.com/zlrrr/mutil-agent-system/internal/store"
 )
 
@@ -40,6 +42,8 @@ type Engine struct {
 	// reasonerName is recorded on every case so a stored investigation says which
 	// strategy produced it (REQ-0106).
 	reasonerName string
+	planner      plan.Planner
+	signals      signal.Set
 
 	mu    sync.Mutex
 	cases map[string]*domain.Case
@@ -57,6 +61,12 @@ type Options struct {
 	// Reasoner names the strategy the agents were built with. Empty means the
 	// deterministic rule adapter, which is the default by design (ADR-002).
 	Reasoner string
+	// Planner decides what to investigate and what to look at. Nil means the
+	// deterministic planner (ADR-008).
+	Planner plan.Planner
+	// Signals is read only to ask what each source offers, so a plan chooses from a
+	// real menu. The engine never collects through it — that is the collectors' job.
+	Signals signal.Set
 }
 
 // New builds an engine.
@@ -70,10 +80,15 @@ func New(o Options) *Engine {
 	if o.Reasoner == "" {
 		o.Reasoner = "rule"
 	}
+	if o.Planner == nil {
+		o.Planner = plan.NewRulePlanner(o.Config.ChangeLookback)
+	}
 	return &Engine{
 		agents: o.Agents, policy: o.Policy, executor: o.Executor,
 		store: o.Store, bus: o.Bus, cfg: o.Config, clock: o.Clock,
 		reasonerName: o.Reasoner,
+		planner:      o.Planner,
+		signals:      o.Signals,
 		cases:        map[string]*domain.Case{},
 	}
 }
@@ -177,10 +192,21 @@ func (e *Engine) Advance(ctx context.Context, caseID string) (*domain.Case, erro
 
 	case domain.StatusTriaging:
 		started := e.clock.Now()
-		plan := e.investigationPlan(c)
+		p, err := e.planner.Triage(ctx, c.Snapshot(e.cfg.MaxRounds))
+		if err != nil || len(p.Roles) == 0 {
+			// A strategy that cannot answer must not be able to blind the
+			// investigation, so the deterministic plan stands in and says so.
+			p, _ = plan.NewRulePlanner(e.cfg.ChangeLookback).Triage(ctx, c.Snapshot(e.cfg.MaxRounds))
+			p.Reason = "fell back to the deterministic plan: " + planFailure(err)
+		}
+		p.By = e.planner.Name()
+		p.Window = c.Window()
+		events = append(events, e.event(c, domain.RoleOrchestrator, domain.EvPlanRecorded,
+			fmt.Sprintf("investigation plan: %s over %s", e.roleNames(c, p), c.Window()), "",
+			map[string]any{"plan": p}))
 		triaged := e.event(c, domain.RoleOrchestrator, domain.EvAgentCompleted,
 			fmt.Sprintf("triage: %s severity %s over %s; plan: %s",
-				c.Alert.Service, c.Alert.Severity, c.Window(), plan), "", nil)
+				c.Alert.Service, c.Alert.Severity, c.Window(), e.roleNames(c, p)), "", nil)
 		triaged.Duration = e.clock.Now().Sub(started)
 		events = append(events, triaged)
 		next = domain.StatusCollecting
@@ -353,15 +379,65 @@ func (e *Engine) challengeActedHypothesis(c *domain.Case) []domain.Event {
 
 // investigationPlan names the roles triage will fan out to, so the plan is visible in
 // the timeline rather than implied by what happens next.
-func (e *Engine) investigationPlan(c *domain.Case) string {
+func (e *Engine) roleNames(c *domain.Case, p domain.InvestigationPlan) string {
 	if c.Mode == domain.ModeSingle {
 		return string(domain.RoleBaseline)
 	}
-	names := make([]string, 0, len(e.agents.Collectors))
-	for _, a := range e.agents.Collectors {
-		names = append(names, string(a.Role()))
+	names := make([]string, 0, len(p.Roles))
+	for _, r := range p.Roles {
+		names = append(names, string(r))
 	}
 	return strings.Join(names, ", ")
+}
+
+// planFailure renders why a plan was not usable, so the fallback is attributable.
+func planFailure(err error) string {
+	if err != nil {
+		return err.Error()
+	}
+	return "the strategy named no roles"
+}
+
+// planCollection asks the strategy what to look at, resolves it against what the sources
+// actually offer, and records the decision.
+//
+// Recording matters as much as deciding: "why did round one not look at X" has to be
+// answerable from the log. A plan trimmed silently is indistinguishable from a plan that
+// never asked (REQ-0107).
+func (e *Engine) planCollection(ctx context.Context, c *domain.Case, snap domain.Snapshot) (domain.QueryPlan, []domain.Event) {
+	rule := plan.NewRulePlanner(e.cfg.ChangeLookback)
+	available := plan.Available{Series: e.availableSeries(ctx, snap)}
+	fallback, _ := rule.PlanCollection(ctx, snap, available)
+
+	q, err := e.planner.PlanCollection(ctx, snap, available)
+	if err != nil {
+		q = fallback
+		q.Reason = "fell back to the deterministic plan: " + planFailure(err)
+	}
+	resolved, dropped := plan.Resolve(q, available, fallback)
+	resolved.By = e.planner.Name()
+	resolved.Dropped = dropped
+
+	summary := fmt.Sprintf("collection plan: %d series, %d log term(s)",
+		len(resolved.Series), len(resolved.LogTerms))
+	if len(dropped) > 0 {
+		summary += fmt.Sprintf("; %d name(s) no source offers were dropped", len(dropped))
+	}
+	return resolved, []domain.Event{e.event(c, domain.RoleOrchestrator, domain.EvPlanRecorded,
+		summary, "", map[string]any{"queries": resolved})}
+}
+
+// availableSeries reports what the metric source offers, so a strategy chooses from a
+// real menu rather than inventing names.
+func (e *Engine) availableSeries(ctx context.Context, snap domain.Snapshot) []string {
+	if e.signals.Metrics == nil {
+		return nil
+	}
+	names, err := e.signals.Metrics.SeriesNames(ctx, snap.Alert.Service)
+	if err != nil {
+		return nil
+	}
+	return names
 }
 
 // afterCritique decides where a criticised case goes next. It is the junction where
@@ -413,6 +489,7 @@ func (e *Engine) afterCritique(c *domain.Case) (domain.Status, string, []domain.
 // runCollection fans the collectors out concurrently and gathers their contributions
 // into a fixed order, so completion order cannot reach the result (REQ-0061).
 func (e *Engine) runCollection(ctx context.Context, c *domain.Case) ([]domain.Event, error) {
+	var events []domain.Event
 	agents := e.agents.Collectors
 	if c.Mode == domain.ModeSingle {
 		if e.agents.Baseline == nil {
@@ -422,6 +499,13 @@ func (e *Engine) runCollection(ctx context.Context, c *domain.Case) ([]domain.Ev
 	}
 
 	snap := c.Snapshot(e.cfg.MaxRounds)
+
+	// The collection plan is decided once per round and recorded, then executed by every
+	// collector. Deciding it per collector would let two agents in the same round act on
+	// different plans, and the case would have no single answer to "what did we look at".
+	planned, planEvents := e.planCollection(ctx, c, snap)
+	events = append(events, planEvents...)
+	snap.Queries = planned
 	results := make([][]domain.Contribution, len(agents))
 	errs := make([]error, len(agents))
 
@@ -435,7 +519,6 @@ func (e *Engine) runCollection(ctx context.Context, c *domain.Case) ([]domain.Ev
 	}
 	wg.Wait()
 
-	var events []domain.Event
 	var contribs []domain.Contribution
 	for i, a := range agents {
 		started := e.clock.Now()

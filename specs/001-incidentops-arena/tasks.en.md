@@ -209,6 +209,20 @@ fails if either stops satisfying it.
 
 **Blocked by.** T-014. **Parallelisable.** no.
 
+<!-- sdd:item id=T-016 stage=plan status=approved derives_from=DLD-1036,DLD-1037 -->
+### T-016 — Planner port and planned collection
+
+**Implements.** DLD-1036, DLD-1037
+
+**Files.** `internal/agent/plan/plan.go`, `internal/agent/collectors.go`,
+`internal/orchestrator/engine.go`, `internal/domain/case.go`
+
+**Definition of done.** TC-0115 and TC-0116 pass; the deterministic planner reproduces the
+pre-port behaviour so the existing suite passes unchanged; the executed plan is recoverable
+from the event log; remediation and verification accept no strategy.
+
+**Blocked by.** T-015. **Parallelisable.** no.
+
 ## 3. Execution order
 
 | Wave | Tasks | Gate before the next wave |
@@ -221,6 +235,7 @@ fails if either stops satisfying it.
 | 6 | T-011 | Reference scenario runs end to end; the determinism test passes |
 | 7 | T-012, T-013, T-014 | Full suite green under `-race`; `sddctl gate --stage deliver` passes |
 | 8 | T-015 | Both reasoner adapters pass one contract; the evaluation reports per reasoner |
+| 9 | T-016 | The deterministic planner changes nothing; the executed plan is on the event log |
 
 ## 4. Progress log
 

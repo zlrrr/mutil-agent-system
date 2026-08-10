@@ -1047,6 +1047,56 @@ attributable to the strategy rather than assumed.
 
 **Verified by.** TC-0114
 
+<!-- sdd:item id=REQ-0107 stage=specify status=approved derives_from=G-001,G-005 priority=P0 -->
+### REQ-0107 — Choosing what to look at is a decision the system makes
+
+**Requirement.** Triage MUST produce an investigation plan — the window and the roles to
+run — and collection MUST produce a query plan naming the series and log terms to
+retrieve, from what the sources actually offer. Both MUST be reached through a strategy
+port whose default adapter is deterministic and whose alternative is model-backed, and
+both MUST be recorded as decisions in the case timeline.
+
+**Why this is a requirement.** Today collection decides nothing: the metrics collector
+asks each source for everything it offers and analyses all of it. What round one looks at
+— which in this system determines the first-round error, and therefore what the critic has
+to overturn (REQ-0103) — is a property of the fixture rather than of any agent. That makes
+the single most consequential choice in the flow the one choice no role is accountable
+for.
+
+**Acceptance.**
+- Given the reference scenario, when triage and collection run, then the plan each
+  produced is recorded on the case and names the window, the roles, the series and the log
+  terms actually used.
+- Given a query plan naming a series no source offers, when collection runs, then that
+  entry is dropped and the remaining plan is executed.
+- Given a planner that returns nothing, when collection runs, then the deterministic plan
+  is used, because a strategy that fails must not be able to blind the investigation.
+
+**Verified by.** TC-0115
+
+<!-- sdd:item id=REQ-0108 stage=specify status=approved derives_from=G-002,G-004 priority=P0 -->
+### REQ-0108 — Remediation and verification stay deterministic
+
+**Requirement.** The remediation and verification roles MUST NOT route through a
+model-backed strategy. Remediation MUST produce a typed action drawn from the catalog, and
+verification MUST decide recovery by comparing signal values.
+
+**Why this is a requirement and not an omission.** ADR-008 deviates from the goal
+document, which specifies a system prompt for every role, and a deviation belongs in the
+specification where it can be argued with rather than in the silence between two files.
+The policy engine can only gate what it can parse and REQ-0041 forbids agent-authored
+shell and SQL, so a natural-language step before the executor removes the guarantee the
+approval gate rests on. Verification is arithmetic: a strategy that can disagree with the
+comparison turns the recovery claim from evidence into an opinion.
+
+**Acceptance.**
+- Given any configured strategy, when remediation runs, then the proposed action's tool
+  and arguments come from the catalog template and pass policy validation unchanged.
+- Given any configured strategy, when verification runs, then the recovery decision is
+  reproducible from the recorded before-and-after values alone.
+
+**Verified by.** TC-0116
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |

@@ -225,6 +225,34 @@ rows do not say what produced them is not a comparison.
 
 **Realises.** REQ-0011, REQ-0020, REQ-0090, REQ-0100, REQ-0104, REQ-0105, REQ-0106
 
+<!-- sdd:item id=ARC-019 stage=architect status=approved derives_from=REQ-0107,REQ-0108 -->
+### ARC-019 — Strategy ports cover judgements, not measurements
+
+**Element.** A family of ports — triage, collection planning, and the reasoner of ARC-005
+— each with a deterministic adapter as its default and a model-backed alternative selected
+by the same configuration.
+
+**Responsibility.** Put every *judgement* the investigation makes behind a substitutable
+strategy, and leave every *measurement* and every *typed action* where arithmetic and the
+catalog can be held to account.
+
+**Constraints.** A model adapter's output is untrusted structured data at every port: a
+planned series the sources do not offer is dropped, and a planner returning nothing falls
+back to the deterministic plan — a strategy that fails must not be able to blind the
+investigation. Remediation and verification gain no port (REQ-0108): the policy engine can
+only gate what it can parse, and a recovery decision that a strategy could disagree with
+stops being evidence.
+
+**Why the line is drawn at judgement rather than at role count.** The goal document
+specifies a prompt per role, which counts components. What matters is what a component
+decides. Collection is the sharpest case: today it decides nothing — each collector asks
+its source for everything on offer — so the choice that determines the first-round error,
+and therefore what the critic must overturn (REQ-0103), belongs to the fixture rather than
+to any agent. That is the gap worth closing, and closing it by count would put natural
+language in front of the executor while leaving the real gap open.
+
+**Realises.** REQ-0107, REQ-0108
+
 <!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082,REQ-0096,REQ-0097,REQ-0098 -->
 ### ARC-006 — Signal ports are fixture-first
 
@@ -449,3 +477,5 @@ pair per decision, under `docs/adr/`:
 | ADR-004 | A file-backed append-only store rather than an embedded or external database |
 | ADR-005 | A server-rendered embedded console rather than a separate front-end application |
 | ADR-006 | A declarative fault signature and case catalog rather than hard-coded scenarios |
+| ADR-007 | The model selects signatures from the catalog; scoring stays deterministic |
+| ADR-008 | Judgement-bearing roles get a strategy port; measurement roles do not |

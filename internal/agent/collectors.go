@@ -8,18 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/zlrrr/mutil-agent-system/internal/agent/plan"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
 	"github.com/zlrrr/mutil-agent-system/internal/signal"
 )
 
 // sdd:impl DLD-1040
-
-// defaultLogTerms are the error terms a log collector searches for when the alert does
-// not narrow them.
-var defaultLogTerms = []string{
-	"error", "timeout", "refused", "exception", "panic", "slow query", "exhausted",
-}
 
 // Collectors returns the five evidence-gathering agents, in the fixed order their
 // contributions are applied.
@@ -48,10 +43,19 @@ func Collectors(set signal.Set, cfg reasoner.Config) []Agent {
 func collectMetrics(ctx context.Context, set signal.Set, _ reasoner.Config, s domain.Snapshot) ([]domain.Contribution, error) {
 	window, spanTrunc := set.Bounds.ApplySpan(s.Window)
 
-	names, err := set.Metrics.SeriesNames(ctx, s.Alert.Service)
-	if err != nil {
-		return nil, fmt.Errorf("list series: %w", err)
+	// The series to query come from the recorded collection plan, not from asking the
+	// source for everything (DLD-1037). A snapshot without a plan — a caller that drives
+	// a collector directly — falls back to every series on offer, which is what the
+	// deterministic planner would have said anyway.
+	names := s.Queries.Series
+	if len(names) == 0 {
+		var err error
+		names, err = set.Metrics.SeriesNames(ctx, s.Alert.Service)
+		if err != nil {
+			return nil, fmt.Errorf("list series: %w", err)
+		}
 	}
+	names = append([]string(nil), names...)
 	sort.Strings(names)
 
 	var out []domain.Contribution
@@ -155,8 +159,12 @@ func appendUnique(s []string, v string) []string {
 func collectLogs(ctx context.Context, set signal.Set, _ reasoner.Config, s domain.Snapshot) ([]domain.Contribution, error) {
 	window, spanTrunc := set.Bounds.ApplySpan(s.Window)
 
+	terms := s.Queries.LogTerms
+	if len(terms) == 0 {
+		terms = plan.DefaultLogTerms
+	}
 	lines, err := set.Logs.Search(ctx, signal.LogQuery{
-		Service: s.Alert.Service, Terms: defaultLogTerms, Window: window,
+		Service: s.Alert.Service, Terms: terms, Window: window,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("search logs: %w", err)

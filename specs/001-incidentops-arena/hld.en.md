@@ -280,6 +280,49 @@ is therefore tested alongside its objection.
 
 **Refines.** ARC-009
 
+<!-- sdd:item id=HLD-021 stage=hld status=approved derives_from=ARC-019 -->
+### HLD-021 — Planner port and deterministic adapter
+
+**Purpose.** Make "what shall we investigate, and what shall we look at" a decision the
+system takes and records, rather than a property of whatever the sources happen to expose.
+
+**Public surface.**
+
+```go
+type Plan struct {
+    Window domain.TimeWindow
+    Roles  []domain.Role
+    Reason string
+}
+type Queries struct {
+    Series   []string
+    LogTerms []string
+    Reason   string
+}
+type Available struct {
+    Series []string // what the metric source offers for this service
+}
+type Planner interface {
+    Name() string
+    Triage(ctx context.Context, s domain.Snapshot) (Plan, error)
+    PlanCollection(ctx context.Context, s domain.Snapshot, a Available) (Queries, error)
+}
+func NewRulePlanner(cfg Config) Planner
+```
+
+**The deterministic adapter reproduces today's behaviour exactly.** `Triage` returns the
+alert window extended by `changeLookback` and the five collector roles; `PlanCollection`
+returns every available series and the default log terms. Introducing the port is
+therefore a refactor whose observable behaviour is unchanged, which is what lets the
+existing suite serve as its regression check.
+
+**Failure behaviour.** A planner error, or a plan naming nothing, falls back to the
+deterministic plan and records that it did. A strategy that cannot answer must not be able
+to blind the investigation, and silently collecting nothing would look identical to
+"there was nothing to collect".
+
+**Refines.** ARC-019
+
 <!-- sdd:item id=HLD-010 stage=hld status=approved derives_from=ARC-004 -->
 ### HLD-010 — Agent roles
 

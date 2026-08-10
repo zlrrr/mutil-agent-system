@@ -938,6 +938,42 @@ ADR-002 把这套测试列为"双适配器"决策的后果，却从未写出来�
 
 **测试函数。** `internal/eval/eval_test.go` 中的 `TestEvaluationAttributesReasoner`
 
+### 3.16 角色策略
+
+<!-- sdd:item id=TC-0115 stage=verify status=approved derives_from=REQ-0107 -->
+#### TC-0115 — "去看什么"是被规划、被记录、且被校验的
+
+**层级。** integration。**验证。** REQ-0107。
+
+**步骤。** 运行参考场景，并从 case 中回读 triage 方案与采集方案。随后规划一次点名了任何数据
+源都不提供的序列的采集，以及一次什么也没点名的采集。
+
+**预期。** 两份方案都被记录在 case 上，并包含实际使用的时间窗、角色、序列与日志词。不可用的
+序列被丢弃，方案其余部分照常执行。空方案回退到确定性规划器，并记录这次回退。在确定性规划器
+下，该 case 的证据与端口存在之前的同一 case **逐字节一致**——引入一个决策点，不得改变这个决定。
+
+最后那条断言才是要点。确定性适配器复现的是"向每个数据源索要它提供的一切"，因此这个端口可以
+作为一次重构引入，并以整个现有测试套件充当回归检查；而模型给出的更窄方案，也就从此有了一个
+可以对着证明自己的基线。
+
+**测试函数。** `internal/agent/plan/plan_test.go` 中的 `TestCollectionIsPlanned`
+
+<!-- sdd:item id=TC-0116 stage=verify status=approved derives_from=REQ-0108 -->
+#### TC-0116 — 处置与验证不可被接到模型上
+
+**层级。** integration。**验证。** REQ-0108。
+
+**步骤。** 检查 remediation 与 verification 两个角色的构造函数是否带有策略参数。把参考场景
+运行到处置阶段，并仅凭记录在案的前后取值重新计算恢复判定。
+
+**预期。** 两个角色都不接受策略参数。所提议动作的工具与参数与目录模板完全一致，并原样通过
+策略校验。恢复判定仅凭记录值即可复现，无需重跑任何东西。
+
+这个用例之所以存在：ADR-008 偏离了目标文档——后者为每个角色都指定了提示词。一次只活在散文里
+的偏离，距离"被一个读了目标文档却没读 ADR 的人重构掉"只有一步之遥。
+
+**测试函数。** `internal/agent/plan/plan_test.go` 中的 `TestJudgementBoundary`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

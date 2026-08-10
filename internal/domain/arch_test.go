@@ -33,16 +33,20 @@ var planes = map[string]planeSpec{
 	// The model adapter sits above the reasoner port it implements, and below anything
 	// that consumes a reasoner — the same shape as a signal adapter beneath its port.
 	"internal/reasoner/model": {5, "reasoning-adapter"},
-	"internal/agent":          {5, "reasoning"},
-	"internal/policy":         {5, "control"},
-	"internal/store":          {5, "control"},
-	"internal/eventbus":       {5, "control"},
-	"internal/report":         {5, "control"},
-	"internal/orchestrator":   {6, "control"},
-	"internal/arena":          {7, "wiring"},
-	"internal/eval":           {8, "control"},
-	"internal/httpapi":        {8, "control"},
-	"internal/sdd":            {0, "governance"},
+	// The planner port ranks with the reasoner port, not with the agents that consume
+	// it: both are strategies the control plane selects, and neither may depend on the
+	// roles that call them (ARC-019).
+	"internal/agent/plan":   {4, "reasoning"},
+	"internal/agent":        {5, "reasoning"},
+	"internal/policy":       {5, "control"},
+	"internal/store":        {5, "control"},
+	"internal/eventbus":     {5, "control"},
+	"internal/report":       {5, "control"},
+	"internal/orchestrator": {6, "control"},
+	"internal/arena":        {7, "wiring"},
+	"internal/eval":         {8, "control"},
+	"internal/httpapi":      {8, "control"},
+	"internal/sdd":          {0, "governance"},
 }
 
 // forbidden lists imports a package may never have, beyond the rank rule. These encode

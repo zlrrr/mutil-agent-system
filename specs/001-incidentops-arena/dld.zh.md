@@ -621,6 +621,47 @@ total 被夹到 [0, 1]
 
 ## 7. Agent
 
+<!-- sdd:item id=DLD-1036 stage=dld status=approved derives_from=HLD-021 -->
+### DLD-1036 — 规则规划器
+
+**文件。** `internal/agent/plan/plan.go`
+
+**类型。** `Plan{Window domain.TimeWindow; Roles []domain.Role; Reason string}`、
+`Queries{Series, LogTerms []string; Reason string}`、`Available{Series []string}`、
+`RulePlanner{cfg reasoner.Config}`。
+
+**行为。**
+
+1. `Name()` 返回 `"rule"`。
+2. `Triage` 返回 `Window = 按 changeLookback 扩展后的告警窗口`、`Roles =
+   {metrics, logs, change, topology, knowledge}`（固定顺序），以及一条点明"是哪个回看区间
+   产生了该窗口"的理由。
+3. `PlanCollection` 返回 `Available` 中全部序列（已排序）与 `defaultLogTerms`。排序是要紧的：
+   方案会被记录在 case 上，而一份无序的方案会让两次完全相同的调查产生不同的记录（REQ-0090）。
+
+**为什么确定性适配器返回全部。** 它复现的是端口存在之前采集器的行为，因此引入这个端口不改变
+任何可观察输出，现有测试套件即是它的回归检查。"全都要"是一个糟糕的**策略**，却是一个正确的
+**基线**：模型给出的更窄选择，正是要对着这份方案来证明自己。
+
+**检查点。** TC-0115。
+
+<!-- sdd:item id=DLD-1037 stage=dld status=approved derives_from=HLD-021 -->
+### DLD-1037 — 按方案采集
+
+**文件。** `internal/agent/collectors.go`
+
+**行为。** 采集器接受方案，而不再自行决定。指标采集器把 `Queries.Series` 与 `SeriesNames`
+所报告的内容取交集，丢弃数据源并不提供的名称并记录该次丢弃；日志采集器按 `Queries.LogTerms`
+检索。无论出于何种原因得到空方案，都回退到确定性规划器的答案，并记录下这次回退（REQ-0107）。
+
+索证驱动的采集**刻意**不受方案管辖。一条索证会点名它想要的证据，而这正是质疑者握有该权力的
+全部意义（REQ-0031）；把它也走规划器，等于让某个策略可以否决质疑者。
+
+**不变量。** 一个 case 实际执行的方案可从它的事件日志中还原，因此"第 1 轮为什么没看 X"事后
+即可回答，而不必重跑一遍。
+
+**检查点。** TC-0115。
+
 <!-- sdd:item id=DLD-1040 stage=dld status=approved derives_from=HLD-010 -->
 ### DLD-1040 — Agent 接口与采集器
 

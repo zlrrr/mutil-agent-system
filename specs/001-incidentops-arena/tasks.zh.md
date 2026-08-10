@@ -199,6 +199,19 @@ TC-0046、TC-0051、TC-0052、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、
 
 **阻塞于。** T-014。**可并行。** 否。
 
+<!-- sdd:item id=T-016 stage=plan status=approved derives_from=DLD-1036,DLD-1037 -->
+### T-016 — 规划器端口与按方案采集
+
+**实现。** DLD-1036、DLD-1037
+
+**文件。** `internal/agent/plan/plan.go`、`internal/agent/collectors.go`、
+`internal/orchestrator/engine.go`、`internal/domain/case.go`
+
+**完成定义。** TC-0115 与 TC-0116 通过；确定性规划器复现端口引入之前的行为，因此现有测试套件
+原样通过；实际执行的方案可从事件日志还原；remediation 与 verification 不接受任何策略参数。
+
+**阻塞于。** T-015。**可并行。** 否。
+
 ## 3. 执行顺序
 
 | 批次 | 任务 | 进入下一批次的门禁 |
@@ -211,6 +224,7 @@ TC-0046、TC-0051、TC-0052、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、
 | 6 | T-011 | 参考场景端到端跑通；确定性测试通过 |
 | 7 | T-012、T-013、T-014 | 全套测试在 `-race` 下为绿；`sddctl gate --stage deliver` 通过 |
 | 8 | T-015 | 两个推理器适配器通过同一份契约；评测按推理器分别报告 |
+| 9 | T-016 | 确定性规划器不改变任何行为；实际执行的方案落在事件日志上 |
 
 ## 4. 进度记录
 
