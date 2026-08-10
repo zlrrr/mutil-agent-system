@@ -425,7 +425,7 @@ PrometheusURL, ContainerHost string; SeriesMap map[string]string}`。
 cfg reasoner.Config}`、`Options{Timeout time.Duration; Client *http.Client; APIKey
 string; Temperature float64}`、`ProviderError{Endpoint string; Status int; Err error}`。
 
-**行为。** `Hypothesise` 构造一个请求，描述快照中的证据——每条的标识符、类别、来源与
+**行为。** `Name()` 返回 `"model"`。`Hypothesise` 构造一个请求，描述快照中的证据——每条的标识符、类别、来源与
 摘要——以及目录中各签名的标识符与主张。它询问服务商：当前证据支持哪些签名，各自由哪些证据
 标识符支持。响应按
 `{"selections":[{"signature_id","evidence_ids":[],"reasoning"}]}` 解码。
@@ -534,6 +534,8 @@ total 被夹到 [0, 1]
 
 **行为。**
 
+0. `Name()` 返回 `"rule"`；模型适配器返回 `"model"`。该名称在 case 创建时被存入 case，
+   并一路带进每一行评测结果（REQ-0106）。
 1. 对每条签名，与快照中的证据做匹配。
 2. 丢弃匹配模式数为零的签名。
 3. 为每条存活签名构建一个假设，`Supporting` 设为所有贡献了非零项的证据标识符，
@@ -880,7 +882,13 @@ reporting      -> closed
 假设数量，以及因等待审批而被拦截的动作数量。`Summarise` 按模式聚合，并始终在每个比率旁
 给出样本量。
 
-**检查点。** TC-0080、TC-0081。
+**推理器归因。** `Options{Reasoner string; NewReasoner func(*catalog.Catalog)
+reasoner.Reasoner}` 选择策略；`NewReasoner` 为零值时表示规则适配器，名称默认为 `"rule"`。
+该名称随每个 `CaseOutcome` 与每行 `ModeSummary` 一起携带，且 `Summarise` 按
+`(模式, 推理器)` 而不是仅按模式分组——否则一次混用了策略的运行会把它们平均成一个谁也
+描述不了的数字（REQ-0106）。
+
+**检查点。** TC-0080、TC-0081、TC-0114。
 
 <!-- sdd:item id=DLD-1075 stage=dld status=approved derives_from=HLD-018 -->
 ### DLD-1075 — 入口
@@ -892,7 +900,17 @@ reporting      -> closed
 `faultctl inject|restore|status --case` 驱动演示栈的故障注入。配置优先级为参数、环境变量、
 默认值。
 
-**检查点。** TC-0070、TC-0081。
+**推理器选择是共享的，不是各命令各自实现的。** `--reasoner rule|model`、`--model-endpoint`
+与 `--model-name` 由同一个 helper 解析，并同时注册到 `arena serve`、`arena demo` 与
+`evalctl run` 上，读取 `ARENA_REASONER`、`ARENA_MODEL_ENDPOINT`、`ARENA_MODEL_NAME` 与
+`ARENA_MODEL_API_KEY`（REQ-0104）。一个无法选择策略的命令，就无法产出可比较的结果；而此前
+唯一**能**选择策略的入口——服务——恰恰是完全不产出对照的那一个。API key 只从环境变量读取：
+写在命令行上的凭据会落进 shell 历史和 `ps` 输出。
+
+`evalctl run --reasoner rule,model` 会对每个被点名的适配器把整个矩阵各跑一遍，因此一次调用
+就产出对照，而不需要跑两次再手工比对。
+
+**检查点。** TC-0070、TC-0081、TC-0112。
 
 ## 11. 参考场景的算术
 

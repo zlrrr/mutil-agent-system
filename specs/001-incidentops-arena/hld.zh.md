@@ -192,14 +192,31 @@ func NewFixtureSet(fc FaultCase) SignalSet    // 由一份样例定义生成全�
 
 ```go
 type Reasoner interface {
+    Name() string
     Hypothesise(ctx context.Context, s Snapshot) ([]Hypothesis, error)
     Critique(ctx context.Context, s Snapshot) ([]Critique, []EvidenceDemand, error)
 }
 func NewRuleReasoner(cat *Catalog, cfg Config) Reasoner
 ```
 
+`Name` 的存在，是为了让归因**随结果一起流转**，而不是并排放在它旁边（REQ-0106）。调用方在
+一旁维护的标签可能被设错，而没有任何契约测试能抓到；一个必须自报身份的策略，则无法被运行
+它的代码贴错标签。
+
 **失败行为。** 规则适配器不执行 I/O，因此不会因外部条件失败；无签名匹配时返回空假设列表，
 编排器把它当作"证据不足"条件而非错误。
+
+**两个适配器共同负责的那份契约。** 上面的接口是**形状**；契约是**行为性**的，由同一套测试
+对每个适配器各跑一遍来断言（REQ-0105）：
+
+```go
+// reasoner_test 包，每个适配器运行一次
+func Contract(t *testing.T, name string, make func(*Catalog) Reasoner)
+```
+
+每个假设引用的证据都存在于快照中、命名的签名都存在于目录中、且带有机理。每条质疑都指向一个
+被审查过的假设并带有闭集内的裁决。每条索证都带有描述符与类别。一个无法抵达其后端服务的适配器
+返回**错误**——绝不返回空列表，因为"没有匹配"是一个结论，而失败不得冒充结论。
 
 **细化自。** ARC-005
 
@@ -381,9 +398,13 @@ func JSON(c *Case) ([]byte, error)
 
 ```go
 type Mode string // single | multi_no_critic | multi_with_critic
-func RunCase(ctx context.Context, fc FaultCase, m Mode) (CaseOutcome, error)
+type Options struct { Reasoner string; NewReasoner func(*Catalog) Reasoner }
+func RunCase(ctx context.Context, fc FaultCase, m Mode, o Options) (CaseOutcome, error)
 func Summarise(outcomes []CaseOutcome) Report
 ```
+
+`CaseOutcome` 与每一行汇总都在模式旁边携带推理器名称，使两次运行之间的差异**可归因**，而不是
+被假定（REQ-0106）。
 
 **失败行为。** 失败的样例记为一行失败结果，而不是中止整轮运行。
 
@@ -442,6 +463,7 @@ func Build(name string, fc FaultCase, cat *Catalog, b Bounds) (signal.Set, error
 ```go
 package model
 func New(endpoint, model string, cat *Catalog, cfg reasoner.Config, opts Options) *Reasoner
+func (r *Reasoner) Name() string // "model"
 // 实现 reasoner.Reasoner
 ```
 

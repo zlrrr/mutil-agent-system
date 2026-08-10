@@ -56,9 +56,13 @@ type TimelineEntry struct {
 // Case is the projection of a case's event log. Nothing writes its fields except
 // Apply, so the live view and a replayed view are the same computation (ARC-003).
 type Case struct {
-	ID        string    `json:"id"`
-	Alert     Alert     `json:"alert"`
-	Mode      Mode      `json:"mode"`
+	ID    string `json:"id"`
+	Alert Alert  `json:"alert"`
+	Mode  Mode   `json:"mode"`
+	// Reasoner names the strategy that formed and criticised this case's hypotheses.
+	// A stored case that does not say how it was reasoned is not reproducible, and a
+	// comparison between two cases means nothing without it (REQ-0106).
+	Reasoner  string    `json:"reasoner,omitempty"`
 	Status    Status    `json:"status"`
 	Round     int       `json:"round"`
 	CreatedAt time.Time `json:"created_at"`
@@ -290,14 +294,16 @@ func (c *Case) Apply(e Event) error {
 	switch e.Type {
 	case EvCaseCreated:
 		var p struct {
-			Alert Alert `json:"alert"`
-			Mode  Mode  `json:"mode"`
+			Alert    Alert  `json:"alert"`
+			Mode     Mode   `json:"mode"`
+			Reasoner string `json:"reasoner"`
 		}
 		if err := decode(e.Payload, &p); err != nil {
 			return err
 		}
 		c.Alert = p.Alert
 		c.Mode = p.Mode
+		c.Reasoner = p.Reasoner
 		c.CreatedAt = e.At
 		c.Status = StatusCreated
 

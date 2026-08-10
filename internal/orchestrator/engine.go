@@ -37,6 +37,9 @@ type Engine struct {
 	bus      *eventbus.Broker
 	cfg      reasoner.Config
 	clock    domain.Clock
+	// reasonerName is recorded on every case so a stored investigation says which
+	// strategy produced it (REQ-0106).
+	reasonerName string
 
 	mu    sync.Mutex
 	cases map[string]*domain.Case
@@ -51,6 +54,9 @@ type Options struct {
 	Bus      *eventbus.Broker
 	Config   reasoner.Config
 	Clock    domain.Clock
+	// Reasoner names the strategy the agents were built with. Empty means the
+	// deterministic rule adapter, which is the default by design (ADR-002).
+	Reasoner string
 }
 
 // New builds an engine.
@@ -61,10 +67,14 @@ func New(o Options) *Engine {
 	if o.Clock == nil {
 		o.Clock = domain.WallClock{}
 	}
+	if o.Reasoner == "" {
+		o.Reasoner = "rule"
+	}
 	return &Engine{
 		agents: o.Agents, policy: o.Policy, executor: o.Executor,
 		store: o.Store, bus: o.Bus, cfg: o.Config, clock: o.Clock,
-		cases: map[string]*domain.Case{},
+		reasonerName: o.Reasoner,
+		cases:        map[string]*domain.Case{},
 	}
 }
 
@@ -102,7 +112,7 @@ func (e *Engine) Create(ctx context.Context, alert domain.Alert, mode domain.Mod
 
 	ev := e.event(c, domain.RoleOrchestrator, domain.EvCaseCreated,
 		fmt.Sprintf("%s raised for %s (%s)", alert.Name, alert.Service, alert.Severity),
-		id, map[string]any{"alert": alert, "mode": mode})
+		id, map[string]any{"alert": alert, "mode": mode, "reasoner": e.reasonerName})
 	if err := e.commit(ctx, c, []domain.Event{ev}); err != nil {
 		return nil, err
 	}

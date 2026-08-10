@@ -458,7 +458,7 @@ fixtures would make a live deployment look healthy while reading simulated data.
 cfg reasoner.Config}`, `Options{Timeout time.Duration; Client *http.Client; APIKey
 string; Temperature float64}`, `ProviderError{Endpoint string; Status int; Err error}`.
 
-**Behaviour.** `Hypothesise` builds a request describing the snapshot's evidence — each
+**Behaviour.** `Name()` returns `"model"`. `Hypothesise` builds a request describing the snapshot's evidence — each
 item's identifier, kind, source and summary — and the catalog's signature identifiers with
 their claims. It asks the provider which signatures the evidence supports and which
 evidence identifiers support each. The response is decoded as
@@ -580,6 +580,8 @@ within `1e-9`.
 
 **Behaviour.**
 
+0. `Name()` returns `"rule"`; the model adapter returns `"model"`. The name is stored on
+   the case at creation and travels into every evaluation row (REQ-0106).
 1. For every signature, match against the snapshot's evidence.
 2. Discard signatures with zero matched patterns.
 3. Build one hypothesis per surviving signature, with `Supporting` set to the identifiers
@@ -978,7 +980,14 @@ collected, the number of hypotheses whose score or status the critic changed, an
 number of actions blocked pending approval. `Summarise` aggregates per mode and always
 emits the sample size alongside each rate.
 
-**Checkpoint.** TC-0080, TC-0081.
+**Reasoner attribution.** `Options{Reasoner string; NewReasoner func(*catalog.Catalog)
+reasoner.Reasoner}` selects the strategy; a zero `NewReasoner` means the rule adapter and
+the name defaults to `"rule"`. The name is carried on every `CaseOutcome` and every
+`ModeSummary`, and `Summarise` groups by `(mode, reasoner)` rather than by mode alone —
+otherwise a run that mixed strategies would average them into a number describing neither
+(REQ-0106).
+
+**Checkpoint.** TC-0080, TC-0081, TC-0114.
 
 <!-- sdd:item id=DLD-1075 stage=dld status=approved derives_from=HLD-018 -->
 ### DLD-1075 — Entry points
@@ -991,7 +1000,19 @@ emits the sample size alongside each rate.
 demo stack's fault injection. Configuration precedence is flag, then environment
 variable, then default.
 
-**Checkpoint.** TC-0070, TC-0081.
+**Reasoner selection is shared, not per-command.** `--reasoner rule|model`,
+`--model-endpoint` and `--model-name` are parsed by one helper registered on `arena
+serve`, `arena demo` and `evalctl run` alike, reading `ARENA_REASONER`,
+`ARENA_MODEL_ENDPOINT`, `ARENA_MODEL_NAME` and `ARENA_MODEL_API_KEY` (REQ-0104). A command
+that could not select the strategy could not produce a comparable result, and the entry
+point that *can* select it — the server — is the one that produces no comparison at all.
+The API key is read only from the environment: a credential on a command line lands in the
+shell history and in `ps` output.
+
+`evalctl run --reasoner rule,model` runs the whole matrix once per named adapter, so a
+single invocation produces the comparison rather than requiring two runs and a diff.
+
+**Checkpoint.** TC-0070, TC-0081, TC-0112.
 
 ## 11. The reference scenario, arithmetic
 

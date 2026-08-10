@@ -69,6 +69,12 @@ same contribution validation, evidence-binding and policy checks as rule output.
 - Two adapters must be kept behaviourally compatible, which needs a shared contract
   test.
 
+  *Follow-up, 2026-08-10.* That test was not written when this decision was taken, and
+  the model adapter was reachable only from the service — so for the whole of M1..M5 the
+  central claim above was untestable from any entry point that produces a comparable
+  result. REQ-0104 and REQ-0105 make it testable. A consequence recorded and not built is
+  a decision only half-taken.
+
 ### Neutral
 
 - The system is best described as a multi-agent system whose reasoning strategy is

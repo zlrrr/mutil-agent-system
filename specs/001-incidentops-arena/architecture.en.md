@@ -194,7 +194,7 @@ completion order cannot influence the result.
 
 **Realises.** REQ-0001, REQ-0004, REQ-0061, REQ-0080, REQ-0081
 
-<!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090,REQ-0100 -->
+<!-- sdd:item id=ARC-005 stage=architect status=approved derives_from=REQ-0011,REQ-0020,REQ-0090,REQ-0100,REQ-0104,REQ-0105,REQ-0106 -->
 ### ARC-005 — The Reasoner port separates what to think from how to think
 
 **Element.** A port whose default adapter is a deterministic rule engine over a fault
@@ -212,7 +212,18 @@ assert on a sampled distribution, and a demo cannot depend on an endpoint. The r
 engine is a real inference mechanism — a signature catalog with mechanism narratives —
 so the offline system is a working product, not a placeholder.
 
-**Realises.** REQ-0011, REQ-0020, REQ-0090, REQ-0100
+**A port is only a port if both sides can be exercised.** The claim above — that swapping
+adapters changes no contract, no state transition and no stored schema — is an empirical
+claim, and the architecture must make it checkable rather than merely stated. Two
+structures carry that: the selection is reachable from *every* entry point that produces a
+comparable result, and both adapters answer to one behavioural contract test rather than
+merely satisfying the same Go interface (REQ-0104, REQ-0105). An interface both sides
+compile against is a shape; what the orchestrator depends on is behaviour.
+
+Which adapter produced a result travels with the result (REQ-0106). A comparison whose
+rows do not say what produced them is not a comparison.
+
+**Realises.** REQ-0011, REQ-0020, REQ-0090, REQ-0100, REQ-0104, REQ-0105, REQ-0106
 
 <!-- sdd:item id=ARC-006 stage=architect status=approved derives_from=REQ-0010,REQ-0012,REQ-0013,REQ-0014,REQ-0015,REQ-0016,REQ-0082,REQ-0096,REQ-0097,REQ-0098 -->
 ### ARC-006 — Signal ports are fixture-first

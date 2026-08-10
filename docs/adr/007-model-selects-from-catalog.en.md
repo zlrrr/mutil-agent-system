@@ -74,7 +74,13 @@ orchestrator's existing role and contribution checks apply unchanged (REQ-0005, 
 
 **What this buys.** The substitution is genuinely behind the port: swapping the adapter
 changes how explanations are *selected*, and changes nothing about how they are scored,
-challenged, acted on or audited. Every test above the port keeps its meaning. A model
+challenged, acted on or audited. Every test above the port keeps its meaning.
+
+*Follow-up, 2026-08-10.* "Genuinely behind the port" was, until REQ-0104 and REQ-0105, a
+claim rather than an observation: the adapter could be selected only from the service, and
+no suite held both adapters to one behaviour. Both are now true of the code, and the
+contract suite found its first defect on the run that introduced it — in the test, not the
+adapter, but that is what a contract is for. A model
 that hallucinates an evidence identifier produces a dropped hypothesis rather than a
 fabricated citation in a report.
 

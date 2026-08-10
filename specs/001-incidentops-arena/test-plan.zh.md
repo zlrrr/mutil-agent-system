@@ -889,6 +889,55 @@ release。
 **测试函数。** `internal/orchestrator/e2e_test.go` 中的
 `TestUnanswerableDemandDoesNotVeto`
 
+### 3.15 推理策略
+
+<!-- sdd:item id=TC-0112 stage=verify status=approved derives_from=REQ-0104 -->
+#### TC-0112 — 推理策略在每一个入口都可选择
+
+**层级。** integration。**验证。** REQ-0104。
+
+**步骤。** 分别解析 `arena serve`、`arena demo`、`evalctl run` 的推理器参数，断言三者都接受
+`--reasoner`、`--model-endpoint`、`--model-name`，且读取同一组环境变量。随后让参考场景分别
+通过桩模型服务商与规则适配器运行，并回读每个 case 记录的适配器。
+
+**预期。** 三个命令接受同一套选择方式。两次运行都能跑完，且每个 case 都记录了产出它的适配器。
+选择 `model` 却不给 endpoint 或 model name 时，以配置错误退出并点名缺失的参数。
+
+这个用例之所以存在：一个只能从服务端抵达的选择方式，恰恰是产出不了任何对照的那一个。ADR-002
+声称"换成模型不改变任何契约"；而一个无法完成这次替换的入口，也就无法核对这个声称。
+
+**测试函数。** `cmd/arena/main_test.go` 中的 `TestReasonerSelectableEverywhere`
+
+<!-- sdd:item id=TC-0113 stage=verify status=approved derives_from=REQ-0105 -->
+#### TC-0113 — 两个推理器适配器满足同一份契约
+
+**层级。** integration。**验证。** REQ-0105。
+
+**步骤。** 用同一套测试、在同一份快照上，分别对规则适配器与由桩服务商支撑的模型适配器运行：
+断言每个假设引用的证据都存在于快照中、命名的签名都在目录中、且带有机理；每条质疑都指向被
+审查过的假设并带有闭集内的裁决；每条索证都带有描述符与类别。随后把模型适配器指向一个关闭的
+端口，再调用两个方法。
+
+**预期。** 全部性质对两个适配器都成立。不可达的适配器在两个方法上都返回错误，绝不返回空结果：
+"没有匹配"是一个结论，而传输失败不得冒充结论。
+
+ADR-002 把这套测试列为"双适配器"决策的后果，却从未写出来；于是整整五个里程碑里，两个适配器
+只被同一个**形状**约束着。一个编译期接口约束不了行为，而编排器依赖的正是行为。
+
+**测试函数。** `internal/reasoner/contract_test.go` 中的 `TestReasonerContract`
+
+<!-- sdd:item id=TC-0114 stage=verify status=approved derives_from=REQ-0106 -->
+#### TC-0114 — 评测的每个数字都标明它的推理器
+
+**层级。** integration。**验证。** REQ-0106。
+
+**步骤。** 在一次调用中对两个适配器运行评测，并检查结果行、汇总行与渲染出的 Markdown。
+
+**预期。** 每一行结果与每一行汇总都在模式旁携带推理器名称；汇总按 `(模式, 推理器)` 分组；
+渲染出的报告同时标明二者。两个适配器 × 三种模式产出**六行**汇总，而不是三行。
+
+**测试函数。** `internal/eval/eval_test.go` 中的 `TestEvaluationAttributesReasoner`
+
 ## 4. 覆盖矩阵
 
 由 `sddctl matrix` 生成；权威版本位于 `docs/traceability-matrix.md`，每次治理运行时重新

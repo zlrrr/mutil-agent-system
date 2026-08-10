@@ -7,6 +7,7 @@
 //	             [--container-host HOST] [--series-map FILE]
 //	             [--reasoner rule|model] [--model-endpoint URL] [--model-name NAME]
 //	arena demo   [--case C1] [--mode multi_with_critic] [--approve] [--out report.md]
+//	             [--reasoner rule|model] [--model-endpoint URL] [--model-name NAME]
 //	arena cases
 //	arena version
 package main
@@ -31,7 +32,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/httpapi"
 	"github.com/zlrrr/mutil-agent-system/internal/policy"
 	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
-	"github.com/zlrrr/mutil-agent-system/internal/reasoner/model"
+	"github.com/zlrrr/mutil-agent-system/internal/reasoner/strategy"
 	"github.com/zlrrr/mutil-agent-system/internal/report"
 	"github.com/zlrrr/mutil-agent-system/internal/signal/profile"
 	"github.com/zlrrr/mutil-agent-system/internal/store"
@@ -103,11 +104,7 @@ func serve(args []string) error {
 		"container runtime host, used by the live profile")
 	seriesMap := fs.String("series-map", env("ARENA_SERIES_MAP", ""),
 		"path to a JSON file mapping series names to PromQL, used by the live profile")
-	reasonerKind := fs.String("reasoner", env("ARENA_REASONER", "rule"), "reasoner adapter: rule|model")
-	modelEndpoint := fs.String("model-endpoint", env("ARENA_MODEL_ENDPOINT", ""),
-		"chat-completions URL, required by the model reasoner")
-	modelName := fs.String("model-name", env("ARENA_MODEL_NAME", ""),
-		"model identifier, required by the model reasoner")
+	rsnCfg := strategy.Register(fs)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -125,7 +122,7 @@ func serve(args []string) error {
 	if err != nil {
 		return err
 	}
-	rsn, err := buildReasoner(*reasonerKind, *modelEndpoint, *modelName, cat)
+	rsn, err := buildReasoner(*rsnCfg, cat)
 	if err != nil {
 		return err
 	}
@@ -156,7 +153,7 @@ func serve(args []string) error {
 	}()
 
 	fmt.Printf("IncidentOps Arena %s listening on %s (store=%s, signals=%s, reasoner=%s, cases=%v)\n",
-		Version, *addr, *kind, signals.Profile, *reasonerKind, cat.CaseIDs())
+		Version, *addr, *kind, signals.Profile, rsnCfg.Name(), cat.CaseIDs())
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
@@ -171,12 +168,24 @@ func demo(args []string) error {
 	approve := fs.Bool("approve", true, "approve the proposed action when the gate is reached")
 	out := fs.String("out", "", "write the report to a file instead of stdout")
 	quiet := fs.Bool("quiet", false, "print only the report")
+	rsnCfg := strategy.Register(fs)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 
+	cat, err := catalog.Load()
+	if err != nil {
+		return fmt.Errorf("load catalog: %w", err)
+	}
+	rsn, err := buildReasoner(*rsnCfg, cat)
+	if err != nil {
+		return err
+	}
+
 	ctx := context.Background()
-	build, err := arena.NewFixtureBuild(arena.Params{CaseID: *caseID})
+	build, err := arena.NewFixtureBuild(arena.Params{
+		CaseID: *caseID, Catalog: cat, Reasoner: rsn,
+	})
 	if err != nil {
 		return err
 	}
@@ -303,27 +312,14 @@ func buildSignalConfig(name, promURL, runtimeHost, seriesMapPath string) (profil
 	return cfg, nil
 }
 
-// buildReasoner resolves the reasoner adapter. Nil means the deterministic rule engine,
-// which arena treats as the default (ADR-002) — so "rule" and an unset flag agree.
-func buildReasoner(kind, endpoint, name string, cat *catalog.Catalog) (reasoner.Reasoner, error) {
-	switch kind {
-	case "rule", "":
-		return nil, nil
-	case "model":
-		// No provider has been chosen (charter Q1), so there is no default endpoint to
-		// fall back to and guessing one would be a decision this code cannot make.
-		if endpoint == "" {
-			return nil, badConfig("-model-endpoint", "required by the model reasoner")
-		}
-		if name == "" {
-			return nil, badConfig("-model-name", "required by the model reasoner")
-		}
-		return model.New(endpoint, name, cat, reasoner.DefaultConfig(), model.Options{
-			APIKey: os.Getenv("ARENA_MODEL_API_KEY"),
-		}), nil
-	default:
-		return nil, badConfig("-reasoner", "unknown adapter %q: use rule or model", kind)
+// buildReasoner resolves the reasoner adapter, turning a configuration error into the
+// exit-2 shape every entry point uses (HLD-018).
+func buildReasoner(c strategy.Config, cat *catalog.Catalog) (reasoner.Reasoner, error) {
+	r, err := c.Build(cat, reasoner.DefaultConfig())
+	if err != nil {
+		return nil, badConfig("-reasoner", "%w", err)
 	}
+	return r, nil
 }
 
 func buildStore(kind, dir string) (store.Store, error) {

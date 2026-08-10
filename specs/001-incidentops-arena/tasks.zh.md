@@ -94,7 +94,7 @@ stage: plan
 **文件。** `internal/reasoner/{reasoner,score,rule}.go`
 
 **完成定义。** TC-0020、TC-0022、TC-0023、TC-0024、TC-0072 通过；参考场景第 1 轮与第 2 轮
-的总分与 DLD 算术在两位小数上一致。
+的总分与 DLD 算术在两位小数上一致；该适配器满足共享契约测试（TC-0113），而不只是满足接口。
 
 **阻塞于。** T-006。**可并行。** 否。
 
@@ -167,7 +167,8 @@ TC-0046、TC-0051、TC-0052、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、
 
 **文件。** `internal/eval/eval.go`
 
-**完成定义。** TC-0080、TC-0081 通过；汇总在每个比率旁给出样本量。
+**完成定义。** TC-0080、TC-0081、TC-0114 通过；汇总在每个比率旁给出样本量，并在模式旁标明
+推理器。
 
 **阻塞于。** T-011。**可并行。** 是，与 T-012。
 
@@ -179,10 +180,24 @@ TC-0046、TC-0051、TC-0052、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、
 **文件。** `cmd/arena/main.go`、`cmd/evalctl/main.go`、`cmd/faultctl/main.go`、
 `deploy/docker/*`、`Makefile`、`.github/workflows/ci.yml`
 
-**完成定义。** TC-0090 通过；`arena demo --case C1` 打印报告；`make test` 与
-`make sdd-validate` 为绿。
+**完成定义。** TC-0090 与 TC-0112 通过；`arena demo --case C1` 打印报告；每一个产出可比较
+结果的命令都接受同一套推理器选择方式；`make test` 与 `make sdd-validate` 为绿。
 
 **阻塞于。** T-012、T-013。**可并行。** 否。
+
+<!-- sdd:item id=T-015 stage=plan status=approved derives_from=DLD-1074,DLD-1075 -->
+### T-015 — 推理器选择与共享契约
+
+**实现。** DLD-1074、DLD-1075
+
+**文件。** `cmd/arena/main.go`、`cmd/evalctl/main.go`、`internal/eval/eval.go`、
+`internal/reasoner/contract_test.go`
+
+**完成定义。** TC-0112、TC-0113、TC-0114 通过；推理器参数由同一个 helper 注册并共享给
+`arena serve`、`arena demo` 与 `evalctl run`；评测按 `(模式, 推理器)` 分组；契约测试套件对
+两个适配器都运行，任一适配器不再满足它即失败。
+
+**阻塞于。** T-014。**可并行。** 否。
 
 ## 3. 执行顺序
 
@@ -195,6 +210,7 @@ TC-0046、TC-0051、TC-0052、TC-0060、TC-0061、TC-0062、TC-0070、TC-0071、
 | 5 | T-009、T-010 | TC-0001、TC-0040、TC-0041、TC-0043、TC-0044 通过 |
 | 6 | T-011 | 参考场景端到端跑通；确定性测试通过 |
 | 7 | T-012、T-013、T-014 | 全套测试在 `-race` 下为绿；`sddctl gate --stage deliver` 通过 |
+| 8 | T-015 | 两个推理器适配器通过同一份契约；评测按推理器分别报告 |
 
 ## 4. 进度记录
 

@@ -72,6 +72,9 @@ type Reasoner struct {
 // New builds a model-backed reasoner. There is no default endpoint: no provider has been
 // chosen (charter Q1), and a default would be a decision this code is not entitled to
 // make.
+// Name identifies this strategy in stored cases and evaluation rows.
+func (r *Reasoner) Name() string { return "model" }
+
 func New(endpoint, modelName string, cat *catalog.Catalog, cfg reasoner.Config, opts Options) *Reasoner {
 	if opts.Timeout <= 0 {
 		opts.Timeout = 30 * time.Second

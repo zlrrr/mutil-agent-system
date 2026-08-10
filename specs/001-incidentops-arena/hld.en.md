@@ -201,15 +201,34 @@ evaluation runner.
 
 ```go
 type Reasoner interface {
+    Name() string
     Hypothesise(ctx context.Context, s Snapshot) ([]Hypothesis, error)
     Critique(ctx context.Context, s Snapshot) ([]Critique, []EvidenceDemand, error)
 }
 func NewRuleReasoner(cat *Catalog, cfg Config) Reasoner
 ```
 
+`Name` exists so attribution travels with the result rather than beside it (REQ-0106). A
+label the caller keeps in parallel can be set wrong, and no contract test would catch it;
+a strategy that has to state what it is cannot be mislabelled by the code that ran it.
+
 **Failure behaviour.** The rule adapter performs no I/O and cannot fail on external
 conditions; it returns an empty hypothesis list when no signature matches, which the
 orchestrator treats as an insufficient-evidence condition rather than an error.
+
+**The contract both adapters answer to.** The interface above is the shape; the contract
+is behavioural and is asserted against every adapter by one shared suite (REQ-0105):
+
+```go
+// reasoner_test package, run once per adapter
+func Contract(t *testing.T, name string, make func(*Catalog) Reasoner)
+```
+
+Every hypothesis cites evidence present in the snapshot, names a signature present in the
+catalog, and carries a mechanism. Every critique names an examined hypothesis and a
+verdict from the closed set. Every demand carries a descriptor and a kind. An adapter that
+cannot reach its backing service returns an error — never an empty list, because "nothing
+matched" is a conclusion and a failure must not be able to impersonate one.
 
 **Refines.** ARC-005
 
@@ -404,9 +423,13 @@ renders that section as explicitly absent rather than omitting it.
 
 ```go
 type Mode string // single | multi_no_critic | multi_with_critic
-func RunCase(ctx context.Context, fc FaultCase, m Mode) (CaseOutcome, error)
+type Options struct { Reasoner string; NewReasoner func(*Catalog) Reasoner }
+func RunCase(ctx context.Context, fc FaultCase, m Mode, o Options) (CaseOutcome, error)
 func Summarise(outcomes []CaseOutcome) Report
 ```
+
+`CaseOutcome` and every summary row carry the reasoner name beside the mode, so a
+difference between two runs is attributable rather than assumed (REQ-0106).
 
 **Failure behaviour.** A failing case is recorded as a failure row rather than aborting
 the run.
@@ -470,6 +493,7 @@ remediation exactly where they are (ADR-007).
 ```go
 package model
 func New(endpoint, model string, cat *Catalog, cfg reasoner.Config, opts Options) *Reasoner
+func (r *Reasoner) Name() string // "model"
 // implements reasoner.Reasoner
 ```
 

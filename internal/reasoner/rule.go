@@ -20,6 +20,9 @@ type RuleReasoner struct {
 	rules []CritiqueRule
 }
 
+// Name identifies this strategy in stored cases and evaluation rows.
+func (r *RuleReasoner) Name() string { return "rule" }
+
 // NewRuleReasoner builds the deterministic reasoner over a catalog.
 func NewRuleReasoner(cat *catalog.Catalog, cfg Config) *RuleReasoner {
 	r := &RuleReasoner{cat: cat, cfg: cfg}

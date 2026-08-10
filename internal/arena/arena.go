@@ -122,6 +122,7 @@ func NewBuild(p Params) (*Build, error) {
 		Bus:      bus,
 		Config:   cfg,
 		Clock:    clock,
+		Reasoner: rsn.Name(),
 	})
 
 	return &Build{

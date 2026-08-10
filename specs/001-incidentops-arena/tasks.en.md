@@ -100,7 +100,8 @@ metric source to post-recovery series after the recovery trigger.
 **Files.** `internal/reasoner/{reasoner,score,rule}.go`
 
 **Definition of done.** TC-0020, TC-0022, TC-0023, TC-0024, TC-0072 pass; the round-1
-and round-2 totals of the reference scenario match the DLD arithmetic to two decimals.
+and round-2 totals of the reference scenario match the DLD arithmetic to two decimals; the
+adapter satisfies the shared contract suite (TC-0113) rather than only the interface.
 
 **Blocked by.** T-006. **Parallelisable.** no.
 
@@ -174,8 +175,8 @@ identically from live and replayed projections.
 
 **Files.** `internal/eval/eval.go`
 
-**Definition of done.** TC-0080, TC-0081 pass; the summary reports sample size beside
-every rate.
+**Definition of done.** TC-0080, TC-0081, TC-0114 pass; the summary reports sample size
+beside every rate, and names the reasoner beside the mode.
 
 **Blocked by.** T-011. **Parallelisable.** yes, with T-012.
 
@@ -187,10 +188,26 @@ every rate.
 **Files.** `cmd/arena/main.go`, `cmd/evalctl/main.go`, `cmd/faultctl/main.go`,
 `deploy/docker/*`, `Makefile`, `.github/workflows/ci.yml`
 
-**Definition of done.** TC-0090 passes; `arena demo --case C1` prints the report;
-`make test` and `make sdd-validate` are green.
+**Definition of done.** TC-0090 and TC-0112 pass; `arena demo --case C1` prints the
+report; every command that produces a comparable result accepts the same reasoner
+selection; `make test` and `make sdd-validate` are green.
 
 **Blocked by.** T-012, T-013. **Parallelisable.** no.
+
+<!-- sdd:item id=T-015 stage=plan status=approved derives_from=DLD-1074,DLD-1075 -->
+### T-015 — Reasoner selection and the shared contract
+
+**Implements.** DLD-1074, DLD-1075
+
+**Files.** `cmd/arena/main.go`, `cmd/evalctl/main.go`, `internal/eval/eval.go`,
+`internal/reasoner/contract_test.go`
+
+**Definition of done.** TC-0112, TC-0113 and TC-0114 pass; the reasoner flags are
+registered by one helper shared across `arena serve`, `arena demo` and `evalctl run`; the
+evaluation groups by `(mode, reasoner)`; the contract suite runs against both adapters and
+fails if either stops satisfying it.
+
+**Blocked by.** T-014. **Parallelisable.** no.
 
 ## 3. Execution order
 
@@ -203,6 +220,7 @@ every rate.
 | 5 | T-009, T-010 | TC-0001, TC-0040, TC-0041, TC-0043, TC-0044 pass |
 | 6 | T-011 | Reference scenario runs end to end; the determinism test passes |
 | 7 | T-012, T-013, T-014 | Full suite green under `-race`; `sddctl gate --stage deliver` passes |
+| 8 | T-015 | Both reasoner adapters pass one contract; the evaluation reports per reasoner |
 
 ## 4. Progress log
 

@@ -16,6 +16,8 @@ import (
 
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/eval"
+	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
+	"github.com/zlrrr/mutil-agent-system/internal/reasoner/strategy"
 )
 
 // sdd:impl DLD-1075
@@ -38,6 +40,7 @@ func main() {
 	cases := fs.String("cases", "", "comma-separated case identifiers (default: all)")
 	out := fs.String("out", "", "write the report to a file instead of stdout")
 	asJSON := fs.Bool("json", false, "emit machine-readable JSON")
+	rsnCfg := strategy.Register(fs)
 	if err := fs.Parse(os.Args[2:]); err != nil {
 		os.Exit(2)
 	}
@@ -55,7 +58,32 @@ func main() {
 		}
 	}
 
-	rep, err := eval.RunAll(context.Background(), cat, ids)
+	// A comma-separated selection runs the whole matrix once per adapter, so a single
+	// invocation produces the comparison rather than two runs a reader has to align by
+	// hand — and nothing would check that those two ran over the same cases (REQ-0104).
+	selections, err := strategy.Split(*rsnCfg)
+	if err != nil {
+		fatal(err)
+	}
+	opts := make([]eval.Options, 0, len(selections))
+	for _, sel := range selections {
+		sel := sel
+		opts = append(opts, eval.Options{
+			Reasoner: sel.Name(),
+			NewReasoner: func(c *catalog.Catalog) reasoner.Reasoner {
+				r, err := sel.Build(c, reasoner.DefaultConfig())
+				if err != nil {
+					fatal(err)
+				}
+				if r == nil {
+					return reasoner.NewRuleReasoner(c, reasoner.DefaultConfig())
+				}
+				return r
+			},
+		})
+	}
+
+	rep, err := eval.RunAllWith(context.Background(), cat, ids, opts)
 	if err != nil {
 		fatal(err)
 	}

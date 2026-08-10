@@ -44,6 +44,11 @@ func DefaultConfig() Config {
 // Reasoner forms hypotheses and critiques them. Swapping the adapter changes no
 // contract, no state transition and no stored schema.
 type Reasoner interface {
+	// Name identifies the strategy, so attribution travels with the result rather than
+	// beside it. A label the caller keeps in parallel can be set wrong and no contract
+	// test would catch it; a strategy that states what it is cannot be mislabelled by
+	// the code that ran it (REQ-0106).
+	Name() string
 	Hypothesise(ctx context.Context, s domain.Snapshot) ([]domain.Hypothesis, error)
 	Critique(ctx context.Context, s domain.Snapshot) ([]domain.Critique, []domain.EvidenceDemand, error)
 }

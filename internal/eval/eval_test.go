@@ -8,6 +8,7 @@ import (
 	"github.com/zlrrr/mutil-agent-system/internal/catalog"
 	"github.com/zlrrr/mutil-agent-system/internal/domain"
 	"github.com/zlrrr/mutil-agent-system/internal/eval"
+	"github.com/zlrrr/mutil-agent-system/internal/reasoner"
 )
 
 func loadCatalog(t *testing.T) *catalog.Catalog {
@@ -26,7 +27,7 @@ func TestThreeModesOverIdenticalInputs(t *testing.T) {
 
 	results := map[domain.Mode]eval.Outcome{}
 	for _, mode := range eval.Modes {
-		o, err := eval.RunCase(ctx, cat, "C1", mode)
+		o, err := eval.RunCase(ctx, cat, "C1", mode, eval.Options{})
 		if err != nil {
 			t.Fatalf("%s: %v", mode, err)
 		}
@@ -158,7 +159,7 @@ func TestEveryCatalogCaseIsSolvedByTheFullFlow(t *testing.T) {
 	cat := loadCatalog(t)
 	ctx := context.Background()
 	for _, id := range cat.CaseIDs() {
-		o, err := eval.RunCase(ctx, cat, id, domain.ModeMultiWithCritic)
+		o, err := eval.RunCase(ctx, cat, id, domain.ModeMultiWithCritic, eval.Options{})
 		if err != nil {
 			t.Fatalf("%s: %v", id, err)
 		}
@@ -173,4 +174,82 @@ func TestEveryCatalogCaseIsSolvedByTheFullFlow(t *testing.T) {
 			t.Errorf("%s gathered only %d evidence kinds", id, o.EvidenceKinds)
 		}
 	}
+}
+
+// sdd:verify TC-0114
+func TestEvaluationAttributesReasoner(t *testing.T) {
+	cat := loadCatalog(t)
+	ctx := context.Background()
+
+	// Two strategies in one invocation. Both are deterministic here — the second is the
+	// same rule engine under a different name — because what is under test is the
+	// attribution, not the strategies. A comparison that loses track of which adapter
+	// produced which row is worthless whatever the adapters were.
+	rep, err := eval.RunAllWith(ctx, cat, []string{"C1"}, []eval.Options{
+		{},
+		{
+			Reasoner: "second",
+			NewReasoner: func(c *catalog.Catalog) reasoner.Reasoner {
+				return reasoner.NewRuleReasoner(c, reasoner.DefaultConfig())
+			},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("every outcome names its reasoner", func(t *testing.T) {
+		if len(rep.Outcomes) != 2*len(eval.Modes) {
+			t.Fatalf("ran %d outcomes, want %d adapters x %d modes",
+				len(rep.Outcomes), 2, len(eval.Modes))
+		}
+		for _, o := range rep.Outcomes {
+			if o.Reasoner == "" {
+				t.Errorf("%s/%s records no reasoner", o.CaseID, o.Mode)
+			}
+		}
+	})
+
+	t.Run("summaries are grouped by mode and reasoner, not by mode alone", func(t *testing.T) {
+		if len(rep.Summaries) != 2*len(eval.Modes) {
+			t.Fatalf("got %d summary rows, want %d: grouping by mode alone would average "+
+				"two strategies into a number describing neither",
+				len(rep.Summaries), 2*len(eval.Modes))
+		}
+		seen := map[string]bool{}
+		for _, s := range rep.Summaries {
+			key := string(s.Mode) + "/" + s.Reasoner
+			if seen[key] {
+				t.Errorf("duplicate summary for %s", key)
+			}
+			seen[key] = true
+			if s.Reasoner == "" {
+				t.Errorf("summary for %s records no reasoner", s.Mode)
+			}
+			if s.Samples != 1 {
+				t.Errorf("%s reports %d samples over one case", key, s.Samples)
+			}
+		}
+	})
+
+	t.Run("the rendered report names both", func(t *testing.T) {
+		md := rep.Markdown()
+		if !strings.Contains(md, "Reasoner") {
+			t.Error("the report has no reasoner column")
+		}
+		for _, want := range []string{"`rule`", "`second`"} {
+			if !strings.Contains(md, want) {
+				t.Errorf("the report never names %s", want)
+			}
+		}
+	})
+
+	t.Run("an unnamed selection reports the adapter's own name", func(t *testing.T) {
+		for _, o := range rep.Outcomes {
+			if o.Reasoner == "rule" {
+				return
+			}
+		}
+		t.Error("the default selection did not report itself as the rule adapter")
+	})
 }

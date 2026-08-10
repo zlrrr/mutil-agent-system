@@ -987,6 +987,66 @@ would hold confidently.
 
 **Verified by.** TC-0110
 
+<!-- sdd:item id=REQ-0104 stage=specify status=approved derives_from=G-005,G-006 priority=P0 -->
+### REQ-0104 — The reasoning strategy is selectable wherever a result is produced
+
+**Requirement.** Every entry point that produces a comparable result — the service, the
+single-case runner and the evaluation runner — MUST accept the same reasoner selection,
+and MUST record which adapter produced each result.
+
+**Why this is a requirement.** ADR-002 claims that substituting a model changes no
+contract, no state transition and no stored schema. That claim is only worth what it can
+be checked against. With the selection reachable from the service alone, the reference
+scenario cannot be run through the model adapter and the two strategies cannot be
+compared — so the central architectural claim of the project is unfalsifiable from the
+outside, and the choice of default rests on an argument rather than on a measurement.
+
+**Acceptance.**
+- Given the reference scenario, when it is run through each adapter in turn, then both
+  complete and the case records which adapter produced the result.
+- Given the evaluation runner, when it is run for an adapter, then every outcome row
+  names that adapter.
+
+**Verified by.** TC-0112
+
+<!-- sdd:item id=REQ-0105 stage=specify status=approved derives_from=G-005 priority=P0 -->
+### REQ-0105 — The reasoner adapters answer to one contract
+
+**Requirement.** Both reasoner adapters MUST satisfy a single contract test asserting
+the properties the orchestrator relies on, independent of which strategy produced the
+output: every hypothesis cites evidence present in the snapshot, names a signature
+present in the catalog and carries a mechanism; every critique names an examined
+hypothesis and a verdict from the closed set; every demand carries a descriptor and a
+kind. A provider failure MUST surface as an error and MUST NOT be reported as an empty
+result.
+
+**Why this is a requirement and not a test detail.** ADR-002 listed this test as a
+consequence of the two-adapter decision and it was never written. An interface both
+adapters merely compile against is not a contract — it is a shape. What the orchestrator
+actually depends on is behavioural, and until both adapters are held to it, "swapping the
+adapter changes nothing" is an assertion about code that nobody has checked.
+
+**Acceptance.**
+- Given each adapter in turn, when the contract suite runs against it, then every
+  property holds for both.
+- Given an adapter whose provider is unreachable, when hypothesis formation runs, then it
+  returns an error rather than an empty list.
+
+**Verified by.** TC-0113
+
+<!-- sdd:item id=REQ-0106 stage=specify status=approved derives_from=G-005 priority=P1 -->
+### REQ-0106 — The evaluation attributes every number to a reasoner
+
+**Requirement.** The evaluation report MUST carry the reasoner adapter alongside the
+mode for every outcome and every summary row, so that a difference between two runs is
+attributable to the strategy rather than assumed.
+
+**Acceptance.**
+- Given an evaluation run, when the report is produced, then each summary row names both
+  the mode and the reasoner, and the sample size accompanies them.
+
+**Verified by.** TC-0114
+
 ## 12. Out of scope
 
 | # | Excluded behaviour | Reason |
